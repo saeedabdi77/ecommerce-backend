@@ -53,7 +53,7 @@ services:
 
   celery:
     build: .
-    command: celery -A online_store worker --loglevel=info
+    command: celery -A atashin_gallery_backend worker --loglevel=info
     env_file:
       - .env
     depends_on:
@@ -62,7 +62,7 @@ services:
 
   celery-beat:
     build: .
-    command: celery -A online_store beat --loglevel=info
+    command: celery -A atashin_gallery_backend beat --loglevel=info
     env_file:
       - .env
     depends_on:
@@ -71,7 +71,7 @@ services:
 
   flower:
     build: .
-    command: celery -A online_store flower --port=5555
+    command: celery -A atashin_gallery_backend flower --port=5555
     ports:
       - "5555:5555"
     environment:
