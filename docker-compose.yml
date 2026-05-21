@@ -35,52 +35,52 @@ services:
       - django-web
     restart: unless-stopped
     volumes:
-      - ./ssl:/etc/ssl/certs:ro
+#      - ./ssl:/etc/ssl/certs:ro
       - static_volume:/app/staticfiles:ro
 #      - certbot_data:/etc/letsencrypt
 
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - certbot_data:/etc/letsencrypt
-      - static_volume:/app/staticfiles
-    depends_on:
-      - nginx
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-
-  redis:
-    image: redis:6
-
-  celery:
-    build: .
-    command: celery -A atashin_gallery_backend worker --loglevel=info
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - db
-
-  celery-beat:
-    build: .
-    command: celery -A atashin_gallery_backend beat --loglevel=info
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - db
-
-  flower:
-    build: .
-    command: celery -A atashin_gallery_backend flower --port=5555
-    ports:
-      - "5555:5555"
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-    depends_on:
-      - redis
-      - celery
+#  certbot:
+#    image: certbot/certbot
+#    volumes:
+#      - certbot_data:/etc/letsencrypt
+#      - static_volume:/app/staticfiles
+#    depends_on:
+#      - nginx
+#    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+#
+#  redis:
+#    image: redis:6
+#
+#  celery:
+#    build: .
+#    command: celery -A atashin_gallery_backend worker --loglevel=info
+#    env_file:
+#      - .env
+#    depends_on:
+#      - redis
+#      - db
+#
+#  celery-beat:
+#    build: .
+#    command: celery -A atashin_gallery_backend beat --loglevel=info
+#    env_file:
+#      - .env
+#    depends_on:
+#      - redis
+#      - db
+#
+#  flower:
+#    build: .
+#    command: celery -A atashin_gallery_backend flower --port=5555
+#    ports:
+#      - "5555:5555"
+#    environment:
+#      - CELERY_BROKER_URL=redis://redis:6379/0
+#    depends_on:
+#      - redis
+#      - celery
 
 volumes:
   postgres_data:
   static_volume:
-  certbot_data:
+#  certbot_data:
