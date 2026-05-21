@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from decoupe import config
+from decouple import config
 
 urlpatterns = [
     path('config("ADMIN_URL")/', admin.site.urls),
