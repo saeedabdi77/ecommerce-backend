@@ -8,7 +8,6 @@ from rest_framework.serializers import as_serializer_error
 from rest_framework.utils.serializer_helpers import ReturnList, ReturnDict
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError as DjangoValidationError
-from sentry_sdk import capture_message
 
 
 class CustomSerializer(serializers.Serializer):
