@@ -15,9 +15,10 @@ services:
       - .env
 
   django-web:
-    build: .
+#    build: .
+    image: atashin_gallery_dev-django-web:latest
     container_name: django-docker
-    command: bash -c "python manage.py migrate --noinput"
+    command: bash -c "python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:8000 atashin_gallery_backend.wsgi:application"
     ports:
       - "8000:8000"
     depends_on:

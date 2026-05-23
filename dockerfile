@@ -33,4 +33,4 @@ RUN python manage.py collectstatic --noinput
 EXPOSE 8000
 
 # Run Django’s development server
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "atashin_gallery_backend.wsgi:application"]
+# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "atashin_gallery_backend.wsgi:application"]
