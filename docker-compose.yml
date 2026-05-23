@@ -29,7 +29,8 @@ services:
       - static_volume:/app/staticfiles
 
   nginx:
-    build: ./nginx
+#    build: ./nginx
+    image: atashin_gallery_dev-nginx:latest
     ports:
       - "80:80"
       - "443:443"
