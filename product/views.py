@@ -8,4 +8,4 @@ from rest_framework import status
 class TestView(GenericAPIView):
 
     def get(self, request, *args, **kwargs):
-        return Response({'message': 'test', 'data': 'test'}, status=status.HTTP_200_OK)
+        return Response({'message': 'test', 'data': 'this_is_a_test_api'}, status=status.HTTP_200_OK)
