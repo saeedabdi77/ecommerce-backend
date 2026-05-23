@@ -18,7 +18,8 @@ services:
 #    build: .
     image: atashin_gallery_dev-django-web:latest
     container_name: django-docker
-    command: bash -c "python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:8000 atashin_gallery_backend.wsgi:application"
+    # collect static is temporarily because of IRAN server
+    command: bash -c "python manage.py collectstatic --noinput && python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:8000 atashin_gallery_backend.wsgi:application"
     ports:
       - "8000:8000"
     depends_on:
@@ -26,6 +27,8 @@ services:
     env_file:
       - .env
     volumes:
+      # .:/app is temporarily because of IRAN server
+      - .:/app
       - static_volume:/app/staticfiles
 
   nginx:
