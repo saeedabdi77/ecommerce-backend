@@ -17,6 +17,7 @@ services:
   django-web:
     build: .
     container_name: django-docker
+    command: bash -c "python manage.py migrate --noinput"
     ports:
       - "8000:8000"
     depends_on:
