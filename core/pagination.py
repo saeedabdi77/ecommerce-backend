@@ -1,7 +1,7 @@
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination, _positive_int
 
-from core.api_exceptions import BaseCustomException
+from core.base_serializers import BaseCustomException
 
 
 class CustomPagination(PageNumberPagination):
