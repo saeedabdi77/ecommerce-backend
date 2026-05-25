@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_yasg',
+    'user',
+    'product',
+    'order',
 ]
 
 MIDDLEWARE = [
@@ -152,6 +155,8 @@ LOGGING = {
         },
     },
 }
+
+AUTH_USER_MODEL = 'user.User'
 
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS').split(',')
 
