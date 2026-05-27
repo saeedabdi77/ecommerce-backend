@@ -1,13 +1,17 @@
 from collections import OrderedDict
 
-from django_rest.http.exceptions import InternalServerError
 from rest_framework import status, serializers
 from rest_framework.exceptions import ValidationError, APIException
-from rest_framework.fields import get_error_detail, SkipField, set_value, ListField, empty, CharField
+from rest_framework.fields import get_error_detail, SkipField,  ListField, empty, CharField
 from rest_framework.serializers import as_serializer_error
 from rest_framework.utils.serializer_helpers import ReturnList, ReturnDict
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError as DjangoValidationError
+
+def set_value(dictionary, keys, value):
+    for key in keys[:-1]:
+        dictionary = dictionary.setdefault(key, {})
+    dictionary[keys[-1]] = value
 
 
 class CustomSerializer(serializers.Serializer):
