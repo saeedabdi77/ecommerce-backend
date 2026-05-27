@@ -38,7 +38,6 @@ class CustomSerializer(serializers.Serializer):
             try:
                 error_z = self.error_list
             except Exception as e:
-                capture_message(f'CustomSerializer error capture:\n{e}')  # Sentry event
                 raise APIException(
                     {'message': _('Internal Server Error! backend: Ozrkhahi pishapish :)'), 'details': self.errors, 'Exception': e})
             if error_z:
