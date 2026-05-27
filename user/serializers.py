@@ -150,7 +150,7 @@ class PasswordResetSendSerializer(CustomSerializer):
 
         try:
             user = User.objects.get(phone_number=phone_number)
-            attrs.set('user', user)
+            attrs['user'] = user
         except User.DoesNotExist:
             error_obj.append_errors({
                 "message": "کاربری با این شماره پیدا نشد",
