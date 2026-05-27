@@ -219,7 +219,7 @@ class PasswordResetConfirmSerializer(CustomSerializer):
         payload_phone_number = payload.get('phone_number')
         payload_exp = payload.get('exp')
 
-        if payload_purpose != 'password_reset' or payload_phone_number != phone_number or payload_exp < datetime.now():
+        if payload_purpose != 'password_reset' or payload_phone_number != phone_number or payload_exp < datetime.now().timestamp():
             error_obj.append_errors({
                 "message": "عملیات ناموفق",
                 "reason": "reset_token"
