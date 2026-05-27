@@ -149,7 +149,7 @@ class PasswordResetSendSerializer(CustomSerializer):
             })
 
         try:
-            user = User.objects.get(username=phone_number)
+            user = User.objects.get(phone_number=phone_number)
             attrs.set('user', user)
         except User.DoesNotExist:
             error_obj.append_errors({
@@ -225,7 +225,7 @@ class PasswordResetConfirmSerializer(CustomSerializer):
                 "reason": "reset_token"
             })
         else:
-            user = User.objects.get(username=phone_number)
+            user = User.objects.get(phone_number=phone_number)
             attrs['user'] = user
 
         if password != repeat_password:
