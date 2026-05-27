@@ -79,7 +79,7 @@ class SetPasswordSerializer(CustomSerializer):
     def validate_serializer(self, attrs, error_obj):
         password = attrs.get('password')
         repeat_password = attrs.get('repeat_password')
-        user = self.request.user
+        user = self.context['request'].user
 
         if password != repeat_password:
             error_obj.append_errors({
@@ -95,7 +95,7 @@ class SetPasswordSerializer(CustomSerializer):
 
     def create(self, validated_data):
         password = validated_data.get('password')
-        user = self.request.user
+        user = self.context['request'].user
 
         user.set_password(password)
         user.save()
@@ -223,6 +223,9 @@ class PasswordResetConfirmSerializer(CustomSerializer):
                 "message": "عملیات ناموفق",
                 "reason": "reset_token"
             })
+        else:
+            user = User.objects.get(username=phone_number)
+            attrs['user'] = user
 
         if password != repeat_password:
             error_obj.append_errors({
@@ -233,7 +236,7 @@ class PasswordResetConfirmSerializer(CustomSerializer):
 
     def create(self, validated_data):
         password = validated_data.get('password')
-        user = self.request.user
+        user = validated_data.get('user')
 
         user.set_password(password)
         user.save()
