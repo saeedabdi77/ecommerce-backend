@@ -86,7 +86,7 @@ class SetPasswordSerializer(CustomSerializer):
                 "message": "پسوورد مطابقت ندارد",
                 "reason": "repeat_password"
             })
-        if user.password is not None:
+        if user.password != '':
             error_obj.append_errors({
                 "message": "پسوورد تعیین شده است",
                 "reason": "repeat_password"
