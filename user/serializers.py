@@ -50,7 +50,7 @@ class VerifyOTPSerializer(CustomSerializer):
         master_otp = config('MASTER_OTP_CODE')
         cached_otp = cache.get(f"otp_{phone_number}")
 
-        if (master_otp and otp_received == str(master_otp)) or (otp_received == cached_otp):
+        if not ((master_otp and otp_received == str(master_otp)) or (otp_received == cached_otp)):
             error_obj.append_errors({
                 "message": "کد تایید نادرست است",
                 "reason": "otp"
