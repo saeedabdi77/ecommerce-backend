@@ -114,6 +114,7 @@ class LoginSerializer(CustomSerializer):
 
         try:
             user = User.objects.get(phone_number=phone_number)
+            attrs['user'] = user
             if not user.check_password(password):
                 error_obj.append_errors({
                     "message": "شماره موبایل یا رمز عبور نادرست است",
