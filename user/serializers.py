@@ -42,6 +42,9 @@ class SendOTPSerializer(CustomSerializer):
 class VerifyOTPSerializer(CustomSerializer):
     phone_number = serializers.CharField(max_length=11)
     otp = serializers.CharField(max_length=4, min_length=4, write_only=True)
+    access = serializers.ReadOnlyField()
+    refresh = serializers.ReadOnlyField()
+    is_new_user = serializers.ReadOnlyField()
 
     def validate_serializer(self, attrs, error_obj):
         phone_number = attrs.get('phone_number')
@@ -102,6 +105,8 @@ class SetPasswordSerializer(CustomSerializer):
 class LoginSerializer(CustomSerializer):
     phone_number = serializers.CharField(max_length=11, min_length=11)
     password = serializers.CharField(write_only=True)
+    access = serializers.ReadOnlyField()
+    refresh = serializers.ReadOnlyField()
 
     def validate_serializer(self, attrs, error_obj):
         phone_number = attrs.get('phone_number')
@@ -165,6 +170,7 @@ class PasswordResetSendSerializer(CustomSerializer):
 class PasswordResetVerifySerializer(CustomSerializer):
     phone_number = serializers.CharField(max_length=11, min_length=11)
     otp = serializers.CharField(max_length=4, min_length=4, write_only=True)
+    reset_token = serializers.ReadOnlyField()
 
     def validate_serializer(self, attrs, error_obj):
         phone_number = attrs.get('phone_number')
