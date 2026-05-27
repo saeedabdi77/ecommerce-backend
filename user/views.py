@@ -5,9 +5,11 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 from core.base_views import CustomCreateAPIView
-from .serializers import SendOTPSerializer, VerifyOTPSerializer
+from .serializers import SendOTPSerializer, VerifyOTPSerializer, SetPasswordSerializer, LoginSerializer
 from user.models import User
 
 from decouple import config
@@ -66,3 +68,13 @@ class VerifyOTPView(CustomCreateAPIView):
             'message': "Invalid OTP",
             'data': None
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SetPasswordView(CustomCreateAPIView):
+    serializer_class = SetPasswordSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+class LoginView(CustomCreateAPIView):
+    serializer_class = LoginSerializer
