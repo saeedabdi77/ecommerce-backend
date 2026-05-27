@@ -62,9 +62,9 @@ class VerifyOTPSerializer(CustomSerializer):
         user, created = User.objects.get_or_create(phone_number=phone_number)
 
         refresh = RefreshToken.for_user(user)
-        validated_data.set('access', str(refresh.access_token))
-        validated_data.set('refresh', str(refresh))
-        validated_data.set('is_new_user', str(created))
+        validated_data['access'] = str(refresh.access_token)
+        validated_data['refresh'] = str(refresh)
+        validated_data['is_new_user'] = str(created)
 
         return validated_data
 
@@ -191,7 +191,7 @@ class PasswordResetVerifySerializer(CustomSerializer):
 
         reset_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
-        validated_data.set("reset_token", reset_token)
+        validated_data["reset_token"] = reset_token
         return validated_data
 
 
