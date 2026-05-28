@@ -1,7 +1,7 @@
-import jdatetime
+# import jdatetime
 import uuid
 
-import pandas as pd
+# import pandas as pd
 
 
 def clean_validated_data(model, validated_data):
@@ -45,38 +45,38 @@ def update_object(instance, validated_data):
     return instance
 
 
-# arg sample: [{'column1: value1, 'column2: value2}, {'column1: value3, 'column2: value4}, ...]
-def dict_to_dataframe(list_of_dicts, columns=None):
-    df = pd.DataFrame(list_of_dicts, index=range(1, len(list_of_dicts) + 1))
-    if columns and len(list_of_dicts) and len(columns) == len(list_of_dicts[0].keys()):
-        df.columns = columns
-    return df
+# # arg sample: [{'column1: value1, 'column2: value2}, {'column1: value3, 'column2: value4}, ...]
+# def dict_to_dataframe(list_of_dicts, columns=None):
+#     df = pd.DataFrame(list_of_dicts, index=range(1, len(list_of_dicts) + 1))
+#     if columns and len(list_of_dicts) and len(columns) == len(list_of_dicts[0].keys()):
+#         df.columns = columns
+#     return df
+#
+#
+# def dict_to_excel(list_of_dicts, user, ext='xlsx', columns=None, list_of_dicts_2=None, columns_2=None,
+#                   sheet_1="sheet_1", sheet_2="sheet_2", file_name_uid=None):
+#     from core.file_system import FileSystem
+#     df = dict_to_dataframe(list_of_dicts, columns)
+#     df_2 = None
+#     if list_of_dicts_2:
+#         df_2 = dict_to_dataframe(list_of_dicts_2, columns_2)
+#     file_name = file_name_uid or str(uuid.uuid4())
+#
+#     FileSystem.create_temporary_excel_file(df, file_name, user, ext=ext, dataframe_2=df_2, sheet_1=sheet_1,
+#                                            sheet_2=sheet_2)
+#     return file_name
 
 
-def dict_to_excel(list_of_dicts, user, ext='xlsx', columns=None, list_of_dicts_2=None, columns_2=None,
-                  sheet_1="sheet_1", sheet_2="sheet_2", file_name_uid=None):
-    from core.file_system import FileSystem
-    df = dict_to_dataframe(list_of_dicts, columns)
-    df_2 = None
-    if list_of_dicts_2:
-        df_2 = dict_to_dataframe(list_of_dicts_2, columns_2)
-    file_name = file_name_uid or str(uuid.uuid4())
-
-    FileSystem.create_temporary_excel_file(df, file_name, user, ext=ext, dataframe_2=df_2, sheet_1=sheet_1,
-                                           sheet_2=sheet_2)
-    return file_name
-
-
-def convert_date_to_shamsi(date):
-    year, month, day = list(map(lambda x: int(x), str(date).split('-')))
-
-    j = jdatetime.date.fromgregorian(day=day, month=month, year=year).strftime('%Y/%m/%d')
-
-    return j
-
-
-def gregorian_to_shamsi(date):
-    return jdatetime.date.fromgregorian(year=date.year, month=date.month, day=date.day)
+# def convert_date_to_shamsi(date):
+#     year, month, day = list(map(lambda x: int(x), str(date).split('-')))
+#
+#     j = jdatetime.date.fromgregorian(day=day, month=month, year=year).strftime('%Y/%m/%d')
+#
+#     return j
+#
+#
+# def gregorian_to_shamsi(date):
+#     return jdatetime.date.fromgregorian(year=date.year, month=date.month, day=date.day)
 
 
 persian_ordinal_numbers = {
