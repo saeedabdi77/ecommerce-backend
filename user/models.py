@@ -35,5 +35,8 @@ class Address(BaseModel):
     address_detail = models.TextField('جزئیات آدرس')
     postal_code = models.CharField('کد پستی', max_length=10, blank=True)
 
+    latitude = models.DecimalField( 'عرض جغرافیایی', max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField('طول جغرافیایی', max_digits=9, decimal_places=6, null=True,  blank=True)
+
     def __str__(self):
         return f"{self.user.phone_number} - {self.city.name}"
