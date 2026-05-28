@@ -1,9 +1,10 @@
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from core.base_views import CustomCreateAPIView
+from core.base_views import CustomCreateAPIView, CustomRetrieveAPIView, CustomCreateGetUpdateViewSet
 from .serializers import SendOTPSerializer, VerifyOTPSerializer, SetPasswordSerializer, LoginSerializer, \
-    PasswordResetSendSerializer, PasswordResetVerifySerializer, PasswordResetConfirmSerializer
+    PasswordResetSendSerializer, PasswordResetVerifySerializer, PasswordResetConfirmSerializer, GetProfileSerializer, \
+    PostProfileSerializer, PutProfileSerializer
 
 
 class SendOTPView(CustomCreateAPIView):
@@ -34,3 +35,20 @@ class PasswordResetVerifyView(CustomCreateAPIView):
 
 class PasswordResetConfirmView(CustomCreateAPIView):
     serializer_class = PasswordResetConfirmSerializer
+
+
+class ProfileViewSet(CustomCreateGetUpdateViewSet):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['post', 'put', 'get']
+
+    def get_object(self):
+        return self.request.user
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return PostProfileSerializer
+        elif self.request.method == 'PUT':
+            return PutProfileSerializer
+        else:
+            return GetProfileSerializer

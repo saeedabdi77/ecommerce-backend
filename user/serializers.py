@@ -8,7 +8,8 @@ from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
 
-from core.base_serializers import CustomSerializer
+from core.base_serializers import CustomSerializer, CustomModelSerializer
+from core.utilities import update_object
 from user.models import User
 
 from decouple import config
@@ -241,4 +242,51 @@ class PasswordResetConfirmSerializer(CustomSerializer):
 
         user.set_password(password)
         user.save()
+        return validated_data
+
+
+class GetProfileSerializer(CustomModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('phone_number', 'first_name', 'last_name')
+
+
+class PostProfileSerializer(CustomModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name')
+
+    def validate_serializer(self, attrs, error_obj):
+        user = self.context['request'].user
+        attrs['user'] = user
+
+        if user.first_name != '' or user.last_name != '':
+            error_obj.append_errors({
+                "message": "اطلاعات وارد شده است",
+                "reason": "first_name"
+            })
+        return attrs
+
+    def create(self, validated_data):
+        user = validated_data.get('user')
+        update_object(user, validated_data)
+        return validated_data
+
+
+class PutProfileSerializer(CustomModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name')
+
+    def validate_serializer(self, attrs, error_obj):
+        user = self.context['request'].user
+        attrs['user'] = user
+        return attrs
+
+    def create(self, validated_data):
+        user = validated_data.get('user')
+        update_object(user, validated_data)
         return validated_data
