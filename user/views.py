@@ -84,9 +84,11 @@ class AddressViewSet(CustomCreateGetUpdateDestroyViewSet):
 class ProvinceView(CustomListAPIView):
     serializer_class = ProvinceSerializer
     queryset = Province.objects.all()
+    pagination_class = None
 
 
 class CityView(CustomListAPIView):
     serializer_class = CitySerializer
     queryset = City.objects.all()
     lookup_field = 'province__id'
+    pagination_class = None
