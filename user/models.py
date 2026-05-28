@@ -31,6 +31,7 @@ class City(BaseModel):
 
 class Address(BaseModel):
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='addresses')
+    title = models.CharField('عنوان آدرس', max_length=100)
     city = models.ForeignKey(City, on_delete=models.PROTECT, verbose_name='City')
     address_detail = models.TextField('جزئیات آدرس')
     postal_code = models.CharField('کد پستی', max_length=10, blank=True)
