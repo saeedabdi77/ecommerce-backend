@@ -203,45 +203,15 @@ class CustomGenericViewSet(ViewSetMixin, GenericAPIView):
     pass
 
 
-class CustomModelViewSet(CustomCreateModelMixin,
-                         CustomRetrieveModelMixin,
-                         CustomUpdateModelMixin,
-                         CustomDestroyModelMixin,
-                         CustomListModelMixin,
-                         CustomGenericViewSet):
-    """
-    A viewset that provides default `create()`, `retrieve()`, `update()`,
-    `partial_update()`, `destroy()` and `list()` actions.
-    """
-    pass
-
-
-class CustomViewSet(CustomCreateModelMixin,
-                    CustomRetrieveModelMixin,
-                    CustomUpdateModelMixin,
-                    CustomDestroyModelMixin,
-                    GenericViewSet):
-    """
-    A viewset that provides default `create()`, `retrieve()`, `update()`,
-    `partial_update()` and `destroy()` actions.
-    """
-    pass
-
-
-class CustomListViewSet(CustomCreateModelMixin,
-                        CustomListModelMixin,
-                        CustomUpdateModelMixin,
-                        CustomDestroyModelMixin,
-                        GenericViewSet):
-    """
-        A viewset that provides default `create()`, `list()`, `update()`,
-        `partial_update()` and `destroy()` actions.
-    """
-    pass
-
-
 class CustomCreateGetUpdateViewSet(CustomCreateModelMixin,
                                    CustomUpdateModelMixin,
                                    CustomRetrieveAPIView,
+                                   GenericViewSet):
+    pass
+
+
+class CustomCreateListUpdateViewSet(CustomCreateModelMixin,
+                                   CustomUpdateModelMixin,
+                                   CustomListAPIView,
                                    GenericViewSet):
     pass
