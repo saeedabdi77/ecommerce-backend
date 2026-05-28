@@ -47,8 +47,8 @@ class ProfileViewSet(CustomCreateGetUpdateViewSet):
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
-            return PostProfileSerializer
+            return CreateProfileSerializer
         elif self.request.method == 'PUT':
-            return PutProfileSerializer
+            return UpdateProfileSerializer
         else:
             return GetProfileSerializer

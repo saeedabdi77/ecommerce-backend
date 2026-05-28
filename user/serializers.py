@@ -252,7 +252,7 @@ class GetProfileSerializer(CustomModelSerializer):
         fields = ('phone_number', 'first_name', 'last_name')
 
 
-class PostProfileSerializer(CustomModelSerializer):
+class CreateProfileSerializer(CustomModelSerializer):
 
     class Meta:
         model = User
@@ -275,7 +275,7 @@ class PostProfileSerializer(CustomModelSerializer):
         return validated_data
 
 
-class PutProfileSerializer(CustomModelSerializer):
+class UpdateProfileSerializer(CustomModelSerializer):
 
     class Meta:
         model = User
