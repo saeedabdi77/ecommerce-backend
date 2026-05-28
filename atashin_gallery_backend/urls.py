@@ -46,4 +46,5 @@ urlpatterns = [
     path(f'api/v{VERSION}/product/', include('product.urls')),
     path(f'api/v{VERSION}/auth/', include('user.auth_urls')),
     path(f'api/v{VERSION}/user/', include('user.urls')),
+    path(f'api/v{VERSION}/locations/', include('user.location_urls')),
 ]

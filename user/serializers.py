@@ -9,8 +9,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
 
 from core.base_serializers import CustomSerializer, CustomModelSerializer
-from core.utilities import update_object
-from user.models import User
+from core.utilities import update_object, create_object
+from user.models import User, Address, Province
 
 from decouple import config
 
@@ -290,3 +290,57 @@ class UpdateProfileSerializer(CustomModelSerializer):
         user = validated_data.get('user')
         update_object(user, validated_data)
         return validated_data
+
+
+class GetAddressSerializer(CustomModelSerializer):
+
+    class Meta:
+        model = Address
+        fields = ('id', 'title', 'city', 'address_detail', 'postal_code', 'latitude', 'longitude')
+
+
+class CreateAddressSerializer(CustomModelSerializer):
+
+    class Meta:
+        model = Address
+        fields = ('title', 'city', 'address_detail', 'postal_code', 'latitude', 'longitude')
+
+    def validate_serializer(self, attrs, error_obj):
+        user = self.context['request'].user
+        attrs['user'] = user
+        return attrs
+
+    def create(self, validated_data):
+        create_object(Address, validated_data)
+        return validated_data
+
+
+class UpdateAddressSerializer(CustomModelSerializer):
+
+    class Meta:
+        model = Address
+        fields = ('title', 'city', 'address_detail', 'postal_code', 'latitude', 'longitude')
+        extra_kwargs = {'city': {'required': False},
+                  'address_detail': {'required': False},
+                  'postal_code': {'required': False}}
+
+    def validate_serializer(self, attrs, error_obj):
+        return attrs
+
+    def create(self, validated_data):
+        update_object(self.instance, validated_data)
+        return validated_data
+
+
+class ProvinceSerializer(CustomModelSerializer):
+
+    class Meta:
+        model = Province
+        fields = ('id', 'name')
+
+
+class CitySerializer(CustomModelSerializer):
+
+    class Meta:
+        model = Province
+        fields = ('id', 'name')
