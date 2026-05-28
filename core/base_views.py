@@ -211,8 +211,8 @@ class CustomCreateGetUpdateDestroyViewSet(CustomCreateModelMixin,
     pass
 
 
-class CustomCreateListUpdateViewSet(CustomCreateModelMixin,
+class CustomCreateGetUpdateViewSet(CustomCreateModelMixin,
                                    CustomUpdateModelMixin,
-                                   CustomListAPIView,
+                                   CustomRetrieveAPIView,
                                    GenericViewSet):
     pass
