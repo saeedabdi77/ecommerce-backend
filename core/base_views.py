@@ -124,7 +124,7 @@ class CustomListModelMixin:
             return Response({'message': message, 'data': data}, status=status_code)
         else:
             serializer = self.get_serializer(queryset, many=True)
-            return Response({'message': message, 'data': {'result': serializer.data}}, status=status_code)
+            return Response({'message': message, 'data': {'results': serializer.data}}, status=status_code)
 
     def sort_queryset(self, queryset, request):
         sort_item = self.get_sort_item(request)
