@@ -18,7 +18,7 @@ jobs:
           port: 22
           script: |
             set -e
-            cd /root/backend
+            cd /backend
             git pull origin master
             docker compose up -d --build
             docker compose ps
