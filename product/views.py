@@ -1,6 +1,7 @@
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework import status
+from  datetime import datetime
 
 
 # Create your views here.
@@ -8,4 +9,4 @@ from rest_framework import status
 class TestView(GenericAPIView):
 
     def get(self, request, *args, **kwargs):
-        return Response({'message': 'test', 'data': 'test test testtt'}, status=status.HTTP_200_OK)
+        return Response({'message': 'test', 'data': f'test test testtt {str(datetime.now())}'}, status=status.HTTP_200_OK)
