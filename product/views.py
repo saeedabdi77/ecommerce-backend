@@ -9,4 +9,4 @@ from  datetime import datetime
 class TestView(GenericAPIView):
 
     def get(self, request, *args, **kwargs):
-        return Response({'message': 'test', 'data': f'test test testtt {str(datetime.now())}'}, status=status.HTTP_200_OK)
+        return Response({'message': 'test', 'data': f'testiiii  {str(datetime.now())}'}, status=status.HTTP_200_OK)
