@@ -20,8 +20,7 @@ jobs:
             set -e
             cd /backend
             git pull origin master
-            docker compose up -d --build
-            sleep 3
+            docker compose restart django-web
             docker compose exec -T nginx nginx -s reload
             docker compose ps
             echo "✅ Deployment completed!"
