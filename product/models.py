@@ -1,6 +1,6 @@
 from django.db import models
 from core.models import BaseModel
-from product.enum import ProductState
+from product.enums import ProductState
 
 
 class Category(BaseModel):
