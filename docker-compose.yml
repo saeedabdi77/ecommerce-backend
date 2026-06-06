@@ -15,7 +15,7 @@ services:
       - .env
 
   django-web:
-#    build: .
+    build: .
     image: atashin_gallery_dev-django-web:latest
     container_name: django-docker
     # collect static is temporarily because of IRAN server
