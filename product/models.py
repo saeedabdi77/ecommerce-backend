@@ -43,6 +43,10 @@ class ProductType(BaseModel):
     def __st__(self):
         return self.name
 
+    @property
+    def stock(self):
+        return self.products.filter(state=ProductState.IN_WAREHOUSE).count()
+
 
 class ProductImage(BaseModel):
     product_type = models.ForeignKey(ProductType, verbose_name='محصول', on_delete=models.CASCADE, related_name='images')
