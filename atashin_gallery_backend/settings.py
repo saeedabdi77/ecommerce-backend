@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'user',
     'product',
     'order',
+    'repair',
     'rest_framework_simplejwt',
 ]
 
