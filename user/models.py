@@ -10,12 +10,20 @@ class User(AbstractUser, BaseModel):
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = []
 
+    class Meta:
+        verbose_name = 'کاربر'
+        verbose_name_plural = 'کاربران'
+
     def __str__(self):
         return self.phone_number
 
 
 class Province(BaseModel):
     name = models.CharField('نام استان', max_length=50, unique=True)
+
+    class Meta:
+        verbose_name = 'استان'
+        verbose_name_plural = 'استانها'
 
     def __str__(self):
         return self.name
@@ -24,6 +32,10 @@ class Province(BaseModel):
 class City(BaseModel):
     province = models.ForeignKey(Province, on_delete=models.PROTECT, related_name='cities')
     name = models.CharField('نام شهر', max_length=50)
+
+    class Meta:
+        verbose_name = 'شهر'
+        verbose_name_plural = 'شهرها'
 
     def __str__(self):
         return f"{self.province.name} - {self.name}"
@@ -38,6 +50,10 @@ class Address(BaseModel):
 
     latitude = models.DecimalField( 'عرض جغرافیایی', max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField('طول جغرافیایی', max_digits=9, decimal_places=6, null=True,  blank=True)
+
+    class Meta:
+        verbose_name = 'ادرس'
+        verbose_name_plural = 'ادرسها'
 
     def __str__(self):
         return f"{self.user.phone_number} - {self.city.name}"

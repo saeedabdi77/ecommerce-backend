@@ -12,7 +12,7 @@ class RepairDeviceType(BaseModel):
     class Meta:
         ordering = ['order', 'name']
         verbose_name = 'نوع دستگاه تعمیراتی'
-        verbose_name_plural = 'نوع دستگاه‌های تعمیراتی'
+        verbose_name_plural = 'انواع دستگاه‌ تعمیراتی'
 
     def __str__(self):
         return self.name

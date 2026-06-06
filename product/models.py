@@ -40,6 +40,10 @@ class ProductType(BaseModel):
     sell_price = models.BigIntegerField('قیمت فروش')
     active = models.BooleanField('فعال', default=True, db_index=True)
 
+    class Meta:
+        verbose_name = 'نوع محصول'
+        verbose_name_plural = 'انواع محصولات'
+
     def __st__(self):
         return self.name
 
@@ -59,6 +63,8 @@ class ProductImage(BaseModel):
 
     class Meta:
         ordering = ['order']
+        verbose_name = 'عکس محصول'
+        verbose_name_plural = 'عکسهای محصولات'
 
 
 class Product(BaseModel):
@@ -70,5 +76,10 @@ class Product(BaseModel):
                              db_index=True)
 
     # fk order_item
+
+    class Meta:
+        verbose_name = 'کالا'
+        verbose_name_plural = 'کالاها'
+
     def __str__(self):
         return f"{self.product_type.name} - {self.id}"
