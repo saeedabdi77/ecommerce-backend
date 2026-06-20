@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'product',
     'order',
     'repair',
+    'installation',
     'rest_framework_simplejwt',
 ]
 
