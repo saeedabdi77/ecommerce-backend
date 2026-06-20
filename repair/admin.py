@@ -21,12 +21,15 @@ class RepairProblemTypeAdmin(admin.ModelAdmin):
 
 @admin.register(RepairRequest)
 class RepairRequestAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "device_type", "status", "estimated_price", "final_price", "created_at")
-    list_filter = ("status", "device_type", "created_at")
-    search_fields = ("user__phone", "user__email", "description")
+    list_display = ("id", "user", "name", "phone_number", "device_type", "problem_type", "status", "estimated_price",
+                    "final_price")
+    list_filter = ("status", "device_type", "problem_type", "created_at")
+    search_fields = ("user__phone_number", "user__email", "name", "phone_number", "description")
     readonly_fields = ("created_at", "updated_at")
-    autocomplete_fields = ("user",)
-    actions = ("mark_pending", "mark_accepted", "mark_in_progress", "mark_waiting_for_part", "mark_done", "mark_delivered", "mark_canceled")
+    autocomplete_fields = ("user", "device_type", "problem_type")
+
+    actions = ("mark_pending", "mark_accepted", "mark_in_progress", "mark_waiting_for_part", "mark_done",
+               "mark_delivered", "mark_canceled")
 
     @admin.action(description="تغییر وضعیت به در انتظار بررسی")
     def mark_pending(self, request, queryset):
