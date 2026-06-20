@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import RepairDeviceType, RepairRequest
+from .models import RepairDeviceType, RepairProblemType, RepairRequest
 from .enums import RepairRequestStatus
 
 
@@ -10,6 +10,13 @@ class RepairDeviceTypeAdmin(admin.ModelAdmin):
     list_filter = ("active",)
     search_fields = ("name",)
     ordering = ("order", "name")
+
+
+@admin.register(RepairProblemType)
+class RepairProblemTypeAdmin(admin.ModelAdmin):
+    list_display = ("name", "active", "order")
+    list_editable = ("active", "order")
+    search_fields = ("name",)
 
 
 @admin.register(RepairRequest)
