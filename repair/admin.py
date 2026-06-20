@@ -3,13 +3,22 @@ from .models import RepairDeviceType, RepairProblemType, RepairRequest
 from .enums import RepairRequestStatus
 
 
+def create_status_action(status, description):
+    def action(modeladmin, request, queryset):
+        queryset.update(status=status)
+
+    action.short_description = description
+    action.__name__ = f"mark_as_{status.lower()}"
+    return action
+
+
+# --- Admin Classes ---
 @admin.register(RepairDeviceType)
 class RepairDeviceTypeAdmin(admin.ModelAdmin):
     list_display = ("name", "active", "order", "created_at")
     list_editable = ("active", "order")
     list_filter = ("active",)
     search_fields = ("name",)
-    ordering = ("order", "name")
 
 
 @admin.register(RepairProblemType)
@@ -28,33 +37,12 @@ class RepairRequestAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     autocomplete_fields = ("user", "device_type", "problem_type")
 
-    actions = ("mark_pending", "mark_accepted", "mark_in_progress", "mark_waiting_for_part", "mark_done",
-               "mark_delivered", "mark_canceled")
-
-    @admin.action(description="تغییر وضعیت به در انتظار بررسی")
-    def mark_pending(self, request, queryset):
-        queryset.update(status=RepairRequestStatus.PENDING)
-
-    @admin.action(description="تغییر وضعیت به پذیرفته شده")
-    def mark_accepted(self, request, queryset):
-        queryset.update(status=RepairRequestStatus.ACCEPTED)
-
-    @admin.action(description="تغییر وضعیت به در حال تعمیر")
-    def mark_in_progress(self, request, queryset):
-        queryset.update(status=RepairRequestStatus.IN_PROGRESS)
-
-    @admin.action(description="تغییر وضعیت به در انتظار قطعه")
-    def mark_waiting_for_part(self, request, queryset):
-        queryset.update(status=RepairRequestStatus.WAITING_FOR_PART)
-
-    @admin.action(description="تغییر وضعیت به آماده تحویل")
-    def mark_done(self, request, queryset):
-        queryset.update(status=RepairRequestStatus.DONE)
-
-    @admin.action(description="تغییر وضعیت به تحویل داده شده")
-    def mark_delivered(self, request, queryset):
-        queryset.update(status=RepairRequestStatus.DELIVERED)
-
-    @admin.action(description="تغییر وضعیت به لغو شده")
-    def mark_canceled(self, request, queryset):
-        queryset.update(status=RepairRequestStatus.CANCELED)
+    actions = [
+        create_status_action(RepairRequestStatus.PENDING, "تغییر وضعیت به در انتظار بررسی"),
+        create_status_action(RepairRequestStatus.ACCEPTED, "تغییر وضعیت به پذیرفته شده"),
+        create_status_action(RepairRequestStatus.IN_PROGRESS, "تغییر وضعیت به در حال تعمیر"),
+        create_status_action(RepairRequestStatus.WAITING_FOR_PART, "تغییر وضعیت به در انتظار قطعه"),
+        create_status_action(RepairRequestStatus.DONE, "تغییر وضعیت به آماده تحویل"),
+        create_status_action(RepairRequestStatus.DELIVERED, "تغییر وضعیت به تحویل داده شده"),
+        create_status_action(RepairRequestStatus.CANCELED, "تغییر وضعیت به لغو شده"),
+    ]
