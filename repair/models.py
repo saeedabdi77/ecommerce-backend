@@ -18,6 +18,21 @@ class RepairDeviceType(BaseModel):
         return self.name
 
 
+class RepairProblemType(BaseModel):
+    name = models.CharField("نوع مشکل", max_length=255)
+    device_types = models.ManyToManyField("RepairDeviceType", related_name="problem_types", blank=True)
+    active = models.BooleanField("فعال", default=True, db_index=True)
+    order = models.IntegerField("ترتیب", default=10, db_index=True)
+
+    class Meta:
+        ordering = ("order", "name")
+        verbose_name = "نوع مشکل"
+        verbose_name_plural = "نوع مشکلات"
+
+    def __str__(self):
+        return self.name
+
+
 class RepairRequest(BaseModel):
     user = models.ForeignKey('user.User', verbose_name='کاربر', on_delete=models.PROTECT,
                              related_name='repair_requests')
