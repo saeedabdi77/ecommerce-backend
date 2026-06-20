@@ -36,9 +36,14 @@ class RepairProblemType(BaseModel):
 class RepairRequest(BaseModel):
     user = models.ForeignKey('user.User', verbose_name='کاربر', on_delete=models.PROTECT,
                              related_name='repair_requests')
+    name = models.CharField('نام', max_length=255)
+    phone_number = models.CharField('شماره موبایل', max_length=20)
+    problem_type = models.ForeignKey(RepairProblemType, verbose_name="نوع مشکل",
+                                     on_delete=models.PROTECT, related_name="repair_requests")
     device_type = models.ForeignKey(RepairDeviceType, verbose_name='نوع دستگاه', on_delete=models.PROTECT,
                                     related_name='repair_requests')
     description = models.TextField('توضیحات مشکل')
+    image = models.ImageField('تصویر', upload_to='repair_requests', null=True, blank=True)
     status = models.CharField('وضعیت', max_length=30, choices=RepairRequestStatus.choices,
                               default=RepairRequestStatus.PENDING, db_index=True)
     estimated_price = models.BigIntegerField('هزینه تخمینی', null=True, blank=True)
