@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'repair',
     'installation',
     'rest_framework_simplejwt',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -184,6 +185,7 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
     ),
     'DEFAULT_PAGINATION_CLASS': 'core.pagination.CustomPagination',
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
 SIMPLE_JWT = {
