@@ -219,7 +219,7 @@ SIMPLE_JWT = {
 }
 
 SWAGGER_SETTINGS = {
-    'USE_SESSION_AUTH': True,
+    'USE_SESSION_AUTH': False,
     'SECURITY_DEFINITIONS': {
         'Bearer': {
             'type': 'apiKey',
@@ -227,4 +227,8 @@ SWAGGER_SETTINGS = {
             'in': 'header'
         }
     },
+    "DEFAULT_AUTO_SCHEMA_CLASS": "core.swagger.DjangoFilterAutoSchema",
+    "DEFAULT_FILTER_INSPECTORS": [
+        "drf_yasg.inspectors.CoreAPICompatInspector",
+    ],
 }
