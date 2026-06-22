@@ -203,16 +203,16 @@ class CustomGenericViewSet(ViewSetMixin, GenericAPIView):
     pass
 
 
-class CustomCreateGetUpdateDestroyViewSet(CustomCreateModelMixin,
-                                          CustomUpdateModelMixin,
-                                          CustomListAPIView,
-                                          CustomDestroyAPIView,
-                                          GenericViewSet):
+class CustomCreateListUpdateDestroyViewSet(CustomCreateModelMixin,
+                                           CustomUpdateModelMixin,
+                                           CustomListAPIView,
+                                           CustomDestroyAPIView,
+                                           GenericViewSet):
     pass
 
 
-class CustomCreateGetUpdateViewSet(CustomCreateModelMixin,
-                                   CustomUpdateModelMixin,
-                                   CustomRetrieveAPIView,
-                                   GenericViewSet):
+class CustomCreateRetrieveUpdateViewSet(CustomCreateModelMixin,
+                                        CustomUpdateModelMixin,
+                                        CustomRetrieveAPIView,
+                                        GenericViewSet):
     pass

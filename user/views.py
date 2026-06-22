@@ -2,8 +2,8 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
-from core.base_views import CustomCreateAPIView, CustomCreateGetUpdateViewSet, \
-    CustomCreateGetUpdateDestroyViewSet, CustomListAPIView
+from core.base_views import CustomCreateAPIView, CustomCreateRetrieveUpdateViewSet, \
+    CustomCreateListUpdateDestroyViewSet, CustomListAPIView
 from .models import Address, Province, City
 from .serializers import SendOTPSerializer, VerifyOTPSerializer, SetPasswordSerializer, LoginSerializer, \
     PasswordResetSendSerializer, PasswordResetVerifySerializer, PasswordResetConfirmSerializer, GetProfileSerializer, \
@@ -41,7 +41,7 @@ class PasswordResetConfirmView(CustomCreateAPIView):
     serializer_class = PasswordResetConfirmSerializer
 
 
-class ProfileViewSet(CustomCreateGetUpdateViewSet):
+class ProfileViewSet(CustomCreateRetrieveUpdateViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     http_method_names = ['post', 'put', 'get']
@@ -58,7 +58,7 @@ class ProfileViewSet(CustomCreateGetUpdateViewSet):
             return GetProfileSerializer
 
 
-class AddressViewSet(CustomCreateGetUpdateDestroyViewSet):
+class AddressViewSet(CustomCreateListUpdateDestroyViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     http_method_names = ['post', 'put', 'get', 'delete']
