@@ -1,9 +1,10 @@
 from django_filters import rest_framework as filters
-from repair.models import RepairDeviceType
+from repair.models import RepairDeviceType, RepairProblemType
 
-class DeviceFilter(filters.FilterSet):
-    ids = filters.BaseInFilter(field_name='id', lookup_expr='in')
+
+class RepairProblemTypeFilter(filters.FilterSet):
+    devices = filters.BaseInFilter(field_name='device_types__id', lookup_expr='in')
 
     class Meta:
-        model = RepairDeviceType
+        model = RepairProblemType
         fields = ('ids',)
