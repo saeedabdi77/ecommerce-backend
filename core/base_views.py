@@ -216,3 +216,9 @@ class CustomCreateRetrieveUpdateViewSet(CustomCreateModelMixin,
                                         CustomRetrieveAPIView,
                                         GenericViewSet):
     pass
+
+
+class CustomCreateListViewSet(CustomCreateModelMixin,
+                              CustomListAPIView,
+                              GenericViewSet):
+    pass
