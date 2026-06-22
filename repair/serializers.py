@@ -1,5 +1,5 @@
 from core.base_serializers import CustomSerializer, CustomModelSerializer
-from repair.models import RepairDeviceType, RepairProblemType
+from repair.models import RepairDeviceType, RepairProblemType, RepairRequest
 
 
 class DeviceSerializer(CustomModelSerializer):
@@ -12,3 +12,24 @@ class ProblemTypesSerializer(CustomModelSerializer):
     class Meta:
         model = RepairProblemType
         fields = ('id', 'name')
+
+
+class RepairRequestCreateSerializer(CustomModelSerializer):
+
+    class Meta:
+        model = RepairRequest
+        fields = ('name', 'phone_number', 'problem_type', 'device_type', 'description', 'image')
+
+    def validate_serializer(self, attrs, error_obj):
+        if self.context['request'].user.is_authenticated:
+            attrs['user'] = self.context['request'].user
+
+        return attrs
+
+
+class RepairRequestRetrieveSerializer(CustomModelSerializer):
+
+    class Meta:
+        model = RepairRequest
+        fields = ('name', 'phone_number', 'problem_type', 'device_type', 'description', 'image', 'status',
+                  'estimated_price', 'final_price', 'admin_note')
