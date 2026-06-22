@@ -7,4 +7,4 @@ class RepairProblemTypeFilter(filters.FilterSet):
 
     class Meta:
         model = RepairProblemType
-        fields = ('ids',)
+        fields = ('devices',)
