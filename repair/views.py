@@ -15,6 +15,5 @@ class DeviceView(CustomListAPIView):
 class ProblemTypesView(CustomListAPIView):
     serializer_class = ProblemTypesSerializer
     queryset = RepairProblemType.objects.filter(active=True)
-    filter_backends = [DjangoFilterBackend]
     filterset_class = RepairProblemTypeFilter
     pagination_class = None
