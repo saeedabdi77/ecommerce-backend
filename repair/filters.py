@@ -1,5 +1,5 @@
 from django_filters import rest_framework as filters
-from repair.models import RepairDeviceType, RepairProblemType
+from repair.models import RepairProblemType
 
 
 class RepairProblemTypeFilter(filters.FilterSet):
