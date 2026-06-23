@@ -35,7 +35,7 @@ class RepairProblemType(BaseModel):
 
 class RepairRequest(BaseModel):
     user = models.ForeignKey('user.User', verbose_name='کاربر', on_delete=models.PROTECT,
-                             related_name='repair_requests')
+                             related_name='repair_requests', blank=True, null=True)
     name = models.CharField('نام', max_length=255)
     phone_number = models.CharField('شماره موبایل', max_length=20)
     problem_type = models.ForeignKey(RepairProblemType, verbose_name="نوع مشکل",
