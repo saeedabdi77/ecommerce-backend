@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/
 
-RUN python manage.py collectstatic --noinput
+# RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 # CMD ["gunicorn", "--bind", "0.0.0.0:8000", "atashin_gallery_backend.wsgi:application"]
