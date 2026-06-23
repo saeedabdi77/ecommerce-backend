@@ -168,7 +168,18 @@ AUTH_USER_MODEL = 'user.User'
 
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS').split(',')
 
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS',
+    default=''
+).split(',')
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+
 SECURE_SSL_REDIRECT = False
 
 REST_FRAMEWORK = {
@@ -234,13 +245,3 @@ SWAGGER_SETTINGS = {
         "drf_yasg.inspectors.CoreAPICompatInspector",
     ],
 }
-
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:3000',
-    'http://localhost:3000',
-    'http://127.0.0.1:8000',
-]
-
-CORS_ALLOW_ALL_ORIGINS = True
