@@ -26,9 +26,7 @@ class RepairRequestViewSet(CustomCreateListViewSet):
     authentication_classes = (JWTAuthentication,)
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            return RepairRequest.objects.filter(user=self.request.user)
-        return RepairRequest.objects.none()
+        return RepairRequest.objects.filter(user=self.request.user)
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
