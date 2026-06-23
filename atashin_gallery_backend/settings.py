@@ -234,3 +234,5 @@ SWAGGER_SETTINGS = {
         "drf_yasg.inspectors.CoreAPICompatInspector",
     ],
 }
+
+CORS_ORIGIN_ALLOW_ALL = True
