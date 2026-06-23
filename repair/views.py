@@ -1,3 +1,6 @@
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from core.base_views import CustomListAPIView, CustomCreateListViewSet
 from repair.filters import RepairProblemTypeFilter
 from repair.models import RepairDeviceType, RepairProblemType, RepairRequest
@@ -20,6 +23,7 @@ class ProblemTypesListView(CustomListAPIView):
 
 class RepairRequestViewSet(CustomCreateListViewSet):
     http_method_names = ['post', 'get']
+    authentication_classes = [JWTAuthentication]
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
@@ -31,3 +35,8 @@ class RepairRequestViewSet(CustomCreateListViewSet):
             return RepairRequestCreateSerializer
         else:
             return RepairRequestRetrieveSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated]
+        return [AllowAny]
