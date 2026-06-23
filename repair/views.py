@@ -22,8 +22,8 @@ class ProblemTypesListView(CustomListAPIView):
 
 
 class RepairRequestViewSet(CustomCreateListViewSet):
-    http_method_names = ['post', 'get']
-    authentication_classes = [JWTAuthentication]
+    http_method_names = ('post', 'get')
+    authentication_classes = (JWTAuthentication,)
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
@@ -38,5 +38,5 @@ class RepairRequestViewSet(CustomCreateListViewSet):
 
     def get_permissions(self):
         if self.request.method == 'GET':
-            return [IsAuthenticated]
-        return [AllowAny]
+            return (IsAuthenticated(),)
+        return (AllowAny(),)
