@@ -68,8 +68,9 @@ class VerifyOTPSerializer(CustomSerializer):
         refresh = RefreshToken.for_user(user)
         validated_data['access'] = str(refresh.access_token)
         validated_data['refresh'] = str(refresh)
-        validated_data['is_new_user'] = str(created)
+        validated_data['is_new_user'] = created
 
+        cache.delete(f"otp_{phone_number}")
         return validated_data
 
 
