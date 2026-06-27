@@ -38,8 +38,8 @@ class RepairRequest(BaseModel):
                              related_name='repair_requests', blank=True, null=True)
     name = models.CharField('نام', max_length=255)
     phone_number = models.CharField('شماره موبایل', max_length=20)
-    problem_type = models.ForeignKey(RepairProblemType, verbose_name="نوع مشکل",
-                                     on_delete=models.PROTECT, related_name="repair_requests")
+    problem_type = models.ForeignKey(RepairProblemType, verbose_name="نوع مشکل", on_delete=models.PROTECT,
+                                     related_name="repair_requests", blank=True, null=True)
     device_type = models.ForeignKey(RepairDeviceType, verbose_name='نوع دستگاه', on_delete=models.PROTECT,
                                     related_name='repair_requests')
     description = models.TextField('توضیحات مشکل')
