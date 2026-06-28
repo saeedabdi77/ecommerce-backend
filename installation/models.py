@@ -1,6 +1,7 @@
 from django.db import models
 from core.models import BaseModel
 from django.db.models import Sum
+from installation.enums import GameRateSource
 
 
 class InstallationDeviceType(BaseModel):
