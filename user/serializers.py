@@ -74,7 +74,7 @@ class VerifyOTPSerializer(CustomSerializer):
 
         cache.delete(f"otp_{phone_number}")
 
-        LoginLog.objects.create(user=user, method=LoginMethod.OTP)
+        LoginLog.objects.create(user=user, method=LoginMethod.OTP, request=self.context.get('request'))
         return validated_data
 
 
@@ -139,7 +139,7 @@ class LoginSerializer(CustomSerializer):
         validated_data['access'] = str(refresh.access_token)
         validated_data['refresh'] = str(refresh)
 
-        LoginLog.objects.create(user=user, method=LoginMethod.PASSWORD)
+        LoginLog.objects.create(user=user, method=LoginMethod.PASSWORD, request=self.context.get('request'))
 
         return validated_data
 
