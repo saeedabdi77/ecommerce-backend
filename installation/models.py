@@ -1,6 +1,7 @@
 from django.db import models
 from core.models import BaseModel
 from django.db.models import Sum
+
 from installation.enums import GameRateSource
 
 
@@ -53,3 +54,14 @@ class InstallationRequest(BaseModel):
         total = self.games.aggregate(total=Sum("price"))["total"] or 0
         self.total_price = total
         self.save(update_fields=["total_price"])
+
+
+class GameRate(BaseModel):
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="rates", verbose_name="بازی")
+    source = models.CharField("منبع", max_length=20, choices=GameRateSource.choices, db_index=True)
+    rate = models.DecimalField( "امتیاز", max_digits=4, decimal_places=1)
+
+    class Meta:
+        verbose_name = "امتیاز بازی"
+        verbose_name_plural = "امتیازهای بازی"
+        unique_together = ("game", "source")
