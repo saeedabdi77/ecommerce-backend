@@ -25,6 +25,7 @@ class Game(BaseModel):
     size = models.PositiveIntegerField("حجم (گیگابایت)")
     price = models.BigIntegerField("قیمت")
     active = models.BooleanField("فعال", default=True, db_index=True)
+    image = models.ImageField('تصویر', upload_to='game-images')
 
     class Meta:
         ordering = ("name",)
