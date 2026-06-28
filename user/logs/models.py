@@ -12,8 +12,8 @@ class LoginLog(LogBaseModel):
     user_agent = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'لاگ لاگین'
-        verbose_name_plural = 'لاگهای لاگین'
+        verbose_name = '↧ لاگ ورود'
+        verbose_name_plural = '↧ لاگ‌های ورود'
 
     @classmethod
     def log(cls, user, method, request=None):
