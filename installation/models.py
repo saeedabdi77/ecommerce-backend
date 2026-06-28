@@ -21,7 +21,7 @@ class InstallationDeviceType(BaseModel):
 
 class Game(BaseModel):
     name = models.CharField("نام بازی", max_length=255)
-    device_type = models.ForeignKey(InstallationDeviceType, on_delete=models.PROTECT, related_name="games")
+    device_type = models.ManyToManyField(InstallationDeviceType, related_name="games", blank=True)
     size = models.PositiveIntegerField("حجم (گیگابایت)")
     price = models.BigIntegerField("قیمت")
     active = models.BooleanField("فعال", default=True, db_index=True)
