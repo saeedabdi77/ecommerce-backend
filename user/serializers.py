@@ -11,7 +11,8 @@ import jwt
 from core.base_serializers import CustomSerializer, CustomModelSerializer
 from core.utilities import update_object, create_object
 from user.enums import LoginMethod
-from user.models import User, Address, Province, LoginLog
+from user.models import User, Address, Province
+from user.logs.models import LoginLog
 
 from decouple import config
 
