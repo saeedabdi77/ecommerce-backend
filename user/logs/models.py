@@ -11,6 +11,10 @@ class LoginLog(LogBaseModel):
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(blank=True)
 
+    class Meta:
+        verbose_name = 'لاگ لاگین'
+        verbose_name_plural = 'لاگهای لاگین'
+
     @classmethod
     def log(cls, user, method, request=None):
         ip = request.META.get("REMOTE_ADDR") if request else None
