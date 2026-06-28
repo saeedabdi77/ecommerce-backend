@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import User, Province, City, Address
+from user.logs import admin as logs_admin
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
