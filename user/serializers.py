@@ -10,7 +10,8 @@ import jwt
 
 from core.base_serializers import CustomSerializer, CustomModelSerializer
 from core.utilities import update_object, create_object
-from user.models import User, Address, Province
+from user.enums import LoginMethod
+from user.models import User, Address, Province, LoginLog
 
 from decouple import config
 
@@ -71,6 +72,8 @@ class VerifyOTPSerializer(CustomSerializer):
         validated_data['is_new_user'] = created
 
         cache.delete(f"otp_{phone_number}")
+
+        LoginLog.objects.create(user=user, method=LoginMethod.OTP)
         return validated_data
 
 
@@ -134,6 +137,9 @@ class LoginSerializer(CustomSerializer):
         refresh = RefreshToken.for_user(user)
         validated_data['access'] = str(refresh.access_token)
         validated_data['refresh'] = str(refresh)
+
+        LoginLog.objects.create(user=user, method=LoginMethod.PASSWORD)
+
         return validated_data
 
 
