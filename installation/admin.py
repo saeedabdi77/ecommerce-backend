@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.html import format_html
+
 from .models import InstallationDeviceType, Game, GameRate, InstallationRequest
 
 
@@ -19,12 +21,18 @@ class GameRateInline(admin.TabularInline):
 
 @admin.register(Game)
 class GameAdmin(admin.ModelAdmin):
-    list_display = ("name", "price", "size", "active", "created_at")
+    list_display = ("image_preview", "name", "price", "size", "active", "created_at")
     list_editable = ("price", "active")
     list_filter = ("device_type", "active")
     search_fields = ("name",)
     filter_horizontal = ("device_type",)
     inlines = (GameRateInline,)
+
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" width="60" height="60" style="object-fit:cover;border-radius:6px;" />', obj.image.url)
+        return "-"
+    image_preview.short_description = "تصویر"
 
 
 @admin.register(GameRate)
