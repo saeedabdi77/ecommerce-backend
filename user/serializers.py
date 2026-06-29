@@ -365,3 +365,39 @@ class CitySerializer(CustomModelSerializer):
     class Meta:
         model = Province
         fields = ('id', 'name')
+
+
+class ChangePasswordSerializer(CustomSerializer):
+    current_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
+    repeat_password = serializers.CharField(write_only=True)
+
+    def validate_serializer(self, attrs, error_obj):
+        user = self.context['request'].user
+
+        current_password = attrs.get('current_password')
+        new_password = attrs.get('new_password')
+        repeat_password = attrs.get('repeat_password')
+
+        if not user.check_password(current_password):
+            error_obj.append_errors({
+                "message": "پسوورد فعلی اشتباه است",
+                "reason": "current_password"
+            })
+
+        if new_password != repeat_password:
+            error_obj.append_errors({
+                "message": "پسوورد جدید مطابقت ندارد",
+                "reason": "repeat_password"
+            })
+
+        return attrs
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        new_password = validated_data.get('new_password')
+
+        user.set_password(new_password)
+        user.save()
+
+        return validated_data

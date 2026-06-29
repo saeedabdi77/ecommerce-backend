@@ -8,7 +8,7 @@ from .models import Address, Province, City
 from .serializers import SendOTPSerializer, VerifyOTPSerializer, SetPasswordSerializer, LoginSerializer, \
     PasswordResetSendSerializer, PasswordResetVerifySerializer, PasswordResetConfirmSerializer, GetProfileSerializer, \
     CreateProfileSerializer, UpdateProfileSerializer, GetAddressSerializer, CreateAddressSerializer, \
-    UpdateAddressSerializer, ProvinceSerializer, CitySerializer
+    UpdateAddressSerializer, ProvinceSerializer, CitySerializer, ChangePasswordSerializer
 
 
 class SendOTPView(CustomCreateAPIView):
@@ -92,3 +92,9 @@ class CityView(CustomListAPIView):
     queryset = City.objects.all()
     lookup_field = 'province__id'
     pagination_class = None
+
+
+class ChangePasswordView(CustomCreateAPIView):
+    serializer_class = ChangePasswordSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
