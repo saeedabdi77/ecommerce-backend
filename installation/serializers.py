@@ -15,7 +15,7 @@ class GameRateSerializer(CustomModelSerializer):
 
 class GameSerializer(CustomModelSerializer):
     device_types = InstallationDeviceTypeSerializer(source='device_type', many=True)
-    rates = GameRateSerializer(source='rates', many=True)
+    rates = GameRateSerializer(many=True)
 
     class Meta:
         model = Game
