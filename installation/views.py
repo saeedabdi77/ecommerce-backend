@@ -1,4 +1,5 @@
 from core.base_views import CustomListAPIView
+from installation.filters import GameFilter
 from installation.models import InstallationDeviceType, Game
 from installation.serializers import InstallationDeviceTypeSerializer, GameSerializer
 
@@ -11,5 +12,5 @@ class InstallationDeviceTypeListView(CustomListAPIView):
 
 class GameListView(CustomListAPIView):
     serializer_class = GameSerializer
-    filterset_fields = ('device_type',)
+    filterset_class = GameFilter
     queryset = Game.objects.filter(active=True)
