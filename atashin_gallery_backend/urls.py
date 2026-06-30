@@ -50,4 +50,5 @@ urlpatterns = [
     path(f'api/v{VERSION}/user/', include('user.urls')),
     path(f'api/v{VERSION}/locations/', include('user.location_urls')),
     path(f'api/v{VERSION}/repair/', include('repair.urls')),
+    path(f'api/v{VERSION}/installation/', include('installation.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
