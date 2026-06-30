@@ -1,7 +1,13 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import InstallationDeviceType, Game, GameRate, InstallationRequest
+from .models import (
+    InstallationDeviceType,
+    Game,
+    GameRate,
+    InstallationRequest,
+    InstallationRequestItem
+)
 
 
 @admin.register(InstallationDeviceType)
@@ -43,10 +49,21 @@ class GameRateAdmin(admin.ModelAdmin):
     autocomplete_fields = ("game",)
 
 
+class InstallationRequestItemInline(admin.TabularInline):
+    model = InstallationRequestItem
+    extra = 0
+    readonly_fields = ("game", "price", "created_at")
+    can_delete = False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(InstallationRequest)
 class InstallationRequestAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "device_type", "total_price", "created_at")
     list_filter = ("device_type", "created_at")
     search_fields = ("user__phone_number",)
-    autocomplete_fields = ("user", "device_type", "games")
-    readonly_fields = ("created_at", "updated_at")
+    autocomplete_fields = ("user", "device_type")
+    readonly_fields = ("total_price", "created_at", "updated_at")
+    inlines = (InstallationRequestItemInline,)
