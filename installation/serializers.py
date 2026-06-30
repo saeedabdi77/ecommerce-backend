@@ -14,9 +14,9 @@ class GameRateSerializer(CustomModelSerializer):
         fields = ('id', 'source', 'rate')
 
 class GameSerializer(CustomModelSerializer):
-    device_types = InstallationDeviceTypeSerializer(source='device_type', many=True)
+    device_type = InstallationDeviceTypeSerializer(many=True)
     rates = GameRateSerializer(many=True)
 
     class Meta:
         model = Game
-        fields = ('id', 'name', 'size', 'price', 'image', 'device_types', 'rates')
+        fields = ('id', 'name', 'size', 'price', 'image', 'device_type', 'rates')
