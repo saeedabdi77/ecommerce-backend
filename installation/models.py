@@ -2,7 +2,7 @@ from django.db import models
 from core.models import BaseModel
 from django.db.models import Sum
 
-from installation.enums import GameRateSource
+from installation.enums import GameRateSource, InstallationRequestStatus
 
 
 class InstallationDeviceType(BaseModel):
@@ -40,6 +40,8 @@ class InstallationRequest(BaseModel):
     user = models.ForeignKey("user.User", on_delete=models.PROTECT, related_name="installation_requests",
                              blank=True, null=True)
     guest_uid = models.UUIDField(null=True, blank=True, db_index=True)
+    status = models.CharField("وضعیت", max_length=20, choices=InstallationRequestStatus.choices,
+                              default=InstallationRequestStatus.DRAFT, db_index=True)
     device_type = models.ForeignKey(InstallationDeviceType, on_delete=models.PROTECT,
                                     related_name="installation_requests")
     total_price = models.BigIntegerField("مبلغ کل", null=True, blank=True)

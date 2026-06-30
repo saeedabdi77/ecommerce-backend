@@ -6,3 +6,10 @@ class GameRateSource(models.TextChoices):
     IGN = "ign", "IGN"
     GAMESPOT = "gamespot", "GameSpot"
     IMDB = "imdb", "IMDb"
+
+
+class InstallationRequestStatus(models.TextChoices):
+    DRAFT = "draft", "پیش‌نویس"
+    SUBMITTED = "submitted", "ثبت شده"
+    DONE = "done", "انجام شده"
+    CANCELED = "canceled", "لغو شده"
