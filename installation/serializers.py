@@ -60,7 +60,7 @@ class AddInstallationRequestItemSerializer(CustomModelSerializer):
 
     class Meta:
         model = InstallationRequestItem
-        fields = ('id', 'game', 'guest_uid', 'clear_guest_uid')
+        fields = ('id', 'game', 'guest_uid', 'clear_guest_uid', 'device_type')
 
     def get_clear_guest_uid(self, obj):
         return getattr(self, '_clear_guest_uid', False)
@@ -69,8 +69,9 @@ class AddInstallationRequestItemSerializer(CustomModelSerializer):
         user = self.context['request'].user
         guest_uid = attrs.get('guest_uid')
         game = attrs.get('game')
+        device_type = attrs.get('device_type')
 
-        draft_installation_request = get_or_create_draft_installation_request(user, guest_uid)
+        draft_installation_request = get_or_create_draft_installation_request(device_type, user, guest_uid)
         if not draft_installation_request:
             error_obj.append_errors({
                 "message": "ارسال شناسه کاربر یا شناسه مهمان الزامی است",

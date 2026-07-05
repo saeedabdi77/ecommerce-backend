@@ -19,14 +19,14 @@ def resolve_draft_installation_request(user=None, guest_uid=None):
     return None
 
 
-def get_or_create_draft_installation_request(user=None, guest_uid=None):
+def get_or_create_draft_installation_request(device_type, user=None, guest_uid=None):
     draft_installation_request = resolve_draft_installation_request(user, guest_uid)
     if draft_installation_request:
         return draft_installation_request
 
     if user and user.is_authenticated:
-        return InstallationRequest.objects.create(user=user)
+        return InstallationRequest.objects.create(user=user, device_type=device_type)
     elif guest_uid:
-        return InstallationRequest.objects.create(guest_uid=guest_uid)
+        return InstallationRequest.objects.create(guest_uid=guest_uid, device_type=device_type)
 
     return None
