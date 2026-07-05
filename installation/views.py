@@ -1,11 +1,11 @@
 from django.http import Http404
 
-from core.base_views import CustomListAPIView, CustomRetrieveAPIView
+from core.base_views import CustomListAPIView, CustomRetrieveAPIView, CustomCreateAPIView
 from installation.enums import InstallationRequestStatus
 from installation.filters import GameFilter
 from installation.models import InstallationDeviceType, Game, InstallationRequest
 from installation.serializers import InstallationDeviceTypeSerializer, GameSerializer, \
-    InstallationRequestRetrieveSerializer
+    InstallationRequestRetrieveSerializer, AddInstallationRequestItemSerializer
 from installation.utilities import resolve_draft_installation_request
 
 
@@ -32,3 +32,7 @@ class DraftInstallationRequestRetrieveView(CustomRetrieveAPIView):
         if draft_installation_request:
             return draft_installation_request
         raise Http404
+
+
+class AddInstallationRequestItemView(CustomCreateAPIView):
+    serializer_class = AddInstallationRequestItemSerializer
