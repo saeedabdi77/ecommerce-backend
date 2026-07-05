@@ -78,7 +78,7 @@ class AddInstallationRequestItemSerializer(CustomModelSerializer):
         except InstallationDeviceType.DoesNotExist:
             error_obj.append_errors({
                 "message": "دستگاه یافت نشد",
-                "reason": "guest_uid"
+                "reason": "device_type"
             })
             return attrs
 
