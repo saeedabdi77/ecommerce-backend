@@ -57,6 +57,7 @@ class InstallationRequestRetrieveSerializer(CustomModelSerializer):
 class AddInstallationRequestItemSerializer(CustomModelSerializer):
     guest_uid = serializers.UUIDField(required=False, write_only=True)
     clear_guest_uid = serializers.SerializerMethodField()
+    device_type = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = InstallationRequestItem
@@ -70,6 +71,16 @@ class AddInstallationRequestItemSerializer(CustomModelSerializer):
         guest_uid = attrs.get('guest_uid')
         game = attrs.get('game')
         device_type = attrs.get('device_type')
+
+        try:
+            device_type = InstallationDeviceType.objects.get(id=device_type, active=True)
+            attrs['device_type'] = device_type
+        except InstallationDeviceType.DoesNotExist:
+            error_obj.append_errors({
+                "message": "دستگاه یافت نشد",
+                "reason": "guest_uid"
+            })
+            return attrs
 
         draft_installation_request = get_or_create_draft_installation_request(device_type, user, guest_uid)
         if not draft_installation_request:
