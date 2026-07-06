@@ -3,6 +3,10 @@ from drf_yasg import openapi
 
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.db import transaction
+
+from rest_framework.response import Response
+from rest_framework import status
 
 from core.base_views import CustomListAPIView, CustomRetrieveAPIView, CustomCreateAPIView, \
     CustomCreateListUpdateDestroyViewSet
@@ -67,8 +71,18 @@ class InstallationRequestItemViewSet(CustomCreateListUpdateDestroyViewSet):
             )
         ]
     )
-    def delete(self, request, *args, **kwargs):
-        return self.force_destroy(request, *args, **kwargs)
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        installation_request = instance.installation_request
+
+        with transaction.atomic():
+            instance.force_delete()
+
+            has_other_items = installation_request.items.exists()
+            if not has_other_items:
+                installation_request.force_delete()
+
+        return Response({'message': "Instance delete successfully"}, status=status.HTTP_204_NO_CONTENT)
 
     def get_object(self):
         guest_uid = self.request.query_params.get('guest_uid')
