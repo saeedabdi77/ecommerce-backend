@@ -15,8 +15,8 @@ services:
       - .env
 
   django-web:
-    build: .
-#    image: atashin_gallery_dev-django-web:latest
+#    build: .
+    image: atashin_gallery_dev-django-web:latest
     container_name: django-docker
     # collect static is temporarily because of IRAN server
     command: bash -c "python manage.py collectstatic --noinput && python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:8000 --pythonpath /app atashin_gallery_backend.wsgi:application"
@@ -28,7 +28,7 @@ services:
       - .env
     volumes:
       # .:/app is temporarily because of IRAN server
-#      - .:/app
+      - .:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
 
@@ -42,7 +42,6 @@ services:
       - django-web
     restart: unless-stopped
     volumes:
-#      - ./ssl:/etc/ssl/certs:ro
       - static_volume:/app/staticfiles:ro
       - media_volume:/app/media:ro
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
