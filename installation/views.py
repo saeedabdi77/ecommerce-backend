@@ -3,7 +3,8 @@ from drf_yasg import openapi
 
 from django.http import Http404
 
-from core.base_views import CustomListAPIView, CustomRetrieveAPIView, CustomCreateAPIView
+from core.base_views import CustomListAPIView, CustomRetrieveAPIView, CustomCreateAPIView, \
+    CustomCreateListUpdateDestroyViewSet
 from installation.enums import InstallationRequestStatus
 from installation.filters import GameFilter
 from installation.models import InstallationDeviceType, Game, InstallationRequest
@@ -51,5 +52,9 @@ class DraftInstallationRequestRetrieveView(CustomRetrieveAPIView):
         raise Http404
 
 
-class AddInstallationRequestItemView(CustomCreateAPIView):
-    serializer_class = AddInstallationRequestItemSerializer
+class InstallationRequestItemViewSet(CustomCreateListUpdateDestroyViewSet):
+    http_method_names = ("post",)
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return AddInstallationRequestItemSerializer
