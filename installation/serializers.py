@@ -70,10 +70,10 @@ class AddInstallationRequestItemSerializer(CustomModelSerializer):
         user = self.context['request'].user
         guest_uid = attrs.get('guest_uid')
         game = attrs.get('game')
-        device_type = attrs.get('device_type')
+        device_type_id = attrs.get('device_type')
 
         try:
-            device_type = InstallationDeviceType.objects.get(id=device_type, active=True)
+            device_type = InstallationDeviceType.objects.get(id=device_type_id, active=True)
             attrs['device_type'] = device_type
         except InstallationDeviceType.DoesNotExist:
             error_obj.append_errors({
@@ -83,14 +83,21 @@ class AddInstallationRequestItemSerializer(CustomModelSerializer):
             return attrs
 
         draft_installation_request = get_or_create_draft_installation_request(device_type, user, guest_uid)
+        attrs['installation_request'] = draft_installation_request
         if not draft_installation_request:
             error_obj.append_errors({
                 "message": "ارسال شناسه کاربر یا شناسه مهمان الزامی است",
                 "reason": "guest_uid"
             })
 
-        attrs['installation_request'] = draft_installation_request
-        attrs['price'] = game.price
+        if game:
+            attrs['price'] = game.price
+
+        if draft_installation_request and draft_installation_request.installation_items.filter(game=game).exists():
+            error_obj.append_errors({
+                "message": "بازی از قبل انتخاب شده است",
+                "reason": "game"
+            })
 
         self._clear_guest_uid = bool(guest_uid and user and user.is_authenticated)
         return attrs
