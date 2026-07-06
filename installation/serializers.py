@@ -93,7 +93,7 @@ class AddInstallationRequestItemSerializer(CustomModelSerializer):
         if game:
             attrs['price'] = game.price
 
-        if draft_installation_request and draft_installation_request.installation_items.filter(game=game).exists():
+        if draft_installation_request and draft_installation_request.items.filter(game=game).exists():
             error_obj.append_errors({
                 "message": "بازی از قبل انتخاب شده است",
                 "reason": "game"
