@@ -84,13 +84,13 @@ class CustomDestroyModelMixin:
     def perform_destroy(self, instance):
         instance.delete()
 
-    def perform_dige_vaqan_destroy(self, instance):
+    def perform_force_destroy(self, instance):
         instance.force_delete()
 
     def force_destroy(self, request, message="Instance deleted successfully", status_code=status.HTTP_204_NO_CONTENT,
                       *args, **kwargs):
         instance = self.get_object()
-        self.perform_dige_vaqan_destroy(instance)
+        self.perform_force_destroy(instance)
         return Response({'message': message}, status=status_code)
 
     def delete(self, request, message="Instance delete successfully", status_code=status.HTTP_204_NO_CONTENT,
