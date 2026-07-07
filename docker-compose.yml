@@ -19,7 +19,7 @@ services:
     image: backend-django-web:latest
     container_name: django-docker
     # collect static is temporarily because of IRAN server
-    command: bash -c "python manage.py collectstatic --noinput && python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:8000 --pythonpath /app atashin_gallery_backend.wsgi:application"
+    command: bash -c "python manage.py collectstatic --noinput && python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:8000 --pythonpath /app config.wsgi:application"
     ports:
       - "8000:8000"
     depends_on:
@@ -53,7 +53,7 @@ services:
 #
 #  celery:
 #    build: .
-#    command: celery -A atashin_gallery_backend worker --loglevel=info
+#    command: celery -A config worker --loglevel=info
 #    env_file:
 #      - .env
 #    depends_on:
@@ -62,7 +62,7 @@ services:
 #
 #  celery-beat:
 #    build: .
-#    command: celery -A atashin_gallery_backend beat --loglevel=info
+#    command: celery -A config beat --loglevel=info
 #    env_file:
 #      - .env
 #    depends_on:
@@ -71,7 +71,7 @@ services:
 #
 #  flower:
 #    build: .
-#    command: celery -A atashin_gallery_backend flower --port=5555
+#    command: celery -A config flower --port=5555
 #    ports:
 #      - "5555:5555"
 #    environment:
