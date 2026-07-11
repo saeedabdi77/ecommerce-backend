@@ -2,6 +2,8 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
+from core.enums import SMSPatternType
+
 
 class BaseQuerySet(models.QuerySet):
 
@@ -79,3 +81,17 @@ class BaseSignalLogsModel(LogBaseModel):
 
     class Meta:
         abstract = True
+
+
+class SMSPattern(BaseModel):
+    name = models.CharField(max_length=100, verbose_name="نام الگو")
+    type = models.CharField(max_length=50, choices=SMSPatternType.choices, unique=True, verbose_name="نوع الگو")
+    pattern_code = models.CharField(max_length=100, verbose_name="کد پترن")
+    is_active = models.BooleanField(default=True, verbose_name="فعال")
+
+    class Meta:
+        verbose_name = "الگوی پیامک"
+        verbose_name_plural = "الگوهای پیامک"
+
+    def __str__(self):
+        return self.name
