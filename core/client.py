@@ -1,0 +1,64 @@
+import requests
+
+from django.conf import settings
+
+
+class MedianaAPIError(Exception):
+    pass
+
+
+class MedianaClient:
+    def __init__(self, timeout: int = 15):
+        self.timeout = timeout
+        self.base_url = settings.MEDIANA_BASE_URL.rstrip("/")
+        self.session = requests.Session()
+
+        self.session.headers.update(
+            {
+                "X-API-KEY": settings.MEDIANA_API_KEY,
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
+        )
+
+    def _post(self, endpoint: str, payload: dict):
+        try:
+            response = self.session.post(
+                f"{self.base_url}{endpoint}",
+                json=payload,
+                timeout=self.timeout,
+            )
+        except requests.RequestException as exc:
+            raise MedianaAPIError("Could not connect to Mediana.") from exc
+
+        try:
+            data = response.json()
+        except ValueError as exc:
+            raise MedianaAPIError("Invalid response from Mediana.") from exc
+
+        if not response.ok:
+            raise MedianaAPIError(
+                {
+                    "status_code": response.status_code,
+                    "response": data,
+                }
+            )
+
+        return data
+
+    def send_pattern(
+        self,
+        *,
+        recipients: list[str],
+        pattern_code: str,
+        parameters: dict,
+    ):
+        return self._post(
+            "/sms/v1/send/pattern",
+            {
+                "type": "Informational",
+                "recipients": recipients,
+                "patternCode": pattern_code,
+                "parameters": parameters,
+            },
+        )
