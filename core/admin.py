@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import SMSPattern
+from core.models import SMSPattern
 
 
 @admin.register(SMSPattern)
