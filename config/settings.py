@@ -249,3 +249,6 @@ SWAGGER_SETTINGS = {
         "drf_yasg.inspectors.CoreAPICompatInspector",
     ],
 }
+
+MEDIANA_BASE_URL = config("MEDIANA_BASE_URL", default="https://api.mediana.ir")
+MEDIANA_API_KEY = config("MEDIANA_API_KEY")
