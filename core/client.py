@@ -29,7 +29,8 @@ class MedianaClient:
                 timeout=self.timeout,
             )
             print(response.status_code)
-            print(response.text)
+            print(response.headers.get("Content-Type"))
+            print(repr(response.text))
         except requests.RequestException as exc:
             raise MedianaAPIError("Could not connect to Mediana.") from exc
 
