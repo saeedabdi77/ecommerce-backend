@@ -1,4 +1,4 @@
-from core.client import MedianaClient
+from core.sms_client import MedianaClient
 from core.enums import SMSPatternType
 from core.models import SMSPattern
 
