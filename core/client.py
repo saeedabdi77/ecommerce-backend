@@ -57,7 +57,7 @@ class MedianaClient:
         parameters: dict,
     ):
         return self._post(
-            "/sms/v1/send/pattern",
+            "/v1/api/send",
             {
                 "type": "Informational",
                 "recipients": recipients,
