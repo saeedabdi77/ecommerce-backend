@@ -9,6 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
 
 from core.base_serializers import CustomSerializer, CustomModelSerializer
+from core.services import SMSService
 from core.utilities import update_object, create_object
 from user.enums import LoginMethod
 from user.models import User, Address, Province
@@ -37,8 +38,7 @@ class SendOTPSerializer(CustomSerializer):
 
         cache.set(f"otp_{phone_number}", otp_code, timeout=120)
 
-        # TODO: Implement actual SMS provider sending logic here
-        print(f"\n[SMS LOG] OTP for {phone_number}: {otp_code}\n")
+        SMSService.send_otp(phone_number, otp_code)
         return validated_data
 
 
@@ -185,8 +185,7 @@ class PasswordResetSendSerializer(CustomSerializer):
         otp_code = str(random.randint(1000, 9999))
         cache.set(f"reset_otp_{phone_number}", otp_code, timeout=120)
 
-        # TODO: Implement actual SMS provider sending logic here
-        print(f"\n[SMS LOG] OTP for {phone_number}: {otp_code}\n")
+        SMSService.send_otp(phone_number, otp_code)
         return validated_data
 
 
