@@ -15,7 +15,7 @@ class MedianaClient:
 
         self.session.headers.update(
             {
-                "X-API-KEY": settings.MEDIANA_API_KEY,
+                "Authorization": settings.MEDIANA_API_KEY,
                 "Accept": "application/json",
                 "Content-Type": "application/json",
             }
@@ -59,9 +59,10 @@ class MedianaClient:
         return self._post(
             "/v1/api/send",
             {
-                "type": "Informational",
+                "sending_type": "pattern",
                 "recipients": recipients,
-                "patternCode": pattern_code,
-                "parameters": parameters,
+                "code": pattern_code,
+                "params": parameters,
+                "from_number": settings.MEDIANA_FROM_NUMBER,
             },
         )

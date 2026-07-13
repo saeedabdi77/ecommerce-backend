@@ -252,3 +252,4 @@ SWAGGER_SETTINGS = {
 
 MEDIANA_BASE_URL = config("MEDIANA_BASE_URL", default="https://api.mediana.ir")
 MEDIANA_API_KEY = config("MEDIANA_API_KEY")
+MEDIANA_FROM_NUMBER = config("MEDIANA_FROM_NUMBER")
