@@ -296,3 +296,5 @@ pip-selfcheck.json
 !**/migrations/__init__.py
 
 output/
+
+nginx/default.conf
