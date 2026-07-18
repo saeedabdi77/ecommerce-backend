@@ -8,10 +8,11 @@ class SMSService:
 
     @staticmethod
     def _get_pattern(pattern_type: SMSPatternType):
-        return SMSPattern.objects.get(
-            type=pattern_type,
-            is_active=True,
-        )
+        try:
+            pattern = SMSPattern.objects.get(type=pattern_type, is_active=True)
+            return pattern
+        except SMSPattern.DoesNotExist:
+            return None
 
     @classmethod
     def send_otp(cls, phone: str, code: str):
@@ -29,8 +30,15 @@ class SMSService:
     def send_pattern(cls, phone: str, pattern_type: SMSPatternType, **parameters):
         pattern = cls._get_pattern(pattern_type)
 
+        if not pattern:
+            return {
+                'success': False,
+                'skipped': True,
+                'reason': f'Pattern {pattern_type} not found'
+            }
+
         return cls.client.send_pattern(
-            recipients=[phone],
+            recipients=[phone] if isinstance(phone, str) else phone,
             pattern_code=pattern.pattern_code,
             parameters=parameters,
         )
