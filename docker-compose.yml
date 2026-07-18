@@ -15,8 +15,8 @@ services:
       - .env
 
   django-web:
-    build: .
-#    image: backend-django-web:latest
+#    build: .
+    image: backend-django-web:latest
     container_name: django-docker
     # collect static is temporarily because of IRAN server
     command: bash -c "python manage.py collectstatic --noinput && python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:8000 --pythonpath /app config.wsgi:application"
@@ -28,7 +28,7 @@ services:
       - .env
     volumes:
       # .:/app is temporarily because of IRAN server
-#      - .:/app
+      - .:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
 
