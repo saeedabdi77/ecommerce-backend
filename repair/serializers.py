@@ -1,4 +1,7 @@
 from core.base_serializers import CustomSerializer, CustomModelSerializer
+from core.enums import SMSPatternType
+from core.services import SMSService
+from core.utilities import create_object
 from repair.models import RepairDeviceType, RepairProblemType, RepairRequest
 
 
@@ -26,6 +29,12 @@ class RepairRequestCreateSerializer(CustomModelSerializer):
 
         return attrs
 
+    def create(self, validated_data):
+        create_object(RepairRequest, **validated_data)
+        SMSService.notify_admins(
+            SMSPatternType.NEW_REPAIR_REQUEST,
+        )
+        return validated_data
 
 class RepairRequestRetrieveSerializer(CustomModelSerializer):
 

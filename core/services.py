@@ -1,3 +1,4 @@
+from config import settings
 from core.sms_client import MedianaClient
 from core.enums import SMSPatternType
 from core.models import SMSPattern
@@ -39,6 +40,32 @@ class SMSService:
 
         return cls.client.send_pattern(
             recipients=[phone] if isinstance(phone, str) else phone,
+            pattern_code=pattern.pattern_code,
+            parameters=parameters,
+        )
+
+    @classmethod
+    def notify_admins(cls, pattern_type: SMSPatternType, **parameters):
+        admins = getattr(settings, 'ADMIN_PHONE_NUMBERS', [])
+
+        if not admins:
+            return {
+                'success': False,
+                'skipped': True,
+                'reason': 'No admin numbers configured'
+            }
+
+        pattern = cls._get_pattern(pattern_type)
+
+        if not pattern:
+            return {
+                'success': False,
+                'skipped': True,
+                'reason': f'Pattern {pattern_type} not found'
+            }
+
+        return cls.client.send_pattern(
+            recipients=admins,
             pattern_code=pattern.pattern_code,
             parameters=parameters,
         )
