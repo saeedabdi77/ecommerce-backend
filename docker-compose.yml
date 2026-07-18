@@ -28,7 +28,7 @@ services:
       - .env
     volumes:
       # .:/app is temporarily because of IRAN server
-      - .:/app
+#      - .:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
 
