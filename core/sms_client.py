@@ -53,6 +53,7 @@ class MedianaClient:
         pattern_code: str,
         parameters: dict,
     ):
+        print(recipients, pattern_code, parameters)
         return self._post(
             "/v1/api/send",
             {

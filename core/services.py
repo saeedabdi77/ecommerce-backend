@@ -89,6 +89,7 @@ class SMSService:
 
         pattern = cls._get_pattern(pattern_type)
 
+        print(pattern)
         if not pattern:
             return {
                 'success': False,
