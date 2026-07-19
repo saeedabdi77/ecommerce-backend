@@ -93,7 +93,8 @@ class SMSService:
                 'reason': f'Pattern {pattern_type} not found'
             }
 
-        return cls.send_pattern(admins, pattern_type, **parameters)
+        for admin in admins:
+            cls.send_pattern(admin, pattern_type, **parameters)
 
     @classmethod
     def notify_repair_request(cls, repair_request):
