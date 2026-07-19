@@ -1,7 +1,7 @@
 from config import settings
 from core.sms_client import MedianaClient
 from core.enums import SMSPatternType
-from core.models import SMSPattern
+from core.models import SMSPattern, SMSLog
 
 
 class SMSService:
@@ -28,7 +28,20 @@ class SMSService:
         )
 
     @classmethod
-    def send_pattern(cls, phone: str, pattern_type: SMSPatternType, **parameters):
+    def _log_sms(cls, pattern_type, recipients, parameters, status, bulk_id=None, error=None):
+        message = f"Pattern: {pattern_type}, Params: {parameters}"
+
+        return SMSLog.objects.create(
+            pattern_type=pattern_type,
+            recipient=recipients if isinstance(recipients, list) else [recipients],
+            message=message,
+            status=status,
+            bulk_id=bulk_id,
+            error=error,
+        )
+
+    @classmethod
+    def send_pattern(cls, phone, pattern_type: SMSPatternType, **parameters):
         pattern = cls._get_pattern(pattern_type)
 
         if not pattern:
@@ -38,11 +51,27 @@ class SMSService:
                 'reason': f'Pattern {pattern_type} not found'
             }
 
-        return cls.client.send_pattern(
-            recipients=[phone] if isinstance(phone, str) else phone,
-            pattern_code=pattern.pattern_code,
-            parameters=parameters,
-        )
+        try:
+            response = cls.client.send_pattern(
+                recipients=[phone] if isinstance(phone, str) else phone,
+                pattern_code=pattern.pattern_code,
+                parameters=parameters,
+            )
+            return cls._log_sms(
+                pattern_type,
+                phone,
+                parameters,
+                'sent',
+                response.get('bulk_id')
+            )
+        except Exception as e:
+            return cls._log_sms(
+                pattern_type,
+                phone,
+                parameters,
+                'failed',
+                error=str(e)
+            )
 
     @classmethod
     def notify_admins(cls, pattern_type: SMSPatternType, **parameters):
