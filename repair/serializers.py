@@ -30,10 +30,8 @@ class RepairRequestCreateSerializer(CustomModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        create_object(RepairRequest, validated_data)
-        SMSService.notify_admins(
-            SMSPatternType.NEW_REPAIR_REQUEST,
-        )
+        repair_request = create_object(RepairRequest, validated_data)
+        SMSService.notify_repair_request(repair_request)
         return validated_data
 
 class RepairRequestRetrieveSerializer(CustomModelSerializer):
