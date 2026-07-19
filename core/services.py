@@ -57,7 +57,6 @@ class SMSService:
                 pattern_code=pattern.pattern_code,
                 parameters=parameters,
             )
-            print(response)
             return cls._log_sms(
                 pattern_type,
                 phone,
@@ -66,7 +65,6 @@ class SMSService:
                 response.get('bulk_id')
             )
         except Exception as e:
-            print(e)
             return cls._log_sms(
                 pattern_type,
                 phone,
@@ -79,9 +77,6 @@ class SMSService:
     def notify_admins(cls, pattern_type: SMSPatternType, **parameters):
         admins = getattr(settings, 'ADMIN_PHONE_NUMBERS', '').split(',')
 
-        print(admins)
-        print(pattern_type)
-
         if not admins:
             return {
                 'success': False,
@@ -91,7 +86,6 @@ class SMSService:
 
         pattern = cls._get_pattern(pattern_type)
 
-        print(pattern)
         if not pattern:
             return {
                 'success': False,
