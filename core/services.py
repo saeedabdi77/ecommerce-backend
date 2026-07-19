@@ -66,6 +66,7 @@ class SMSService:
                 response.get('bulk_id')
             )
         except Exception as e:
+            print(e)
             return cls._log_sms(
                 pattern_type,
                 phone,
