@@ -31,10 +31,10 @@ class RepairProblemTypeAdmin(admin.ModelAdmin):
 @admin.register(RepairRequest)
 class RepairRequestAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "name", "phone_number", "device_type", "problem_type", "status", "estimated_price",
-                    "final_price")
+                    "final_price", "tracking_code")
     list_filter = ("status", "device_type", "problem_type", "created_at")
-    search_fields = ("user__phone_number", "user__email", "name", "phone_number", "description")
-    readonly_fields = ("created_at", "updated_at")
+    search_fields = ("user__phone_number", "user__email", "name", "phone_number", "description", "tracking_code")
+    readonly_fields = ("created_at", "updated_at", "tracking_code")
     autocomplete_fields = ("user", "device_type", "problem_type")
 
     actions = [

@@ -37,6 +37,7 @@ class Game(BaseModel):
 
 
 class InstallationRequest(BaseModel):
+    tracking_code = models.PositiveIntegerField(verbose_name='کد پیگیری', unique=True, editable=False)
     user = models.ForeignKey("user.User", on_delete=models.PROTECT, related_name="installation_requests",
                              blank=True, null=True)
     guest_uid = models.UUIDField(null=True, blank=True, db_index=True)
@@ -59,6 +60,12 @@ class InstallationRequest(BaseModel):
         total = self.items.aggregate(total=Sum("price"))["total"] or 0
         self.total_price = total
         self.save(update_fields=["total_price"])
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            last = InstallationRequest.objects.order_by('-tracking_code').first()
+            self.tracking_code = (last.tracking_code + 1) if last else 1000
+        super().save(*args, **kwargs)
 
 
 class InstallationRequestItem(BaseModel):

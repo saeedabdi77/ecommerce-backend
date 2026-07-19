@@ -34,6 +34,7 @@ class RepairProblemType(BaseModel):
 
 
 class RepairRequest(BaseModel):
+    tracking_code = models.PositiveIntegerField(verbose_name='کد پیگیری', unique=True, editable=False)
     user = models.ForeignKey('user.User', verbose_name='کاربر', on_delete=models.PROTECT,
                              related_name='repair_requests', blank=True, null=True)
     name = models.CharField('نام', max_length=255)
@@ -57,3 +58,9 @@ class RepairRequest(BaseModel):
 
     def __str__(self):
         return f'{self.user} - {self.device_type}'
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            last = RepairRequest.objects.order_by('-tracking_code').first()
+            self.tracking_code = (last.tracking_code + 1) if last else 1000
+        super().save(*args, **kwargs)
