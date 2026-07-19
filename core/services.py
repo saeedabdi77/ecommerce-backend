@@ -103,11 +103,11 @@ class SMSService:
     def notify_repair_request(cls, repair_request):
         cls.notify_admins(
             SMSPatternType.NEW_REPAIR_REQUEST,
-            tracking_code=repair_request.tracking_code,
+            orderTracking=repair_request.tracking_code,
         )
 
         cls.send_pattern(
             repair_request.phone_number,
             SMSPatternType.REPAIR_REQUEST_CONFIRMATION,
-            tracking_code=repair_request.tracking_code,
+            orderTracking=repair_request.tracking_code,
         )
