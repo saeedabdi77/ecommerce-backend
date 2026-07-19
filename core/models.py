@@ -95,3 +95,18 @@ class SMSPattern(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class SMSLog(LogBaseModel):
+    pattern_type = models.CharField(max_length=50)
+    recipient = models.JSONField()
+    message = models.TextField()
+    status = models.CharField(max_length=20, choices=[('sent', 'Sent'), ('failed', 'Failed')])
+    bulk_id = models.CharField(max_length=100, null=True, blank=True)
+    error = models.TextField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['pattern_type', 'status']),
+        ]
