@@ -106,6 +106,8 @@ class SMSLog(LogBaseModel):
     error = models.TextField(null=True, blank=True)
 
     class Meta:
+        verbose_name = "↧ لاگ ارسال پیامک"
+        verbose_name_plural = "↧ لاگهای ارسال پیامک"
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['pattern_type', 'status']),
