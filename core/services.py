@@ -75,7 +75,7 @@ class SMSService:
 
     @classmethod
     def notify_admins(cls, pattern_type: SMSPatternType, **parameters):
-        admins = getattr(settings, 'ADMIN_PHONE_NUMBERS', [])
+        admins = getattr(settings, 'ADMIN_PHONE_NUMBERS', '')
 
         if not admins:
             return {
@@ -94,7 +94,7 @@ class SMSService:
             }
 
         return cls.client.send_pattern(
-            recipients=admins,
+            recipients=admins.split(','),
             pattern_code=pattern.pattern_code,
             parameters=parameters,
         )
