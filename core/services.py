@@ -99,7 +99,7 @@ class SMSService:
                 'reason': f'Pattern {pattern_type} not found'
             }
 
-        return cls.client.send_pattern(
+        return cls.send_pattern(
             recipients=admins,
             pattern_code=pattern.pattern_code,
             parameters=parameters,
