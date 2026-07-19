@@ -57,6 +57,7 @@ class SMSService:
                 pattern_code=pattern.pattern_code,
                 parameters=parameters,
             )
+            print(response)
             return cls._log_sms(
                 pattern_type,
                 phone,
