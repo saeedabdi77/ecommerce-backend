@@ -78,7 +78,7 @@ class SMSService:
         )
 
         cls.send_pattern(
-            repair_request.user.phone,
+            repair_request.phone_number,
             SMSPatternType.REPAIR_REQUEST_CONFIRMATION,
             tracking_code=repair_request.tracking_code,
         )
