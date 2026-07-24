@@ -134,6 +134,7 @@ class ProductTypeAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     autocomplete_fields = ['category', 'brand', 'tags']
     inlines = [ProductImageInline, ProductInline, ProductAttributeInline]
+    filter_horizontal = ('tags',)
     fieldsets = (
         ('اطلاعات پایه', {
             'fields': ('category', 'brand', 'name', 'slug', 'description', 'active')
@@ -146,8 +147,8 @@ class ProductTypeAdmin(admin.ModelAdmin):
             'fields': ('weight', 'dimensions'),
             'classes': ('collapse',)
         }),
-        ('ویژگی‌ها و برچسب‌ها', {
-            'fields': ('attributes', 'tags'),
+        ('برچسب‌ها', {
+            'fields': ('tags',),
             'classes': ('collapse',)
         }),
         ('سئو', {
@@ -186,14 +187,14 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('id', 'product_type', 'state', 'purchase_price', 'serial')
     list_filter = ('state', 'product_type')
     search_fields = ('serial', 'product_type__name')
-    list_editable = ('state', 'purchase_price', 'warehouse_location')
+    list_editable = ('state', 'purchase_price')
     autocomplete_fields = ['product_type']
     fieldsets = (
         ('اطلاعات محصول', {
             'fields': ('product_type', 'serial', 'state')
         }),
         ('قیمت و انبار', {
-            'fields': ('purchase_price', 'warehouse_location')
+            'fields': ('purchase_price',)
         }),
         ('تاریخ در دسترس', {
             'fields': ('available_from', 'available_to'),
