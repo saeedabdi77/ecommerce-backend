@@ -131,6 +131,20 @@ class ProductType(BaseModel):
         return self.products.filter(state=ProductState.IN_WAREHOUSE).count()
 
 
+class ProductAttribute(BaseModel):
+    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, related_name='product_attributes')
+    attribute_value = models.ForeignKey(AttributeValue, on_delete=models.CASCADE, related_name='product_attributes')
+    extra_price = models.BigIntegerField('قیمت اضافه', default=0)
+
+    class Meta:
+        verbose_name = 'ویژگی محصول'
+        verbose_name_plural = 'ویژگی‌های محصول'
+        unique_together = [['product_type', 'attribute_value']]
+
+    def __str__(self):
+        return f"{self.product_type.name} - {self.attribute_value}"
+
+
 class ProductImage(BaseModel):
     product_type = models.ForeignKey(ProductType, verbose_name='محصول', on_delete=models.CASCADE, related_name='images')
     image = models.ImageField('تصویر', upload_to='product-images')
