@@ -18,6 +18,6 @@ class CategorySerializer(CustomModelSerializer):
         fields = ('id', 'name', 'slug', 'parent', 'image', 'icon', 'homepage_show', 'order', 'children')
 
     @staticmethod
-    def get_children(self, obj):
+    def get_children(obj):
         serializer = CategorySerializer(obj.children.all(), many=True)
         return serializer.data
