@@ -92,19 +92,39 @@ class AttributeValue(BaseModel):
 class ProductType(BaseModel):
     category = models.ForeignKey(Category, verbose_name='دسته بندی', on_delete=models.PROTECT,
                                  related_name='product_types')
+    brand = models.ForeignKey(Brand, verbose_name='برند', on_delete=models.PROTECT, related_name='product_types', null=True, blank=True)
     name = models.CharField('نام محصول', max_length=200)
     slug = models.SlugField('اسلاگ', unique=True)
     description = models.TextField('توضیحات')
+    active = models.BooleanField('فعال', default=True, db_index=True)
+
     main_price = models.BigIntegerField('قیمت اصلی')
     sell_price = models.BigIntegerField('قیمت فروش')
-    active = models.BooleanField('فعال', default=True, db_index=True)
+    # TODO: Add discount system later (Discount model with percentage/fixed amount, start/end dates, usage limits)
+
+    weight = models.DecimalField('وزن (گرم)', max_digits=10, decimal_places=2, null=True, blank=True)
+    dimensions = models.CharField('ابعاد (سانتی‌متر)', max_length=100, blank=True, help_text='مثال: 20×15×10')
+
+    seo_title = models.CharField('عنوان سئو', max_length=150, blank=True)
+    seo_description = models.TextField('توضیحات سئو', max_length=500, blank=True)
+    seo_keywords = models.TextField('کلمات کلیدی', max_length=1000, blank=True)
+    attributes = models.ManyToManyField(AttributeValue, through='ProductAttribute', related_name='product_types', blank=True)
+    tags = models.ManyToManyField('Tag', related_name='product_types', blank=True)
 
     class Meta:
         verbose_name = 'نوع محصول'
         verbose_name_plural = 'انواع محصولات'
 
-    def __st__(self):
+    def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.sell_price > self.main_price:
+            raise ValidationError({'sell_price': 'قیمت فروش نمی‌تواند از قیمت اصلی بیشتر باشد'})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     @property
     def stock(self):
