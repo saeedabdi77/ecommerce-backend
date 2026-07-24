@@ -228,3 +228,16 @@ class Wishlist(BaseModel):
 
     def __str__(self):
         return f"{self.user.username} - {self.product_type.name}"
+
+
+class ProductCollection(BaseModel):
+    name = models.CharField('نام', max_length=200)
+    code_name = models.SlugField('نام کد', unique=True)
+    product_types = models.ManyToManyField(ProductType, related_name='collections')
+    is_active = models.BooleanField('فعال', default=True)
+    order = models.IntegerField('ترتیب', default=0)
+
+    description = models.TextField('توضیحات', blank=True)
+    image = models.ImageField('تصویر', upload_to='collections', null=True, blank=True)
+    seo_title = models.CharField('عنوان سئو', max_length=150, blank=True)
+    seo_description = models.TextField('توضیحات سئو', max_length=500, blank=True)
