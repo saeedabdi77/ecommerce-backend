@@ -92,7 +92,8 @@ class AttributeValue(BaseModel):
 class ProductType(BaseModel):
     category = models.ForeignKey(Category, verbose_name='دسته بندی', on_delete=models.PROTECT,
                                  related_name='product_types')
-    brand = models.ForeignKey(Brand, verbose_name='برند', on_delete=models.PROTECT, related_name='product_types', null=True, blank=True)
+    brand = models.ForeignKey(Brand, verbose_name='برند', on_delete=models.PROTECT, related_name='product_types',
+                              null=True, blank=True)
     name = models.CharField('نام محصول', max_length=200)
     slug = models.SlugField('اسلاگ', unique=True)
     description = models.TextField('توضیحات')
@@ -108,7 +109,8 @@ class ProductType(BaseModel):
     seo_title = models.CharField('عنوان سئو', max_length=150, blank=True)
     seo_description = models.TextField('توضیحات سئو', max_length=500, blank=True)
     seo_keywords = models.TextField('کلمات کلیدی', max_length=1000, blank=True)
-    attributes = models.ManyToManyField(AttributeValue, through='ProductAttribute', related_name='product_types', blank=True)
+    attributes = models.ManyToManyField(AttributeValue, through='ProductAttribute', related_name='product_types',
+                                        blank=True)
     tags = models.ManyToManyField('Tag', related_name='product_types', blank=True)
 
     class Meta:
@@ -196,7 +198,8 @@ class Tag(BaseModel):
 
 
 class Review(BaseModel):
-    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, related_name='reviews', verbose_name='محصول')
+    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, related_name='reviews',
+                                     verbose_name='محصول')
     user = models.ForeignKey('user.User', on_delete=models.CASCADE, related_name='reviews', verbose_name='کاربر')
     rating = models.PositiveSmallIntegerField('امتیاز', choices=[(i, i) for i in range(1, 6)])
     title = models.CharField('عنوان', max_length=200)
