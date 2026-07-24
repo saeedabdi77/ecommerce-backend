@@ -176,3 +176,52 @@ class Product(BaseModel):
 
     def __str__(self):
         return f"{self.product_type.name} - {self.id}"
+
+
+class Tag(BaseModel):
+    name = models.CharField('برچسب', max_length=100, unique=True)
+    slug = models.SlugField('اسلاگ', unique=True)
+
+    class Meta:
+        verbose_name = 'برچسب'
+        verbose_name_plural = 'برچسب‌ها'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
+class Review(BaseModel):
+    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, related_name='reviews', verbose_name='محصول')
+    user = models.ForeignKey('user.User', on_delete=models.CASCADE, related_name='reviews', verbose_name='کاربر')
+    rating = models.PositiveSmallIntegerField('امتیاز', choices=[(i, i) for i in range(1, 6)])
+    title = models.CharField('عنوان', max_length=200)
+    comment = models.TextField('نظر')
+    is_verified = models.BooleanField('تایید شده', default=False)
+    is_approved = models.BooleanField('منتشر شده', default=False, db_index=True)
+
+    class Meta:
+        verbose_name = 'نظر'
+        verbose_name_plural = 'نظرات'
+        ordering = ['-created_at']
+        unique_together = [['product_type', 'user']]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product_type.name} - {self.rating}/5"
+
+
+class Wishlist(BaseModel):
+    user = models.ForeignKey('user.User', on_delete=models.CASCADE, related_name='wishlist')
+    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, related_name='wishlisted_by')
+
+    class Meta:
+        verbose_name = 'علاقه‌مندی'
+        verbose_name_plural = 'علاقه‌مندی‌ها'
+        unique_together = [['user', 'product_type']]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product_type.name}"
