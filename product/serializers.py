@@ -26,7 +26,7 @@ class CategorySerializer(CustomModelSerializer):
 class ProductImageSerializer(CustomModelSerializer):
     class Meta:
         model = ProductImage
-        fields = ('id', 'image', 'is_thumbnail', 'order', 'alt_text')
+        fields = ('id', 'image', 'is_thumbnail', 'order')
 
 
 class TagSerializer(CustomModelSerializer):
@@ -44,7 +44,7 @@ class AttributeValueSerializer(CustomModelSerializer):
 class ProductListSerializer(CustomModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
-    attributes = AttributeValueSerializer(many=True, read_only=True, source='attributes')
+    attributes = AttributeValueSerializer(many=True, read_only=True)
     stock = serializers.IntegerField(read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
     brand_name = serializers.CharField(source='brand.name', read_only=True)
