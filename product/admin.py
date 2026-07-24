@@ -66,7 +66,7 @@ class CategoryAdmin(admin.ModelAdmin):
             'fields': ('homepage_show',)
         }),
         ('سئو', {
-            'fields': ('seo_title', 'seo_description', 'seo_keywords'),
+            'fields': ('seo_description', 'seo_keywords'),
             'classes': ('collapse',)
         }),
     )
