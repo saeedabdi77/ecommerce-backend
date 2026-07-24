@@ -1,4 +1,7 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.utils.text import slugify
+from django.utils import timezone
 from core.models import BaseModel
 from product.enums import ProductState
 
@@ -25,9 +28,65 @@ class Category(BaseModel):
         ordering = ['order', 'name']
         verbose_name = 'دسته بندی'
         verbose_name_plural = 'دسته بندی ها'
+        unique_together = [['parent', 'slug']]
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
+class Brand(BaseModel):
+    name = models.CharField('نام برند', max_length=200)
+    slug = models.SlugField('اسلاگ', unique=True)
+    logo = models.ImageField('لوگو', upload_to='brands', null=True, blank=True)
+    is_active = models.BooleanField('فعال', default=True)
+
+    class Meta:
+        verbose_name = 'برند'
+        verbose_name_plural = 'برندها'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
+class Attribute(models.Model):
+    name = models.CharField('نام ویژگی', max_length=200)
+    slug = models.SlugField('اسلاگ', unique=True)
+
+    class Meta:
+        verbose_name = 'ویژگی'
+        verbose_name_plural = 'ویژگی‌ها'
+
+    def __str__(self):
+        return self.name
+
+
+class AttributeValue(BaseModel):
+    attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE, related_name='values')
+    value = models.CharField('مقدار', max_length=500)
+    slug = models.SlugField('اسلاگ', blank=True)
+
+    class Meta:
+        verbose_name = 'مقدار ویژگی'
+        verbose_name_plural = 'مقادیر ویژگی'
+        unique_together = [['attribute', 'value']]
+
+    def __str__(self):
+        return f"{self.attribute.name}: {self.value}"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.value)
+        super().save(*args, **kwargs)
 
 
 class ProductType(BaseModel):
