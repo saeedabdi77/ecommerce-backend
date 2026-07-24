@@ -241,3 +241,11 @@ class ProductCollection(BaseModel):
     image = models.ImageField('تصویر', upload_to='collections', null=True, blank=True)
     seo_title = models.CharField('عنوان سئو', max_length=150, blank=True)
     seo_description = models.TextField('توضیحات سئو', max_length=500, blank=True)
+
+
+    class Meta:
+        verbose_name = 'کالکشن محصولات'
+        verbose_name_plural = 'کالکشنهای محصولات'
+
+    def __str__(self):
+        return f"{self.name}"
