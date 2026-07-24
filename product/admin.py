@@ -6,7 +6,7 @@ from django.db.models import Count
 from .models import (
     Category, Brand, Attribute, AttributeValue,
     ProductType, ProductAttribute, ProductImage,
-    Product, Tag, Review, Wishlist
+    Product, Tag, Review, Wishlist, ProductCollection
 )
 
 
@@ -285,3 +285,43 @@ class WishlistAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'product_type__name')
     autocomplete_fields = ['user', 'product_type']
     readonly_fields = ('created_at',)
+
+
+@admin.register(ProductCollection)
+class ProductCollectionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code_name', 'product_count', 'is_active', 'order', 'created_at')
+    list_editable = ('is_active', 'order')
+    list_filter = ('is_active', 'created_at')
+    search_fields = ('name', 'code_name', 'description', 'seo_title', 'seo_description')
+    prepopulated_fields = {'code_name': ('name',)}
+    filter_horizontal = ('product_types',)
+    fieldsets = (
+        ('اطلاعات پایه', {
+            'fields': ('name', 'code_name', 'description', 'is_active', 'order')
+        }),
+        ('تصاویر', {
+            'fields': ('image',),
+            'classes': ('collapse',)
+        }),
+        ('محصولات', {
+            'fields': ('product_types',),
+            'description': 'محصولات موجود در این مجموعه'
+        }),
+        ('سئو', {
+            'fields': ('seo_title', 'seo_description'),
+            'classes': ('collapse',)
+        }),
+    )
+    actions = ['activate_collections', 'deactivate_collections']
+
+    def product_count(self, obj):
+        return obj.product_types.count()
+    product_count.short_description = 'تعداد محصولات'
+
+    def activate_collections(self, request, queryset):
+        queryset.update(is_active=True)
+    activate_collections.short_description = 'فعال کردن مجموعه‌های انتخاب شده'
+
+    def deactivate_collections(self, request, queryset):
+        queryset.update(is_active=False)
+    deactivate_collections.short_description = 'غیرفعال کردن مجموعه‌های انتخاب شده'
