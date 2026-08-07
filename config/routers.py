@@ -7,6 +7,7 @@ class TenantDatabaseRouter:
 
     def _get_db(self):
         print('rrrrrrrrrrrrrrrrrr')
+        print(getattr(_thread_local, 'db', 'default'))
         print('rrrrrrrrrrrrrrrrrr')
         return getattr(_thread_local, 'db', 'default')
 
