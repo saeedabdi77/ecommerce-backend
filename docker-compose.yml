@@ -4,13 +4,13 @@ services:
   db:
     image: postgres:17
     environment:
-      POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
       - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     env_file:
       - .env
 
@@ -19,7 +19,7 @@ services:
 #    image: backend-django-web:latest
     container_name: django-docker
     # collect static is temporarily because of IRAN server
-    command: bash -c "python manage.py collectstatic --noinput && python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:8000 --pythonpath /app config.wsgi:application"
+    command: bash -c "python manage.py collectstatic --noinput && python manage.py migrate_all && gunicorn --bind 0.0.0.0:8000 --pythonpath /app config.wsgi:application"
     ports:
       - "8000:8000"
     depends_on:

@@ -61,7 +61,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'config.middleware.TenantDatabaseMiddleware',
 ]
+
+DATABASE_ROUTERS = ['config.routers.TenantDatabaseRouter']
+
 
 ROOT_URLCONF = 'config.urls'
 
@@ -91,6 +95,14 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('DATABASE_NAME'),
+        'USER': config('DATABASE_USERNAME'),
+        'PASSWORD': config('DATABASE_PASSWORD'),
+        'HOST': config('DATABASE_HOST'),
+        'PORT': config('DATABASE_PORT'),
+    },
+    'repair_console_db': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('REPAIR_CONSOLE_DATABASE_NAME'),
         'USER': config('DATABASE_USERNAME'),
         'PASSWORD': config('DATABASE_PASSWORD'),
         'HOST': config('DATABASE_HOST'),
