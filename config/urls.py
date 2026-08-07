@@ -43,6 +43,8 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path(f'{config("ADMIN_URL")}/test/', admin.site.urls),
+    path(f'{config("ADMIN_URL")}/default/', admin.site.urls),
     path(f'{config("ADMIN_URL")}/fix-bazi/', admin.site.urls),
     path(f'{config("SWAGGER_URL")}/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path(f'api/v{VERSION}/product/', include('product.urls')),

@@ -22,4 +22,4 @@ class TenantDatabaseRouter:
         return True
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
-        return db in ['default', 'shop1', 'shop2', 'shop3']
+        return db in ['default', 'repair_console_db']

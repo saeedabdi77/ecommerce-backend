@@ -100,9 +100,9 @@ DATABASES = {
         'HOST': config('DATABASE_HOST'),
         'PORT': config('DATABASE_PORT'),
     },
-    'fix-bazi': {
+    'repair_console_db': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('FIX_BAZI_DATABASE_NAME'),
+        'NAME': config('REPAIR_CONSOLE_DATABASE_NAME'),
         'USER': config('DATABASE_USERNAME'),
         'PASSWORD': config('DATABASE_PASSWORD'),
         'HOST': config('DATABASE_HOST'),
