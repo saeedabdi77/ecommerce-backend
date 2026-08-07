@@ -64,8 +64,9 @@ MIDDLEWARE = [
     'config.middleware.TenantDatabaseMiddleware',
 ]
 
-DATABASE_ROUTERS = ['config.routers.TenantDatabaseRouter']
-
+DATABASE_ROUTERS = ['config.routers.TenantDatabaseRouter',
+                    'config.routers.SessionRouter']
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 ROOT_URLCONF = 'config.urls'
 
