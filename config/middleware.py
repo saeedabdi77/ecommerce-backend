@@ -11,15 +11,15 @@ class TenantDatabaseMiddleware(MiddlewareMixin):
         if not tenant_code:
             path = request.path
             if path.startswith(f'{config("ADMIN_URL")}/default/'):
-                tenant_code = 'fix-bazi'
+                tenant_code = 'default'
             elif path.startswith(f'{config("ADMIN_URL")}/test/'):
                 tenant_code = 'test'
             elif path.startswith(f'{config("ADMIN_URL")}/fix-bazi/'):
-                tenant_code = 'default'
+                tenant_code = 'fix-bazi'
 
         tenant_mapping = {
-            'test': 'default',
             'default': 'default',
+            'test': 'default',
             'fix-bazi': 'repair_console_db',
         }
 
