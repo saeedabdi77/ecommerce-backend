@@ -27,6 +27,8 @@ from drf_yasg import openapi
 
 from decouple import config
 
+from config.admin_sites import default_admin, test_admin, repair_admin
+
 VERSION = 1
 
 schema_view = get_schema_view(
@@ -43,9 +45,9 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path(f'{config("ADMIN_URL")}/default/', admin.site.urls),
-    path(f'{config("ADMIN_URL")}/test/', admin.site.urls),
-    path(f'{config("ADMIN_URL")}/fix-bazi/', admin.site.urls),
+    path(f"{config('ADMIN_URL')}/default/", default_admin.urls),
+    path(f"{config('ADMIN_URL')}/test/", test_admin.urls),
+    path(f"{config('ADMIN_URL')}/fix-bazi/", repair_admin.urls),
     path(f'{config("SWAGGER_URL")}/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path(f'api/v{VERSION}/product/', include('product.urls')),
     path(f'api/v{VERSION}/auth/', include('user.auth_urls')),
