@@ -4,9 +4,6 @@ from config.middleware import _tenant_local
 class TenantDatabaseRouter:
 
     def _get_db(self):
-        print('rrrrrrrrrrrrrrrrrr')
-        print(getattr(_tenant_local, 'db', 'default'))
-        print('rrrrrrrrrrrrrrrrrr')
         return getattr(_tenant_local, 'db', 'default')
 
     def db_for_read(self, model, **hints):

@@ -25,12 +25,6 @@ class TenantDatabaseMiddleware(MiddlewareMixin):
 
         db_name = tenant_mapping.get(tenant_code)
 
-        print('mmmmmmmmmmmmmmmmmmmmmmmm')
-        print(request.path)
-        print(request.headers)
-        print(db_name)
-        print('mmmmmmmmmmmmmmmmmmmmmmmm')
-
         if db_name:
             _tenant_local.db = db_name
             request.db_alias = db_name
@@ -42,21 +36,3 @@ class TenantDatabaseMiddleware(MiddlewareMixin):
         if hasattr(_tenant_local, 'db'):
             del _tenant_local.db
         return response
-
-
-class DebugMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        if request.path.startswith("/firing-bowl/"):
-            print("-------------")
-            print("path:", request.path)
-            print("router db:", getattr(_tenant_local, "db", None))
-            print("user:", request.user)
-            print("is_authenticated:", request.user.is_authenticated)
-            print("is_staff:", request.user.is_staff)
-            print("is_superuser:", request.user.is_superuser)
-            print("backend:", request.session.get("_auth_user_backend"))
-            print("session:", request.session.get("_auth_user_id"))
-        return self.get_response(request)
