@@ -25,6 +25,12 @@ class TenantDatabaseMiddleware(MiddlewareMixin):
 
         db_name = tenant_mapping.get(tenant_code)
 
+        print('mmmmmmmmmmmmmmmmmmmmmmmm')
+        print(request.path)
+        print(request.headers)
+        print(db_name)
+        print('mmmmmmmmmmmmmmmmmmmmmmmm')
+
         if db_name:
             _tenant_local.db = db_name
             request.db_alias = db_name

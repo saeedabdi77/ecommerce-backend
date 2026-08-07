@@ -6,6 +6,8 @@ _thread_local = local()
 class TenantDatabaseRouter:
 
     def _get_db(self):
+        print('rrrrrrrrrrrrrrrrrr')
+        print('rrrrrrrrrrrrrrrrrr')
         return getattr(_thread_local, 'db', 'default')
 
     def db_for_read(self, model, **hints):
