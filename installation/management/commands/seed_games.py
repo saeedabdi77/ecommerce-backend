@@ -1,4 +1,5 @@
 import os
+import time
 
 import requests
 
@@ -6,32 +7,20 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandError
 
-from installation.models import InstallationDeviceType, Game
+from installation.models import Game, InstallationDeviceType
 
 
 API_URL = "https://api.thegamesdb.net/v1"
 TIMEOUT = 30
 
 
-DEVICE_TYPES = {
-    "PlayStation 5": [
-        "PlayStation 5",
-    ],
-    "PlayStation 4": [
-        "PlayStation 4",
-    ],
-    "Xbox Series X/S": [
-        "Xbox Series X",
-        "Xbox Series S",
-        "Xbox Series X/S",
-    ],
-    "Xbox One": [
-        "Xbox One",
-    ],
-    "Nintendo Switch": [
-        "Nintendo Switch",
-    ],
-}
+DEVICE_TYPES = [
+    "PlayStation 5",
+    "PlayStation 4",
+    "Xbox Series X/S",
+    "Xbox One",
+    "Nintendo Switch",
+]
 
 
 GAMES = [
@@ -96,6 +85,7 @@ GAMES = [
     ("Battlefield 1", ["PlayStation 4", "Xbox One"]),
     ("Battlefield V", ["PlayStation 4", "Xbox One"]),
     ("Battlefield 2042", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One"]),
+    ("Far Cry 4", ["PlayStation 4", "Xbox One"]),
     ("Dying Light", ["PlayStation 4", "Xbox One"]),
     ("Dying Light 2", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One"]),
     ("Dead Space", ["PlayStation 5", "Xbox Series X/S"]),
@@ -115,6 +105,7 @@ GAMES = [
     ("Kingdom Hearts III", ["PlayStation 4", "Xbox One"]),
     ("Dragon Ball Z: Kakarot", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One", "Nintendo Switch"]),
     ("Dragon Ball: Sparking! ZERO", ["PlayStation 5", "Xbox Series X/S"]),
+    ("Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One"]),
     ("Monster Hunter: World", ["PlayStation 4", "Xbox One"]),
     ("Monster Hunter Rise", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One", "Nintendo Switch"]),
     ("Monster Hunter Wilds", ["PlayStation 5", "Xbox Series X/S"]),
@@ -141,6 +132,7 @@ GAMES = [
     ("Fallout 76", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One"]),
     ("Doom", ["PlayStation 4", "Xbox One", "Nintendo Switch"]),
     ("Doom Eternal", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One", "Nintendo Switch"]),
+    ("Wolfenstein II: The New Colossus", ["PlayStation 4", "Xbox One", "Nintendo Switch"]),
     ("Minecraft", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One", "Nintendo Switch"]),
     ("Terraria", ["PlayStation 4", "Xbox One", "Nintendo Switch"]),
     ("Baldur's Gate 3", ["PlayStation 5", "Xbox Series X/S"]),
@@ -165,6 +157,7 @@ GAMES = [
     ("Hitman", ["PlayStation 4", "Xbox One"]),
     ("Hitman 2", ["PlayStation 4", "Xbox One"]),
     ("Hitman 3", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One"]),
+    ("Hitman: World of Assassination", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One"]),
     ("Just Cause 3", ["PlayStation 4", "Xbox One"]),
     ("Just Cause 4", ["PlayStation 4", "Xbox One"]),
     ("Tomb Raider", ["PlayStation 4", "Xbox One"]),
@@ -193,6 +186,9 @@ GAMES = [
     ("Stray", ["PlayStation 5", "PlayStation 4"]),
     ("Kena: Bridge of Spirits", ["PlayStation 5", "PlayStation 4"]),
     ("Sackboy: A Big Adventure", ["PlayStation 5", "PlayStation 4"]),
+    ("Lego Star Wars: The Skywalker Saga", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One", "Nintendo Switch"]),
+    ("Lego Harry Potter Collection", ["PlayStation 4", "Xbox One", "Nintendo Switch"]),
+    ("Teenage Mutant Ninja Turtles: Shredder's Revenge", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One", "Nintendo Switch"]),
     ("Cuphead", ["PlayStation 4", "Xbox One", "Nintendo Switch"]),
     ("Hades", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One", "Nintendo Switch"]),
     ("Hades II", ["Nintendo Switch"]),
@@ -208,6 +204,7 @@ GAMES = [
     ("Tiny Tina's Wonderlands", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One"]),
     ("Destiny 2", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One"]),
     ("Warframe", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One", "Nintendo Switch"]),
+    ("Resident Evil 4", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One"]),
     ("Silent Hill 2", ["PlayStation 5"]),
     ("Dead by Daylight", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One", "Nintendo Switch"]),
     ("The Quarry", ["PlayStation 5", "PlayStation 4", "Xbox Series X/S", "Xbox One"]),
@@ -238,7 +235,7 @@ GAMES = [
 
 
 class Command(BaseCommand):
-    help = "Seed installation games with TheGamesDB images."
+    help = "Seed installation games and download TheGamesDB images."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -258,139 +255,214 @@ class Command(BaseCommand):
             raise CommandError(f"Unknown database: {database}")
 
         if not api_key:
-            raise CommandError("TGDB_API_KEY is not configured.")
+            raise CommandError(
+                "TheGamesDB API key is missing. "
+                "Set TGDB_API_KEY or use --api-key."
+            )
 
         session = requests.Session()
 
-        devices = self.seed_devices(database)
+        devices = self.create_devices(database)
 
         created = 0
-        skipped = 0
         images = 0
-        no_images = []
+        not_found = []
+        no_image = []
+        failed = []
 
-        for name, device_names in GAMES:
-            if Game.objects.using(database).filter(name=name).exists():
-                skipped += 1
-                continue
+        total = len(GAMES)
 
-            game_data = self.find_game(
-                name=name,
-                api_key=api_key,
-                session=session,
+        self.stdout.write(f"Games to import: {total}")
+        self.stdout.write("")
+
+        for index, (name, device_names) in enumerate(GAMES, start=1):
+            self.stdout.write(
+                f"[{index}/{total}] {name}"
             )
 
-            if not game_data:
-                self.stdout.write(
-                    self.style.WARNING(
-                        f"Not found: {name}"
+            try:
+                game_data = self.find_game(
+                    session=session,
+                    api_key=api_key,
+                    name=name,
+                )
+
+                if not game_data:
+                    not_found.append(name)
+                    self.stdout.write(
+                        self.style.WARNING("  Not found")
                     )
+                    continue
+
+                image = self.get_image(
+                    session=session,
+                    api_key=api_key,
+                    game_id=game_data["id"],
                 )
-                skipped += 1
-                continue
 
-            game = Game(
-                name=name,
-                size=0,
-                price=0,
-                active=True,
-            )
-
-            image = self.download_image(
-                game_data=game_data,
-                api_key=api_key,
-                session=session,
-            )
-
-            if image:
-                game.image.save(
-                    image["name"],
-                    ContentFile(image["content"]),
-                    save=False,
+                game = Game(
+                    name=name,
+                    size=0,
+                    price=0,
+                    active=True,
                 )
-                images += 1
-            else:
-                no_images.append(name)
 
-            game.save(using=database)
-
-            game.device_type.set(
-                [
-                    devices[device_name]
-                    for device_name in device_names
-                    if device_name in devices
-                ]
-            )
-
-            created += 1
-
-            if image:
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"Created: {name} [image]"
+                if image:
+                    game.image.save(
+                        image["filename"],
+                        ContentFile(image["content"]),
+                        save=False,
                     )
+
+                game.save(using=database)
+
+                self.add_device_types(
+                    database=database,
+                    game=game,
+                    device_names=device_names,
+                    devices=devices,
                 )
-            else:
+
+                created += 1
+
+                if image:
+                    images += 1
+                    self.stdout.write(
+                        self.style.SUCCESS("  Created + image")
+                    )
+                else:
+                    no_image.append(name)
+                    self.stdout.write(
+                        self.style.WARNING("  Created - no image")
+                    )
+
+            except Exception as exc:
+                failed.append((name, str(exc)))
                 self.stdout.write(
-                    self.style.WARNING(
-                        f"Created: {name} [no image]"
+                    self.style.ERROR(
+                        f"  Failed: {exc}"
                     )
                 )
 
         self.stdout.write("")
+        self.stdout.write("=" * 60)
         self.stdout.write(
             self.style.SUCCESS(
-                f"Done. Created: {created}, "
-                f"skipped: {skipped}, "
-                f"images: {images}"
+                f"Created: {created}"
             )
         )
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Images: {images}"
+            )
+        )
+        self.stdout.write(
+            f"Not found: {len(not_found)}"
+        )
+        self.stdout.write(
+            f"No image: {len(no_image)}"
+        )
+        self.stdout.write(
+            f"Failed: {len(failed)}"
+        )
 
-        if no_images:
+        if not_found:
             self.stdout.write("")
             self.stdout.write(
-                self.style.WARNING("Games without images:")
+                self.style.WARNING("NOT FOUND:")
             )
-
-            for name in no_images:
+            for name in not_found:
                 self.stdout.write(f"- {name}")
 
-    def seed_devices(self, database):
+        if no_image:
+            self.stdout.write("")
+            self.stdout.write(
+                self.style.WARNING("NO IMAGE:")
+            )
+            for name in no_image:
+                self.stdout.write(f"- {name}")
+
+        if failed:
+            self.stdout.write("")
+            self.stdout.write(
+                self.style.ERROR("FAILED:")
+            )
+            for name, error in failed:
+                self.stdout.write(f"- {name}: {error}")
+
+    def create_devices(self, database):
         devices = {}
 
         for order, name in enumerate(DEVICE_TYPES, start=1):
-            device, _ = InstallationDeviceType.objects.using(
-                database
-            ).get_or_create(
-                name=name,
-                defaults={
-                    "active": True,
-                    "order": order,
-                },
+            device, _ = (
+                InstallationDeviceType.objects
+                .using(database)
+                .get_or_create(
+                    name=name,
+                    defaults={
+                        "active": True,
+                        "order": order,
+                    },
+                )
             )
 
             devices[name] = device
 
         return devices
 
-    @staticmethod
-    def find_game(name, api_key, session):
-        try:
-            response = session.get(
-                f"{API_URL}/Games/ByGameName",
-                params={
-                    "apikey": api_key,
-                    "name": name,
-                },
-                timeout=TIMEOUT,
+    def add_device_types(
+        self,
+        database,
+        game,
+        device_names,
+        devices,
+    ):
+        through_model = Game.device_type.through
+
+        rows = []
+
+        for device_name in device_names:
+            device = devices.get(device_name)
+
+            if not device:
+                continue
+
+            rows.append(
+                through_model(
+                    game_id=game.pk,
+                    installationdevicetype_id=device.pk,
+                )
             )
-            response.raise_for_status()
-            data = response.json()
-        except (requests.RequestException, ValueError):
-            return None
+
+        if not rows:
+            return
+
+        through_model.objects.using(database).bulk_create(
+            rows,
+            ignore_conflicts=True,
+        )
+
+    @staticmethod
+    def find_game(
+        session,
+        api_key,
+        name,
+    ):
+        response = session.get(
+            f"{API_URL}/Games/ByGameName",
+            params={
+                "apikey": api_key,
+                "name": name,
+            },
+            timeout=TIMEOUT,
+        )
+
+        response.raise_for_status()
+
+        payload = response.json()
 
         games = (
-            data
+            payload
             .get("data", {})
             .get("games", [])
         )
@@ -398,38 +470,46 @@ class Command(BaseCommand):
         if not games:
             return None
 
+        exact_matches = [
+            game
+            for game in games
+            if game.get("game_title", "").strip().lower()
+            == name.strip().lower()
+        ]
+
+        if exact_matches:
+            return exact_matches[0]
+
         return games[0]
 
     @staticmethod
-    def download_image(game_data, api_key, session):
-        game_id = game_data.get("id")
+    def get_image(
+        session,
+        api_key,
+        game_id,
+    ):
+        response = session.get(
+            f"{API_URL}/Games/Images",
+            params={
+                "apikey": api_key,
+                "games_id": game_id,
+            },
+            timeout=TIMEOUT,
+        )
 
-        if not game_id:
-            return None
+        response.raise_for_status()
 
-        try:
-            response = session.get(
-                f"{API_URL}/Games/Images",
-                params={
-                    "apikey": api_key,
-                    "games_id": game_id,
-                },
-                timeout=TIMEOUT,
-            )
-            response.raise_for_status()
-            data = response.json()
-        except (requests.RequestException, ValueError):
-            return None
+        payload = response.json()
 
-        image_data = data.get("data", {})
+        data = payload.get("data", {})
 
         base_url = (
-            image_data
+            data
             .get("base_url", {})
             .get("original")
         )
 
-        images = image_data.get("images", {})
+        images = data.get("images", {})
 
         if not base_url or not isinstance(images, dict):
             return None
@@ -454,18 +534,24 @@ class Command(BaseCommand):
         if not boxart:
             return None
 
-        filename = boxart["filename"]
+        image_url = (
+            f"{base_url}{boxart['filename']}"
+        )
 
-        try:
-            response = session.get(
-                f"{base_url}{filename}",
-                timeout=TIMEOUT,
-            )
-            response.raise_for_status()
-        except requests.RequestException:
-            return None
+        image_response = session.get(
+            image_url,
+            timeout=TIMEOUT,
+        )
+
+        image_response.raise_for_status()
+
+        extension = os.path.splitext(
+            boxart["filename"]
+        )[1] or ".jpg"
+
+        filename = f"{game_id}{extension}"
 
         return {
-            "name": os.path.basename(filename),
-            "content": response.content,
+            "filename": filename,
+            "content": image_response.content,
         }
