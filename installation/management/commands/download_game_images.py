@@ -117,10 +117,7 @@ class Command(BaseCommand):
 
         base_url = image_data["base_url"]["original"]
 
-        images = image_data["images"].get(
-            str(game_id),
-            [],
-        )
+        images = image_data.get("images", [])
 
         boxarts = [
             image
