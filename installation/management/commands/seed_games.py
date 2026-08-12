@@ -389,7 +389,7 @@ class Command(BaseCommand):
 
         platform_names = self.get_platforms(game_data)
 
-        game.device_type.using(database).set(
+        game.device_type.set(
             [
                 devices[platform]
                 for platform in platform_names
