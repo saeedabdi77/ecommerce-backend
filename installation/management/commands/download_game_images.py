@@ -119,17 +119,20 @@ class Command(BaseCommand):
 
         images = image_data.get("images", [])
 
-        boxarts = [
-            image
-            for image in images
-            if image.get("type") == "boxart"
-            and image.get("side") == "front"
-        ]
+        filename = None
 
-        if not boxarts:
-            return False
+        for image in images:
+            if isinstance(image, dict):
+                if (
+                        image.get("type") == "boxart"
+                        and image.get("side") == "front"
+                ):
+                    filename = image.get("filename")
+                    break
 
-        filename = boxarts[0].get("filename")
+            elif isinstance(image, str):
+                filename = image
+                break
 
         if not filename:
             return False
