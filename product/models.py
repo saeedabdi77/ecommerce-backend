@@ -170,8 +170,6 @@ class Product(BaseModel):
     state = models.CharField('وضعیت', max_length=20, choices=ProductState.choices, default=ProductState.IN_WAREHOUSE,
                              db_index=True)
 
-    # fk order_item
-
     class Meta:
         verbose_name = 'کالا'
         verbose_name_plural = 'کالاها'
