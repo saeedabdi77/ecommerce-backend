@@ -6,29 +6,21 @@ from core.utilities import create_object
 from order.models import Order, OrderItem, OrderItemProduct
 from order.utilities import get_or_create_draft_order
 from product.enums import ProductState
-from product.models import Product, ProductType
+from product.models import ProductType
 
 
 class OrderItemProductTypeSerializer(CustomModelSerializer):
     class Meta:
         model = ProductType
-        fields = ('id', 'name', 'slug')
-
-
-class OrderItemProductSerializer(CustomModelSerializer):
-    product_type = OrderItemProductTypeSerializer()
-
-    class Meta:
-        model = Product
-        fields = ('id', 'product_type', 'serial')
+        fields = ("id", "name", "slug")
 
 
 class OrderItemSerializer(CustomModelSerializer):
-    product = OrderItemProductSerializer()
+    product_type = OrderItemProductTypeSerializer()
 
     class Meta:
         model = OrderItem
-        fields = ('id', 'product', 'price')
+        fields = ("id", "product_type", "count", "price")
 
 
 class OrderRetrieveSerializer(CustomModelSerializer):
@@ -37,10 +29,11 @@ class OrderRetrieveSerializer(CustomModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'guest_uid', 'total_price', 'admin_note', 'clear_guest_uid', 'items', 'status')
+        fields = ("id", "guest_uid", "total_price", "admin_note", "clear_guest_uid", "items", "status",)
 
     def get_clear_guest_uid(self, obj):
-        return self.context['request'].query_params.get('guest_uid') and self.context['request'].user.is_authenticated
+        return bool(
+            self.context["request"].query_params.get("guest_uid") and self.context["request"].user.is_authenticated)
 
 
 class AddCartItemSerializer(CustomModelSerializer):
