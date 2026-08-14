@@ -4,7 +4,7 @@ from order.models import Order
 
 def resolve_draft_order(user=None, guest_uid=None):
     queryset = Order.objects.prefetch_related(
-        "items__product__product_type"
+        "items__product_type"
     )
 
     if user and user.is_authenticated:
