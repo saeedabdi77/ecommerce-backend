@@ -1,7 +1,11 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from core.base_serializers import CustomModelSerializer
-from order.models import Order, OrderItem
+from core.utilities import create_object
+from order.models import Order, OrderItem, OrderItemProduct
+from order.utilities import get_or_create_draft_order
+from product.enums import ProductState
 from product.models import Product, ProductType
 
 
@@ -37,3 +41,68 @@ class OrderRetrieveSerializer(CustomModelSerializer):
 
     def get_clear_guest_uid(self, obj):
         return self.context['request'].query_params.get('guest_uid') and self.context['request'].user.is_authenticated
+
+
+class AddCartItemSerializer(CustomModelSerializer):
+    product_type = serializers.PrimaryKeyRelatedField(queryset=ProductType.objects.filter(active=True), write_only=True)
+    guest_uid = serializers.UUIDField(required=False, write_only=True)
+    clear_guest_uid = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderItem
+        fields = ("id", "product_type", "guest_uid", "clear_guest_uid")
+
+    def get_clear_guest_uid(self, obj):
+        return getattr(self, "_clear_guest_uid", False)
+
+    def validate_serializer(self, attrs, error_obj):
+        user = self.context["request"].user
+        guest_uid = attrs.get("guest_uid")
+        product_type = attrs.get("product_type")
+
+        product = product_type.products.filter(state=ProductState.IN_WAREHOUSE).first()
+
+        if not product:
+            error_obj.append_errors({
+                "message": "این محصول موجود نیست",
+                "reason": "product_type"
+            })
+            return attrs
+
+        order = get_or_create_draft_order(user=user, guest_uid=guest_uid)
+
+        if not order:
+            error_obj.append_errors({
+                "message": "ارسال شناسه کاربر یا شناسه مهمان الزامی است",
+                "reason": "guest_uid"
+            })
+            return attrs
+
+        attrs["order"] = order
+        attrs["price"] = product_type.sell_price
+        attrs["product"] = product
+
+        self._clear_guest_uid = bool(guest_uid and user and user.is_authenticated)
+
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        order = validated_data["order"]
+        product_type = validated_data["product_type"]
+        product = validated_data.pop("product")
+
+        order_item = order.items.filter(product_type=product_type).first()
+
+        if order_item:
+            order_item.count += 1
+            order_item.save(update_fields=["count"])
+        else:
+            order_item = create_object(OrderItem, validated_data)
+
+        OrderItemProduct.objects.create(order_item=order_item, product=product)
+
+        product.state = ProductState.SOLD
+        product.save(update_fields=["state"])
+
+        return order_item
