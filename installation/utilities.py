@@ -3,7 +3,7 @@ from installation.models import InstallationRequest
 
 
 def resolve_draft_installation_request(user=None, guest_uid=None):
-    if user.is_authenticated:
+    if user and user.is_authenticated:
         request = user.installation_requests.filter(status=InstallationRequestStatus.DRAFT).first()
         if request:
             return request
@@ -12,7 +12,7 @@ def resolve_draft_installation_request(user=None, guest_uid=None):
         request = InstallationRequest.objects.filter(status=InstallationRequestStatus.DRAFT, guest_uid=guest_uid,
                                                      user__isnull=True).first()
         if request:
-            if user.is_authenticated:
+            if user and user.is_authenticated:
                 request.user = user
                 request.save(update_fields=['user'])
             return request
