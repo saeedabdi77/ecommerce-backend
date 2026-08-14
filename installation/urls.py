@@ -12,5 +12,5 @@ urlpatterns = [
 ]
 
 router = routers.DefaultRouter()
-router.register(r'requests/items', InstallationRequestItemViewSet, basename='address')
+router.register(r'requests/items', InstallationRequestItemViewSet, basename='installation-request-items')
 urlpatterns += router.urls

@@ -9,5 +9,5 @@ urlpatterns = [
 ]
 
 router = routers.DefaultRouter()
-router.register(r'requests', RepairRequestViewSet, basename='address')
+router.register(r'requests', RepairRequestViewSet, basename='repair-requests')
 urlpatterns += router.urls
