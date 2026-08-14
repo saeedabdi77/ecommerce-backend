@@ -252,8 +252,13 @@ SWAGGER_SETTINGS = {
         'Bearer': {
             'type': 'apiKey',
             'name': 'Authorization',
-            'in': 'header'
-        }
+            'in': 'header',
+        },
+        'TenantID': {
+            'type': 'apiKey',
+            'name': 'X-Tenant-ID',
+            'in': 'header',
+        },
     },
     "DEFAULT_AUTO_SCHEMA_CLASS": "core.swagger.DjangoFilterAutoSchema",
     "DEFAULT_FILTER_INSPECTORS": [
