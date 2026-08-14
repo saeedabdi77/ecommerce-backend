@@ -111,18 +111,14 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
         )
 
     def get_object(self):
-        guest_uid = self.request.query_params.get("guest_uid")
+        guest_uid = self.request.data.get("guest_uid") or self.request.query_params.get("guest_uid")
         user = self.request.user
         pk = self.kwargs["pk"]
 
         draft_order = resolve_draft_order(user, guest_uid)
 
         if draft_order:
-            return get_object_or_404(
-                OrderItem,
-                order=draft_order,
-                id=pk
-            )
+            return get_object_or_404(OrderItem, order=draft_order, id=pk)
 
         raise Http404
 
