@@ -3,19 +3,33 @@ from order.models import Order
 
 
 def resolve_draft_order(user=None, guest_uid=None):
+    queryset = Order.objects.prefetch_related(
+        "items__product__product_type"
+    )
+
     if user and user.is_authenticated:
-        order = user.orders.filter(status=OrderStatus.DRAFT).first()
+        order = queryset.filter(
+            user=user,
+            status=OrderStatus.DRAFT
+        ).first()
+
         if order:
             return order
 
     if guest_uid:
-        order = Order.objects.filter(status=OrderStatus.DRAFT, guest_uid=guest_uid,
-                                     user__isnull=True).first()
+        order = queryset.filter(
+            status=OrderStatus.DRAFT,
+            guest_uid=guest_uid,
+            user__isnull=True
+        ).first()
+
         if order:
             if user and user.is_authenticated:
                 order.user = user
-                order.save(update_fields=['user'])
+                order.save(update_fields=["user"])
+
             return order
+
     return None
 
 
