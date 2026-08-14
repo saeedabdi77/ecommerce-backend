@@ -37,13 +37,27 @@ class Order(BaseModel):
 
 class OrderItem(BaseModel):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
-    product = models.ForeignKey("product.Product", on_delete=models.PROTECT, related_name="order_items")
+    product_type = models.ForeignKey("product.ProductType", on_delete=models.PROTECT, related_name="order_items")
     price = models.BigIntegerField("قیمت")
+    count = models.PositiveIntegerField("تعداد", default=1)
 
     class Meta:
-        unique_together = ("order", "product")
+        unique_together = ("order", "product_type")
         verbose_name = "آیتم سفارش"
         verbose_name_plural = "آیتم‌های سفارش"
 
     def __str__(self):
-        return f"{self.order} - {self.product}"
+        return f"{self.order} - {self.product_type}"
+
+
+class OrderItemProduct(BaseModel):
+    order_item = models.ForeignKey("order.OrderItem", on_delete=models.CASCADE, related_name="products")
+    product = models.ForeignKey("product.Product", on_delete=models.PROTECT, related_name="order_item_products")
+
+    class Meta:
+        unique_together = ("order_item", "product")
+        verbose_name = "کالای آیتم سفارش"
+        verbose_name_plural = "کالاهای آیتم سفارش"
+
+    def __str__(self):
+        return f"{self.order_item} - {self.product}"
