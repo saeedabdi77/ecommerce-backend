@@ -85,6 +85,7 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
     @action(detail=True, methods=("post",))
     def decrease(self, request, *args, **kwargs):
         instance = self.get_object()
+        order = instance.order
 
         with transaction.atomic():
             order_item_product = OrderItemProduct.objects.filter(order_item=instance).select_related("product").last()
@@ -102,6 +103,9 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
 
             if instance.count <= 0:
                 instance.force_delete()
+
+                if not order.items.exists():
+                    order.force_delete()
             else:
                 instance.save(update_fields=("count",))
 
