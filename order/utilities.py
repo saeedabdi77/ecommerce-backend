@@ -59,3 +59,15 @@ def sync_order_item_quantity(order_item):
         order_item.save(update_fields=("count",))
 
     return order_item
+
+
+def sync_draft_order(order):
+    for item in order.items.all():
+        sync_order_item_quantity(item)
+
+    if not order.items.exists():
+        order.force_delete()
+        return None
+
+    order.calculate_total_price()
+    return order
