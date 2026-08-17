@@ -3,8 +3,8 @@ from rest_framework import serializers
 
 from core.base_serializers import CustomModelSerializer
 from core.utilities import create_object
-from order.models import Order, OrderItem, OrderItemProduct
-from order.utilities import get_or_create_draft_order
+from order.models import Order, OrderItem
+from order.utilities import get_or_create_draft_order, sync_order_item_quantity
 from product.enums import ProductState
 from product.models import ProductType
 
@@ -53,15 +53,6 @@ class AddCartItemSerializer(CustomModelSerializer):
         guest_uid = attrs.get("guest_uid")
         product_type = attrs.get("product_type")
 
-        product = product_type.products.filter(state=ProductState.IN_WAREHOUSE).first()
-
-        if not product:
-            error_obj.append_errors({
-                "message": "این محصول موجود نیست",
-                "reason": "product_type"
-            })
-            return attrs
-
         order = get_or_create_draft_order(user=user, guest_uid=guest_uid)
 
         if not order:
@@ -71,9 +62,25 @@ class AddCartItemSerializer(CustomModelSerializer):
             })
             return attrs
 
+        order_item = order.items.filter(product_type=product_type).first()
+
+        if order_item:
+            sync_order_item_quantity(order_item)
+
+            if order_item.count >= product_type.products.filter(state=ProductState.IN_WAREHOUSE).count():
+                error_obj.append_errors({
+                    "message": "موجودی این محصول کافی نیست",
+                    "reason": "product_type"
+                })
+
+        elif not product_type.products.filter(state=ProductState.IN_WAREHOUSE).exists():
+            error_obj.append_errors({
+                "message": "این محصول موجود نیست",
+                "reason": "product_type"
+            })
+
         attrs["order"] = order
         attrs["price"] = product_type.sell_price
-        attrs["product"] = product
 
         self._clear_guest_uid = bool(guest_uid and user and user.is_authenticated)
 
@@ -83,20 +90,14 @@ class AddCartItemSerializer(CustomModelSerializer):
     def create(self, validated_data):
         order = validated_data["order"]
         product_type = validated_data["product_type"]
-        product = validated_data.pop("product")
 
         order_item = order.items.filter(product_type=product_type).first()
 
         if order_item:
             order_item.count += 1
-            order_item.save(update_fields=["count"])
+            order_item.save(update_fields=("count",))
         else:
             order_item = create_object(OrderItem, validated_data)
-
-        OrderItemProduct.objects.create(order_item=order_item, product=product)
-
-        product.state = ProductState.RESERVED
-        product.save(update_fields=["state"])
 
         order.calculate_total_price()
 
