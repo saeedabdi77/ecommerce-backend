@@ -76,6 +76,8 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
 
             if not order.items.exists():
                 order.force_delete()
+            else:
+                order.calculate_total_price()
 
         return Response(
             {"message": "Instance delete successfully"},
@@ -106,6 +108,8 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
 
                 if not order.items.exists():
                     order.force_delete()
+                else:
+                    order.calculate_total_price()
             else:
                 instance.save(update_fields=("count",))
 

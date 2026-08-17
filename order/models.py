@@ -24,9 +24,9 @@ class Order(BaseModel):
         return f"{self.user or self.guest_uid} - {self.tracking_code}"
 
     def calculate_total_price(self):
-        total = self.items.aggregate(total=Sum("price"))["total"] or 0
+        total = self.items.aggregate(total=Sum(F("price") * F("count")))["total"] or 0
         self.total_price = total
-        self.save(update_fields=["total_price"])
+        self.save(update_fields=("total_price",))
 
     def save(self, *args, **kwargs):
         if not self.pk:
