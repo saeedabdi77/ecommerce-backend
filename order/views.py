@@ -123,6 +123,7 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
                     order.calculate_total_price()
             else:
                 instance.save(update_fields=("count",))
+                order.calculate_total_price()
 
         return Response(
             {"message": "Item decreased successfully"},
