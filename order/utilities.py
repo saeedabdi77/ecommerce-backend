@@ -50,6 +50,10 @@ def get_or_create_draft_order(user=None, guest_uid=None):
 def sync_order_item_quantity(order_item):
     available_count = order_item.product_type.products.filter(state=ProductState.IN_WAREHOUSE).count()
 
+    if available_count == 0:
+        order_item.force_delete()
+        return None
+
     if order_item.count > available_count:
         order_item.count = available_count
         order_item.save(update_fields=("count",))
