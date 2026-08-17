@@ -4,7 +4,7 @@ from rest_framework import serializers
 from core.base_serializers import CustomModelSerializer
 from core.utilities import create_object
 from order.models import Order, OrderItem
-from order.utilities import get_or_create_draft_order, sync_order_item_quantity
+from order.utilities import get_or_create_draft_order, sync_draft_order
 from product.enums import ProductState
 from product.models import ProductType
 
@@ -63,21 +63,21 @@ class AddCartItemSerializer(CustomModelSerializer):
             return attrs
 
         order_item = order.items.filter(product_type=product_type).first()
+        available_count = product_type.products.filter(state=ProductState.IN_WAREHOUSE).count()
 
-        if order_item:
-            sync_order_item_quantity(order_item)
-
-            if order_item.count >= product_type.products.filter(state=ProductState.IN_WAREHOUSE).count():
-                error_obj.append_errors({
-                    "message": "موجودی این محصول کافی نیست",
-                    "reason": "product_type"
-                })
+        if order_item and order_item.count >= available_count:
+            error_obj.append_errors({
+                "message": "موجودی این محصول کافی نیست",
+                "reason": "product_type"
+            })
+            sync_draft_order(order_item.order)
 
         elif not product_type.products.filter(state=ProductState.IN_WAREHOUSE).exists():
             error_obj.append_errors({
                 "message": "این محصول موجود نیست",
                 "reason": "product_type"
             })
+            sync_draft_order(order)
 
         attrs["order"] = order
         attrs["price"] = product_type.sell_price
