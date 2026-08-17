@@ -84,6 +84,17 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
             status=status.HTTP_204_NO_CONTENT
         )
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                name="guest_uid",
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_UUID,
+                required=False
+            )
+        ]
+    )
     @action(detail=True, methods=("delete",))
     def decrease(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -119,7 +130,7 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
         )
 
     def get_object(self):
-        guest_uid = self.request.data.get("guest_uid") or self.request.query_params.get("guest_uid")
+        guest_uid = self.request.query_params.get("guest_uid")
         user = self.request.user
         pk = self.kwargs["pk"]
 
