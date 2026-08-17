@@ -95,7 +95,7 @@ class AddCartItemSerializer(CustomModelSerializer):
 
         OrderItemProduct.objects.create(order_item=order_item, product=product)
 
-        product.state = ProductState.SOLD
+        product.state = ProductState.RESERVED
         product.save(update_fields=["state"])
 
         order.calculate_total_price()
