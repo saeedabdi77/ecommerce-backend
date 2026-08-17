@@ -9,10 +9,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from core.base_views import CustomRetrieveAPIView, CustomCreateListUpdateDestroyViewSet
-from order.models import OrderItemProduct, OrderItem
+from order.models import OrderItem
 from order.serializers import OrderRetrieveSerializer, AddCartItemSerializer
 from order.utilities import resolve_draft_order, sync_order_item_quantity
-from product.enums import ProductState
 
 
 class CartRetrieveView(CustomRetrieveAPIView):
@@ -43,6 +42,10 @@ class CartRetrieveView(CustomRetrieveAPIView):
 
         for item in draft_order.items.all():
             sync_order_item_quantity(item)
+
+        if not draft_order.items.exists():
+            draft_order.force_delete()
+            raise Http404
 
         draft_order.calculate_total_price()
 
