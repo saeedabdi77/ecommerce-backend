@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from core.base_views import CustomRetrieveAPIView, CustomCreateListUpdateDestroyViewSet
 from order.models import OrderItem
 from order.serializers import OrderRetrieveSerializer, AddCartItemSerializer
-from order.utilities import resolve_draft_order, sync_order_item_quantity
+from order.utilities import resolve_draft_order, sync_draft_order
 
 
 class CartRetrieveView(CustomRetrieveAPIView):
@@ -40,14 +40,10 @@ class CartRetrieveView(CustomRetrieveAPIView):
         if not draft_order:
             raise Http404
 
-        for item in draft_order.items.all():
-            sync_order_item_quantity(item)
+        draft_order = sync_draft_order(draft_order)
 
-        if not draft_order.items.exists():
-            draft_order.force_delete()
+        if not draft_order:
             raise Http404
-
-        draft_order.calculate_total_price()
 
         return draft_order
 
@@ -72,11 +68,7 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
 
         with transaction.atomic():
             instance.force_delete()
-
-            if not order.items.exists():
-                order.force_delete()
-            else:
-                order.calculate_total_price()
+            sync_draft_order(order)
 
         return Response(
             {"message": "Instance delete successfully"},
@@ -106,12 +98,8 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
                 instance.force_delete()
             else:
                 instance.save(update_fields=("count",))
-                sync_order_item_quantity(instance)
 
-            if not order.items.exists():
-                order.force_delete()
-            else:
-                order.calculate_total_price()
+            sync_draft_order(order)
 
         return Response(
             {"message": "Item decreased successfully"},
