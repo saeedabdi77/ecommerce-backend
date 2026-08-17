@@ -1,5 +1,6 @@
 from order.enums import OrderStatus
 from order.models import Order
+from product.enums import ProductState
 
 
 def resolve_draft_order(user=None, guest_uid=None):
@@ -44,3 +45,13 @@ def get_or_create_draft_order(user=None, guest_uid=None):
         return Order.objects.create(guest_uid=guest_uid)
 
     return None
+
+
+def sync_order_item_quantity(order_item):
+    available_count = order_item.product_type.products.filter(state=ProductState.IN_WAREHOUSE).count()
+
+    if order_item.count > available_count:
+        order_item.count = available_count
+        order_item.save(update_fields=("count",))
+
+    return order_item
