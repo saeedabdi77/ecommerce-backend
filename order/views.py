@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from core.base_views import CustomRetrieveAPIView, CustomCreateListUpdateDestroyViewSet
 from order.models import OrderItemProduct, OrderItem
 from order.serializers import OrderRetrieveSerializer, AddCartItemSerializer
-from order.utilities import resolve_draft_order
+from order.utilities import resolve_draft_order, sync_order_item_quantity
 from product.enums import ProductState
 
 
@@ -37,9 +37,16 @@ class CartRetrieveView(CustomRetrieveAPIView):
         user = self.request.user
 
         draft_order = resolve_draft_order(user, guest_uid)
-        if draft_order:
-            return draft_order
-        raise Http404
+
+        if not draft_order:
+            raise Http404
+
+        for item in draft_order.items.all():
+            sync_order_item_quantity(item)
+
+        draft_order.calculate_total_price()
+
+        return draft_order
 
 
 class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
