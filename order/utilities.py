@@ -1,5 +1,5 @@
 from order.enums import OrderStatus
-from order.models import Order
+from order.models import Order, OrderItem
 from product.enums import ProductState
 
 
@@ -62,10 +62,12 @@ def sync_order_item_quantity(order_item):
 
 
 def sync_draft_order(order):
-    for item in order.items.all():
+    items = OrderItem.objects.filter(order=order).select_related("product_type")
+
+    for item in items:
         sync_order_item_quantity(item)
 
-    if not order.items.exists():
+    if not OrderItem.objects.filter(order=order).exists():
         order.force_delete()
         return None
 
