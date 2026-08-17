@@ -68,17 +68,6 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
         order = instance.order
 
         with transaction.atomic():
-            item_products = OrderItemProduct.objects.filter(
-                order_item=instance
-            ).select_related("product")
-
-            for item_product in item_products:
-                product = item_product.product
-                product.state = ProductState.IN_WAREHOUSE
-                product.save(update_fields=["state"])
-
-            item_products.force_delete()
-
             instance.force_delete()
 
             if not order.items.exists():
@@ -108,28 +97,17 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
         order = instance.order
 
         with transaction.atomic():
-            order_item_product = OrderItemProduct.objects.filter(order_item=instance).select_related("product").last()
-
-            if not order_item_product:
-                raise Http404
-
-            product = order_item_product.product
-            product.state = ProductState.IN_WAREHOUSE
-            product.save(update_fields=("state",))
-
-            order_item_product.force_delete()
-
             instance.count -= 1
 
             if instance.count <= 0:
                 instance.force_delete()
-
-                if not order.items.exists():
-                    order.force_delete()
-                else:
-                    order.calculate_total_price()
             else:
                 instance.save(update_fields=("count",))
+                sync_order_item_quantity(instance)
+
+            if not order.items.exists():
+                order.force_delete()
+            else:
                 order.calculate_total_price()
 
         return Response(
