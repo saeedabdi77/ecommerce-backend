@@ -82,7 +82,7 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
             status=status.HTTP_204_NO_CONTENT
         )
 
-    @action(detail=True, methods=("post",))
+    @action(detail=True, methods=("delete",))
     def decrease(self, request, *args, **kwargs):
         instance = self.get_object()
         order = instance.order
@@ -111,7 +111,7 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
 
         return Response(
             {"message": "Item decreased successfully"},
-            status=status.HTTP_200_OK
+            status=status.HTTP_204_NO_CONTENT
         )
 
     def get_object(self):
