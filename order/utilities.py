@@ -5,37 +5,6 @@ from order.models import Order, OrderItem
 from product.enums import ProductState
 
 
-def resolve_draft_order(user=None, guest_uid=None):
-    queryset = Order.objects.prefetch_related(
-        "items__product_type"
-    )
-
-    if user and user.is_authenticated:
-        order = queryset.filter(
-            user=user,
-            status=OrderStatus.DRAFT
-        ).first()
-
-        if order:
-            return order
-
-    if guest_uid:
-        order = queryset.filter(
-            status=OrderStatus.DRAFT,
-            guest_uid=guest_uid,
-            user__isnull=True
-        ).first()
-
-        if order:
-            if user and user.is_authenticated:
-                order.user = user
-                order.save(update_fields=["user"])
-
-            return order
-
-    return None
-
-
 def get_or_create_draft_order(user=None, guest_uid=None):
     draft_order = get_draft_order(user, guest_uid)
     if draft_order:

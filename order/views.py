@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from core.base_views import CustomRetrieveAPIView, CustomCreateListUpdateDestroyViewSet
 from order.models import OrderItem
 from order.serializers import OrderRetrieveSerializer, AddCartItemSerializer
-from order.utilities import resolve_draft_order, sync_draft_order, get_draft_order
+from order.utilities import sync_draft_order, get_draft_order
 
 
 class CartRetrieveView(CustomRetrieveAPIView):
