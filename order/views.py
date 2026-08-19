@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from core.base_views import CustomRetrieveAPIView, CustomCreateListUpdateDestroyViewSet
 from order.models import OrderItem
 from order.serializers import OrderRetrieveSerializer, AddCartItemSerializer
-from order.utilities import resolve_draft_order, sync_draft_order
+from order.utilities import resolve_draft_order, sync_draft_order, get_draft_order
 
 
 class CartRetrieveView(CustomRetrieveAPIView):
@@ -35,7 +35,7 @@ class CartRetrieveView(CustomRetrieveAPIView):
         guest_uid = self.request.query_params.get('guest_uid')
         user = self.request.user
 
-        draft_order = resolve_draft_order(user, guest_uid)
+        draft_order = get_draft_order(user, guest_uid)
 
         if not draft_order:
             raise Http404
@@ -111,7 +111,7 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
         user = self.request.user
         pk = self.kwargs["pk"]
 
-        draft_order = resolve_draft_order(user, guest_uid)
+        draft_order = get_draft_order(user, guest_uid)
 
         if draft_order:
             return get_object_or_404(OrderItem, order=draft_order, id=pk)

@@ -37,7 +37,7 @@ def resolve_draft_order(user=None, guest_uid=None):
 
 
 def get_or_create_draft_order(user=None, guest_uid=None):
-    draft_order = resolve_draft_order(user, guest_uid)
+    draft_order = get_draft_order(user, guest_uid)
     if draft_order:
         return draft_order
 
