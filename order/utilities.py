@@ -1,3 +1,5 @@
+from django.db import transaction
+
 from order.enums import OrderStatus
 from order.models import Order, OrderItem
 from product.enums import ProductState
@@ -73,3 +75,46 @@ def sync_draft_order(order):
 
     order.calculate_total_price()
     return order
+
+
+def get_draft_order(user=None, guest_uid=None):
+    with transaction.atomic():
+        if user and user.is_authenticated:
+            user_order = Order.objects.filter(user=user, status=OrderStatus.DRAFT).first()
+
+            if not guest_uid:
+                return user_order
+
+            guest_order = Order.objects.filter(guest_uid=guest_uid, user__isnull=True, status=OrderStatus.DRAFT).first()
+
+            if not guest_order:
+                return user_order
+
+            if not user_order:
+                guest_order.user = user
+                guest_order.guest_uid = None
+                guest_order.save(update_fields=("user", "guest_uid"))
+                sync_draft_order(guest_order)
+                return guest_order
+
+            user_items = {item.product_type_id: item for item in user_order.items.all()}
+
+            for guest_item in guest_order.items.all():
+                user_item = user_items.get(guest_item.product_type_id)
+
+                if user_item:
+                    user_item.count += guest_item.count
+                    user_item.save(update_fields=("count",))
+                else:
+                    guest_item.order = user_order
+                    guest_item.save(update_fields=("order",))
+
+            guest_order.force_delete()
+            sync_draft_order(user_order)
+
+            return user_order
+
+        if guest_uid:
+            return Order.objects.filter(guest_uid=guest_uid, user__isnull=True, status=OrderStatus.DRAFT).first()
+
+        return None
