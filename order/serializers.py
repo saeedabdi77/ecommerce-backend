@@ -72,7 +72,7 @@ class AddCartItemSerializer(CustomModelSerializer):
             })
             sync_draft_order(order_item.order)
 
-        elif not product_type.products.filter(state=ProductState.IN_WAREHOUSE).exists():
+        elif not available_count:
             error_obj.append_errors({
                 "message": "این محصول موجود نیست",
                 "reason": "product_type"
