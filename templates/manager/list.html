@@ -1,0 +1,37 @@
+{% extends "manager/base.html" %}
+
+{% block content %}
+
+    <div class="page-toolbar">
+
+        <div>
+            <div class="page-description">
+                Manage {{ manager.get_title|lower }}
+            </div>
+        </div>
+
+        <div class="page-actions">
+            {% for item in actions %}
+                {% if item.action.name == "create" %}
+                    <a href="{{ item.url }}" class="btn btn-primary">
+                        + {{ item.action.label }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+    </div>
+
+    {% include "manager/includes/filters.html" %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% include "manager/includes/bulk_actions.html" %}
+
+        {% include "manager/includes/table.html" %}
+    </form>
+
+    {% include "manager/includes/pagination.html" %}
+
+{% endblock %}

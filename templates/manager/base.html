@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}{{ manager.get_title }}{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'manager/css/manager.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+<div class="manager-app">
+
+    {% include "manager/includes/sidebar.html" %}
+
+    <div class="manager-main">
+
+        {% include "manager/includes/header.html" %}
+
+        <main class="manager-content">
+            {% include "manager/includes/messages.html" %}
+
+            {% block content %}{% endblock %}
+        </main>
+
+    </div>
+
+</div>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

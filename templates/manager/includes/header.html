@@ -1,0 +1,35 @@
+<header class="manager-header">
+
+    <div class="header-left">
+
+        <button type="button" class="sidebar-toggle">
+            ☰
+        </button>
+
+        <div>
+            {% include "manager/includes/breadcrumbs.html" %}
+
+            <h1 class="page-title">
+                {{ manager.get_title }}
+            </h1>
+        </div>
+
+    </div>
+
+    <div class="header-right">
+
+        <div class="header-user">
+            <div class="user-avatar">
+                {{ request.user.get_username|first|upper }}
+            </div>
+
+            <div class="user-info">
+                <div class="user-name">
+                    {{ request.user.get_username }}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</header>

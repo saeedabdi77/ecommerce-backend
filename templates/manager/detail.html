@@ -1,0 +1,37 @@
+{% extends "manager/base.html" %}
+
+{% block content %}
+
+<div class="page-toolbar">
+    <div>
+        <div class="page-description">
+            Details
+        </div>
+    </div>
+
+    <div class="page-actions">
+        {% for action in actions %}
+            <a href="{{ action.url }}" class="btn {% if action.danger %}btn-danger{% else %}btn-secondary{% endif %}">
+                {{ action.action.label }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="detail-card">
+
+    {% for field in fields %}
+        <div class="detail-row">
+            <div class="detail-label">
+                {{ field.label }}
+            </div>
+
+            <div class="detail-value">
+                {{ field.value }}
+            </div>
+        </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

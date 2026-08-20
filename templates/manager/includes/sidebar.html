@@ -1,0 +1,32 @@
+<aside class="manager-sidebar">
+
+    <div class="sidebar-brand">
+        <div class="sidebar-logo">M</div>
+        <div class="sidebar-title">
+            Management
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+
+        <a href="#" class="sidebar-item">
+            <span class="sidebar-icon">⌂</span>
+            <span>Dashboard</span>
+        </a>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">
+                Management
+            </div>
+
+            {% for item in managers %}
+                <a href="{{ item.url }}" class="sidebar-item {% if item.active %}active{% endif %}">
+                    <span class="sidebar-icon">▣</span>
+                    <span>{{ item.label }}</span>
+                </a>
+            {% endfor %}
+        </div>
+
+    </nav>
+
+</aside>

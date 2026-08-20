@@ -1,0 +1,9 @@
+<div class="breadcrumbs">
+    <a href="{% url 'manager:'|add:manager.slug|add:'-list' %}">
+        Management
+    </a>
+
+    <span>/</span>
+
+    <span>{{ manager.get_title }}</span>
+</div>

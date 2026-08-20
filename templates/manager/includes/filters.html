@@ -1,0 +1,61 @@
+<form method="get" class="filters-card">
+
+    <div class="filters-header">
+        <div>
+            <div class="filters-title">
+                Filters
+            </div>
+
+            <div class="filters-description">
+                Search and filter the records
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-body">
+
+        {% if manager.get_search_fields %}
+            <div class="filter-field filter-search">
+                <label for="id_search">Search</label>
+
+                <input
+                    type="text"
+                    id="id_search"
+                    name="search"
+                    value="{{ search|default:'' }}"
+                    placeholder="Search..."
+                >
+            </div>
+        {% endif %}
+
+        {% for field in filter_form %}
+            <div class="filter-field">
+
+                {{ field.label_tag }}
+
+                {{ field }}
+
+                {% if field.errors %}
+                    <div class="field-errors">
+                        {{ field.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+        {% endfor %}
+
+    </div>
+
+    <div class="filters-footer">
+
+        <a href="." class="btn btn-secondary">
+            Reset
+        </a>
+
+        <button type="submit" class="btn btn-primary">
+            Apply Filters
+        </button>
+
+    </div>
+
+</form>

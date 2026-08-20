@@ -1,0 +1,76 @@
+<div class="table-card">
+
+    <div class="table-wrapper">
+
+        <table class="manager-table">
+
+            <thead>
+            <tr>
+
+                <th class="selection-column">
+                    <input type="checkbox" id="select-all">
+                </th>
+
+                {% for column in columns %}
+                    <th>
+                        {% if column.sortable %}
+                            <a href="?ordering={{ column.ordering_name }}">
+                                {{ column.label }}
+                            </a>
+                        {% else %}
+                            {{ column.label }}
+                        {% endif %}
+                    </th>
+                {% endfor %}
+
+                <th class="actions-column">
+                    Actions
+                </th>
+
+            </tr>
+            </thead>
+
+            <tbody>
+
+            {% for row in rows %}
+
+                <tr>
+
+                    <td class="selection-column">
+                        <input
+                                type="checkbox"
+                                name="selected"
+                                value="{{ row.object.pk }}"
+                                class="row-checkbox"
+                        >
+                    </td>
+
+                    {% for cell in row.cells %}
+                        <td>
+                            {{ cell }}
+                        </td>
+                    {% endfor %}
+
+                    <td class="row-actions">
+                        {% for item in row.actions %}
+                            <a href="{{ item.url }}" class="action-link{% if item.danger %} danger{% endif %}">
+                                {{ item.action.label }}
+                            </a>
+                        {% endfor %}
+                    </td>
+
+                </tr>
+
+            {% empty %}
+
+                {% include "manager/includes/empty.html" %}
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
