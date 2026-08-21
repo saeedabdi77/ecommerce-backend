@@ -1,0 +1,48 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Login</title>
+    <link rel="stylesheet" href="{% static 'manager/css/manager.css' %}">
+</head>
+<body>
+
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="sidebar-logo">M</div>
+            <h1>Manager Login</h1>
+            <p>Sign in to continue</p>
+        </div>
+
+        {% if error %}
+            <div class="login-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <input type="hidden" name="next" value="{{ next }}">
+
+            <div class="form-field">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required autofocus>
+            </div>
+
+            <div class="form-field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary login-button">
+                Login
+            </button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

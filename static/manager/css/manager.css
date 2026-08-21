@@ -668,3 +668,55 @@ textarea {
         padding: 18px;
     }
 }
+
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: var(--background);
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 35px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+}
+
+.login-header {
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.login-header .sidebar-logo {
+    margin: 0 auto 15px;
+}
+
+.login-header h1 {
+    margin: 0 0 6px;
+    font-size: 22px;
+}
+
+.login-header p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.login-error {
+    margin-bottom: 20px;
+    padding: 12px 15px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    color: #dc2626;
+}
+
+.login-button {
+    width: 100%;
+    margin-top: 10px;
+}

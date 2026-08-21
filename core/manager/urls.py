@@ -10,6 +10,7 @@ urlpatterns = []
 
 for manager in registry.all():
     urlpatterns.extend([
+        path("login/", ManagerLoginView.as_view(), name="login"),
         path("", ManagerDashboardView.as_view(), name="dashboard"),
         path(f"{manager.slug}/", ManagerListView.as_view(manager=manager), name=f"{manager.slug}-list"),
         path(f"{manager.slug}/create/", ManagerCreateView.as_view(manager=manager), name=f"{manager.slug}-create"),

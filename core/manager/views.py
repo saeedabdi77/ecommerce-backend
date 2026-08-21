@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate, login
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
@@ -5,10 +6,19 @@ from django.views import View
 
 from core.manager.filters import FilterSet, Ordering, Search
 from core.manager.managers import registry
+from core.manager.utils import get_manager_root_url
 
 
 class ManagerViewMixin:
     manager = None
+
+    def dispatch(self, request, *args, **kwargs):
+        response = self.check_authentication()
+
+        if response:
+            return response
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_manager(self):
         if self.manager is None:
@@ -17,6 +27,16 @@ class ManagerViewMixin:
 
     def get_queryset(self):
         return self.get_manager().get_queryset(self.request)
+
+    def get_login_url(self):
+        return f"{get_manager_root_url(self.request)}login/"
+
+    def check_authentication(self):
+        if not self.request.user.is_authenticated:
+            login_url = self.get_login_url()
+            next_url = self.request.get_full_path()
+            return redirect(f"{login_url}?next={next_url}")
+        return None
 
     def check_permission(self, action, obj=None):
         permission = self.get_manager().get_permission(self.request)
@@ -36,8 +56,35 @@ class ManagerViewMixin:
 
         return navigation
 
+    def get_login_url(self):
+        return f"{get_manager_root_url(self.request)}login/"
 
-class ManagerDashboardView(LoginRequiredMixin, View):
+    def get_manager_root_url(self):
+        return self.request.path.split("/manager/")[0]
+
+
+class ManagerLoginView(View):
+    def get(self, request, *args, **kwargs):
+        return render(request, "manager/login.html", {"next": request.GET.get("next", "")})
+
+    def post(self, request, *args, **kwargs):
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is None:
+            return render(request, "manager/login.html", {
+                "error": "Invalid username or password.",
+                "next": request.POST.get("next", ""),
+            })
+
+        login(request, user)
+
+        return redirect(request.POST.get("next") or request.path.rsplit("login/", 1)[0])
+
+
+class ManagerDashboardView(ManagerViewMixin, View):
     def get(self, request, *args, **kwargs):
         menu = registry.get_menu(request)
 
