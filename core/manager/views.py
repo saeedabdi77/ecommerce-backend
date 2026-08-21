@@ -37,6 +37,14 @@ class ManagerViewMixin:
         return navigation
 
 
+class ManagerDashboardView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        managers = registry.all()
+        return render(request, "manager/dashboard.html", {
+            "managers": managers,
+        })
+
+
 class ManagerListView(ManagerViewMixin, View):
     def get(self, request, *args, **kwargs):
         manager = self.get_manager()
