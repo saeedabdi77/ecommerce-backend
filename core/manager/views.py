@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views import View
 
 from core.manager.filters import FilterSet, Ordering, Search
@@ -93,6 +94,42 @@ class ManagerDashboardView(ManagerViewMixin, View):
 
 
 class ManagerListView(ManagerViewMixin, View):
+    def post(self, request, *args, **kwargs):
+        manager = self.get_manager()
+        self.check_permission("edit")
+
+        editable_columns = {
+            column.name: column
+            for column in manager.get_columns(request)
+            if column.editable
+        }
+
+        objects = {
+            str(obj.pk): obj
+            for obj in self.get_queryset()
+            if any(f"{field_name}__{obj.pk}" in request.POST for field_name in editable_columns)
+        }
+
+        for pk, obj in objects.items():
+            update_fields = []
+
+            for field_name in editable_columns:
+                key = f"{field_name}__{pk}"
+
+                if key not in request.POST:
+                    continue
+
+                field = manager.model._meta.get_field(field_name)
+                value = field.to_python(request.POST[key])
+
+                setattr(obj, field_name, value)
+                update_fields.append(field_name)
+
+            if update_fields:
+                obj.save(update_fields=update_fields)
+
+        return redirect(request.get_full_path())
+
     def get(self, request, *args, **kwargs):
         manager = self.get_manager()
         self.check_permission("view")
@@ -120,10 +157,7 @@ class ManagerListView(ManagerViewMixin, View):
 
         columns = manager.get_columns(request)
 
-        manager_actions = [
-            action for action in manager.get_actions(request)
-            if action.is_visible(request, manager)
-        ]
+        manager_actions = [action for action in manager.get_actions(request) if action.is_visible(request, manager)]
 
         actions = []
 
@@ -151,7 +185,14 @@ class ManagerListView(ManagerViewMixin, View):
 
             rows.append({
                 "object": obj,
-                "cells": [column.render(obj) for column in columns],
+                "cells": [
+                    {
+                        "column": column,
+                        "value": column.render(obj),
+                        "raw_value": column.get_value(obj),
+                    }
+                    for column in columns
+                ],
                 "actions": row_actions,
             })
 
@@ -165,6 +206,7 @@ class ManagerListView(ManagerViewMixin, View):
             "actions": actions,
             "rows": rows,
             "managers": self.get_navigation(),
+            "bulk_edit_url": reverse(f"manager:{manager.slug}-update-fields"),
         })
 
 
@@ -335,23 +377,32 @@ class ManagerBulkActionView(ManagerViewMixin, View):
 class ManagerFieldUpdateView(ManagerViewMixin, View):
     def post(self, request, *args, **kwargs):
         manager = self.get_manager()
-        obj = get_object_or_404(self.get_queryset(), pk=kwargs["pk"])
-        field_name = kwargs["field"]
+        self.check_permission("edit")
 
-        column = next(
-            (column for column in manager.get_columns(request) if column.field == field_name and column.editable),
-            None,
-        )
+        editable_columns = {
+            column.field: column
+            for column in manager.get_columns(request)
+            if column.editable
+        }
 
-        if column is None:
-            raise PermissionDenied
+        objects = self.get_queryset()
 
-        self.check_permission("edit", obj)
+        for obj in objects:
+            update_fields = []
 
-        field = manager.model._meta.get_field(field_name)
-        value = field.to_python(request.POST.get("value"))
+            for field_name in editable_columns:
+                key = f"{field_name}_{obj.pk}"
 
-        setattr(obj, field_name, value)
-        obj.save(update_fields=[field_name])
+                if key not in request.POST:
+                    continue
+
+                field = manager.model._meta.get_field(field_name)
+                value = field.to_python(request.POST[key])
+
+                setattr(obj, field_name, value)
+                update_fields.append(field_name)
+
+            if update_fields:
+                obj.save(update_fields=update_fields)
 
         return redirect(request.META.get("HTTP_REFERER", manager.get_list_url(request)))

@@ -1,84 +1,94 @@
 <div class="table-card">
 
-    <div class="table-wrapper">
+    <form method="post" action="{{ bulk_edit_url }}">
+        {% csrf_token %}
 
-        <table class="manager-table">
+        <div class="table-wrapper">
 
-            <thead>
-            <tr>
+            <table class="manager-table">
 
-                <th class="selection-column">
-                    <input type="checkbox" id="select-all">
-                </th>
-
-                {% for column in columns %}
-                    <th>
-                        {% if column.sortable %}
-                            <a href="?ordering={{ column.ordering_name }}">
-                                {{ column.label }}
-                            </a>
-                        {% else %}
-                            {{ column.label }}
-                        {% endif %}
-                    </th>
-                {% endfor %}
-
-                <th class="actions-column">
-                    Actions
-                </th>
-
-            </tr>
-            </thead>
-
-            <tbody>
-
-            {% for row in rows %}
-
+                <thead>
                 <tr>
 
-                    <td class="selection-column">
-                        <input
+                    <th class="selection-column">
+                        <input type="checkbox" id="select-all">
+                    </th>
+
+                    {% for column in columns %}
+                        <th>
+                            {% if column.sortable %}
+                                <a href="?ordering={{ column.ordering_name }}">
+                                    {{ column.label }}
+                                </a>
+                            {% else %}
+                                {{ column.label }}
+                            {% endif %}
+                        </th>
+                    {% endfor %}
+
+                    <th class="actions-column">
+                        Actions
+                    </th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+
+                {% for row in rows %}
+                    <tr>
+
+                        <td class="selection-column">
+                            <input
                                 type="checkbox"
                                 name="selected"
                                 value="{{ row.object.pk }}"
                                 class="row-checkbox"
-                        >
-                    </td>
-
-                    {% for cell in row.cells %}
-                        <td>
-                            {% if column.editable %}
-                                <form method="post" action="{{ column.get_edit_url(request, manager, object) }}">
-                                    {% csrf_token %}
-                                    <input type="text" name="value" value="{{ cell }}">
-                                    <button type="submit">Save</button>
-                                </form>
-                            {% else %}
-                                {{ cell }}
-                            {% endif %}
+                            >
                         </td>
-                    {% endfor %}
 
-                    <td class="row-actions">
-                        {% for item in row.actions %}
-                            <a href="{{ item.url }}" class="action-link{% if item.danger %} danger{% endif %}">
-                                {{ item.action.label }}
-                            </a>
+                        {% for cell in row.cells %}
+                            <td>
+                                {% if cell.column.editable %}
+                                    <input
+                                        type="text"
+                                        name="{{ cell.column.name }}__{{ row.object.pk }}"
+                                        value="{{ cell.raw_value|default_if_none:'' }}"
+                                    >
+                                {% else %}
+                                    {{ cell.value }}
+                                {% endif %}
+                            </td>
                         {% endfor %}
-                    </td>
 
-                </tr>
+                        <td class="row-actions">
+                            {% for item in row.actions %}
+                                <a href="{{ item.url }}"
+                                   class="action-link{% if item.danger %} danger{% endif %}">
+                                    {{ item.action.label }}
+                                </a>
+                            {% endfor %}
+                        </td>
 
-            {% empty %}
+                    </tr>
+                {% empty %}
+                    {% include "manager/includes/empty.html" %}
+                {% endfor %}
 
-                {% include "manager/includes/empty.html" %}
+                </tbody>
 
-            {% endfor %}
+            </table>
 
-            </tbody>
+        </div>
 
-        </table>
+        {% if rows %}
+            <div class="table-footer">
+                <button type="submit" class="btn btn-primary">
+                    Save Changes
+                </button>
+            </div>
+        {% endif %}
 
-    </div>
+    </form>
 
 </div>

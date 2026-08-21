@@ -23,10 +23,10 @@ class ModelPermission(BasePermission):
         opts = manager.model._meta
         return request.user.has_perm(f"{opts.app_label}.{action}_{opts.model_name}")
 
-    def can_view(self, request, manager):
+    def can_view(self, request, manager, obj=None):
         return self._has_perm(request, manager, "view")
 
-    def can_create(self, request, manager):
+    def can_create(self, request, manager, obj=None):
         return self._has_perm(request, manager, "add")
 
     def can_update(self, request, manager, obj=None):
@@ -36,4 +36,4 @@ class ModelPermission(BasePermission):
         return self._has_perm(request, manager, "delete")
 
     def can_detail(self, request, manager, obj=None):
-        return self.can_view(request, manager)
+        return self.can_view(request, manager, obj)

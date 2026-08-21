@@ -3,12 +3,13 @@ from django.utils.safestring import mark_safe
 
 
 class Column:
-    def __init__(self, name, label=None, *, value=None, formatter=None, sortable=False, html=False):
+    def __init__(self, name, label=None, *, value=None, formatter=None, editable=None, sortable=False, html=False):
         self.name = name
         self.label = label or name.replace("_", " ").title()
         self.value = value
         self.formatter = formatter
         self.sortable = sortable
+        self.editable = editable
         self.html = html
 
     @property
@@ -42,3 +43,6 @@ class Column:
             return ""
 
         return mark_safe(value) if self.html else conditional_escape(str(value))
+
+    def get_edit_url(self, request, manager, obj):
+        return manager.get_update_url(request, obj)

@@ -4,16 +4,19 @@ from core.manager.utils import get_manager_url
 
 
 class ManagerPermission:
-    def can_view(self, request, manager):
+    def can_view(self, request, manager, obj=None):
         return request.user.is_superuser
 
-    def can_create(self, request, manager):
+    def can_create(self, request, manager, obj=None):
         return request.user.is_superuser
 
-    def can_edit(self, request, manager, obj):
+    def can_edit(self, request, manager, obj=None):
         return request.user.is_superuser
 
-    def can_delete(self, request, manager, obj):
+    def can_delete(self, request, manager, obj=None):
+        return request.user.is_superuser
+
+    def can_detail(self, request, manager, obj=None):
         return request.user.is_superuser
 
     def can_action(self, request, manager, action, obj=None):
