@@ -1,9 +1,19 @@
 from decouple import config
 
 
-def get_manager_root_url(request):
-    manager_url = config("MANAGER_URL").strip("/")
+def get_manager_root_url(self):
+    parts = self.request.path.strip("/").split("/")
+    return "/" + "/".join(parts[:2])
+
+def get_manager_url(request, slug=None):
     parts = request.path.strip("/").split("/")
-    index = parts.index(manager_url)
-    tenant = parts[index + 1]
-    return f"/{manager_url}/{tenant}/"
+
+    if len(parts) < 2:
+        return "/"
+
+    root = "/" + "/".join(parts[:2]) + "/"
+
+    if slug:
+        return f"{root}{slug}/"
+
+    return root

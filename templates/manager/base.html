@@ -1,11 +1,18 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>{% block title %}{{ manager.get_title }}{% endblock %}</title>
+    <title>
+        {% if manager %}
+            {{ manager.get_title }}
+        {% else %}
+            Management
+        {% endif %}
+    </title>
 
     <link rel="stylesheet" href="{% static 'manager/css/manager.css' %}">
 
@@ -13,24 +20,178 @@
 </head>
 
 <body>
+
 <div class="manager-app">
 
-    {% include "manager/includes/sidebar.html" %}
+    <aside class="manager-sidebar">
 
-    <div class="manager-main">
+        <div class="sidebar-brand">
+            <div class="sidebar-logo">M</div>
+            <div class="sidebar-title">Management</div>
+        </div>
 
-        {% include "manager/includes/header.html" %}
+        <nav class="sidebar-nav">
 
-        <main class="manager-content">
-            {% include "manager/includes/messages.html" %}
+            {% for section in menu %}
+                <div class="sidebar-section">
 
-            {% block content %}{% endblock %}
-        </main>
+                    <div class="sidebar-section-title">
+                        {{ section.group.label }}
+                    </div>
 
-    </div>
+                    <div class="sidebar-items">
+
+                        {% for item in section.items %}
+
+                            <div class="sidebar-menu-item">
+
+                                <a href="{{ item.url }}"
+                                   class="sidebar-item {% if manager and manager.slug == item.manager.slug %}active{% endif %}">
+
+                                <span class="sidebar-label">
+                                    {{ item.label }}
+                                </span>
+
+                                </a>
+
+                                {% if item.children %}
+                                    <div class="sidebar-submenu">
+
+                                        {% for child in item.children %}
+
+                                            <a href="{{ child.url }}"
+                                               class="sidebar-item sidebar-subitem {% if manager and manager.slug == child.manager.slug %}active{% endif %}">
+
+                                            <span class="sidebar-label">
+                                                {{ child.label }}
+                                            </span>
+
+                                            </a>
+
+                                        {% endfor %}
+
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+            {% endfor %}
+
+        </nav>
+
+    </aside>
+
+
+    <main class="manager-main">
+
+        <header class="manager-header">
+
+            <div class="header-left">
+
+                <button type="button"
+                        class="sidebar-toggle"
+                        id="sidebar-toggle">
+                    ☰
+                </button>
+
+                <div class="header-page">
+
+                    {% if manager %}
+
+                        <div class="breadcrumbs">
+                            <a href="{{ dashboard_url }}">
+                                Management
+                            </a>
+
+                            <span>/</span>
+
+                            <span>
+                                {{ manager.get_title }}
+                            </span>
+                        </div>
+
+                        <h1 class="page-title">
+                            {{ manager.get_title }}
+                        </h1>
+
+                    {% else %}
+
+                        <h1 class="page-title">
+                            Dashboard
+                        </h1>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <div class="header-user">
+
+                {% if request.user.is_authenticated %}
+
+                    <div class="user-info">
+                        <div class="user-name">
+                            {{ request.user.get_username }}
+                        </div>
+                    </div>
+
+                    <div class="user-avatar">
+                        {{ request.user.get_username|first|upper }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </header>
+
+
+        <div class="manager-content">
+
+            {% if messages %}
+                <div class="messages">
+
+                    {% for message in messages %}
+
+                        <div class="message {{ message.tags }}">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+            {% endif %}
+
+
+            {% block content %}
+            {% endblock %}
+
+        </div>
+
+    </main>
 
 </div>
 
+
+<script>
+    const sidebarToggle = document.getElementById("sidebar-toggle");
+    const sidebar = document.querySelector(".manager-sidebar");
+
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener("click", function () {
+            sidebar.classList.toggle("open");
+        });
+    }
+</script>
+
 {% block extra_js %}{% endblock %}
+
 </body>
 </html>

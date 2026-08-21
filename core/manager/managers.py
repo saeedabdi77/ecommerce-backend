@@ -1,8 +1,35 @@
 from django.core.exceptions import ImproperlyConfigured
-from django.urls import reverse
+
+from core.manager.utils import get_manager_url
+
+
+class ManagerPermission:
+    def can_view(self, request, manager):
+        return request.user.is_superuser
+
+    def can_create(self, request, manager):
+        return request.user.is_superuser
+
+    def can_edit(self, request, manager, obj):
+        return request.user.is_superuser
+
+    def can_delete(self, request, manager, obj):
+        return request.user.is_superuser
+
+    def can_action(self, request, manager, action, obj=None):
+        return request.user.is_superuser
 
 
 class BaseManager:
+    permission_class = ManagerPermission
+
+    menu = True
+    menu_group = None
+    menu_label = None
+    menu_icon = None
+    menu_parent = None
+    menu_order = 0
+
     model = None
     title = None
     columns = ()
@@ -13,7 +40,9 @@ class BaseManager:
     select_related = ()
     prefetch_related = ()
     paginate_by = 25
+
     permission = None
+
     list_template = "manager/list.html"
     form_template = "manager/form.html"
     detail_template = "manager/detail.html"
@@ -59,22 +88,57 @@ class BaseManager:
         return self.paginate_by
 
     def get_permission(self, request):
-        return self.permission
+        return self.permission_class()
+
+    def can_access(self, request):
+        permission = self.get_permission(request)
+        return permission is None or permission.can_view(request, self)
+
+    def get_manager_url(self, request):
+        return get_manager_url(request, self.slug)
 
     def get_list_url(self, request):
-        return reverse(f"manager:{self.slug}-list")
+        return self.get_manager_url(request)
 
     def get_create_url(self, request):
-        return reverse(f"manager:{self.slug}-create")
+        return f"{self.get_manager_url(request)}create/"
 
     def get_detail_url(self, request, obj):
-        return reverse(f"manager:{self.slug}-detail", kwargs={"pk": obj.pk})
+        return f"{self.get_manager_url(request)}{obj.pk}/"
 
     def get_update_url(self, request, obj):
-        return reverse(f"manager:{self.slug}-update", kwargs={"pk": obj.pk})
+        return f"{self.get_manager_url(request)}{obj.pk}/edit/"
 
     def get_delete_url(self, request, obj):
-        return reverse(f"manager:{self.slug}-delete", kwargs={"pk": obj.pk})
+        return f"{self.get_manager_url(request)}{obj.pk}/delete/"
+
+    def get_menu_label(self):
+        return self.menu_label or self.get_title()
+
+    def get_menu_icon(self):
+        return self.menu_icon
+
+    def get_menu_group(self):
+        return self.menu_group
+
+    def get_menu_parent(self):
+        return self.menu_parent
+
+    def get_menu_order(self):
+        return self.menu_order
+
+    def get_menu_items(self, request):
+        if not self.menu or not self.can_access(request):
+            return []
+
+        return [{
+            "manager": self,
+            "label": self.get_menu_label(),
+            "icon": self.get_menu_icon(),
+            "url": self.get_list_url(request),
+            "order": self.get_menu_order(),
+            "children": [],
+        }]
 
 
 class ManagerRegistry:
@@ -87,10 +151,77 @@ class ManagerRegistry:
         return manager
 
     def get(self, slug):
-        return self._managers[slug]
+        return self._managers.get(slug)
 
     def all(self):
         return self._managers.values()
+
+    def get_menu_group(self, key):
+        return next((group for group in menu_groups if group.key == key), None)
+
+    def get_menu(self, request):
+        groups = {}
+
+        for manager in self.all():
+            if not manager.menu or not manager.can_access(request):
+                continue
+
+            group_key = manager.get_menu_group()
+
+            if not group_key:
+                continue
+
+            group = self.get_menu_group(group_key)
+
+            if group is None:
+                continue
+
+            groups.setdefault(group_key, {"group": group, "items": []})
+
+            groups[group_key]["items"].append({
+                "manager": manager,
+                "label": manager.get_menu_label(),
+                "icon": manager.get_menu_icon(),
+                "url": manager.get_list_url(request),
+                "order": manager.get_menu_order(),
+                "children": [],
+            })
+
+        for group_data in groups.values():
+            items = group_data["items"]
+
+            root_items = [
+                item for item in items
+                if not item["manager"].get_menu_parent()
+            ]
+
+            for item in root_items:
+                parent_slug = item["manager"].slug
+
+                item["children"] = sorted(
+                    [
+                        child for child in items
+                        if child["manager"].get_menu_parent() == parent_slug
+                    ],
+                    key=lambda child: child["order"],
+                )
+
+            group_data["items"] = sorted(root_items, key=lambda item: item["order"])
+
+        return sorted(groups.values(), key=lambda group: group["group"].order)
+
+
+class MenuGroup:
+    def __init__(self, key, label, icon=None, order=0):
+        self.key = key
+        self.label = label
+        self.icon = icon
+        self.order = order
+
+
+menu_groups = [
+    MenuGroup("product_management", "Product Management", order=10),
+]
 
 
 registry = ManagerRegistry()

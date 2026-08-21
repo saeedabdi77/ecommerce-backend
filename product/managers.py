@@ -11,13 +11,17 @@ class ProductTypeManager(BaseManager):
     slug = "product-types"
     model = ProductType
 
+    menu_group = "product_management"
+    menu_label = "Product Types"
+    menu_icon = "box"
+    menu_order = 30
     columns = (
         Column("name", "نام محصول", sortable=True),
         Column("category", "دسته بندی", sortable=True),
         Column("brand", "برند"),
-        Column("main_price", "قیمت اصلی", sortable=True),
-        Column("sell_price", "قیمت فروش", sortable=True),
-        Column("active", "فعال", sortable=True),
+        Column("main_price", "قیمت اصلی", sortable=True, editable=True),
+        Column("sell_price", "قیمت فروش", sortable=True, editable=True),
+        Column("active", "فعال", sortable=True, editable=True),
     )
 
     filters = (
@@ -44,6 +48,11 @@ class ProductTypeManager(BaseManager):
 class CategoryManager(BaseManager):
     slug = "categories"
     model = Category
+
+    menu_group = "product_management"
+    menu_label = "Categories"
+    menu_icon = "folder"
+    menu_order = 10
     columns = [
         Column("name", "نام"),
         Column("parent", "دسته بندی پدر"),
@@ -68,6 +77,11 @@ class CategoryManager(BaseManager):
 class BrandManager(BaseManager):
     slug = "brands"
     model = Brand
+
+    menu_group = "product_management"
+    menu_label = "Brands"
+    menu_icon = "tag"
+    menu_order = 20
     columns = [
         Column("name", "نام"),
         Column("slug", "اسلاگ"),

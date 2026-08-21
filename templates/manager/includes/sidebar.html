@@ -1,32 +1,30 @@
 <aside class="manager-sidebar">
-
     <div class="sidebar-brand">
         <div class="sidebar-logo">M</div>
-        <div class="sidebar-title">
-            Management
-        </div>
+        <div class="sidebar-title">Management</div>
     </div>
 
     <nav class="sidebar-nav">
-
-        <a href="#" class="sidebar-item">
+        <a href="{{ dashboard_url }}" class="sidebar-item {% if is_dashboard %}active{% endif %}">
             <span class="sidebar-icon">⌂</span>
             <span>Dashboard</span>
         </a>
 
-        <div class="sidebar-section">
-            <div class="sidebar-section-title">
-                Management
-            </div>
+        {% for section in menu %}
+            {% if section.items %}
+                <div class="sidebar-section">
+                    {% if section.group.label %}
+                        <div class="sidebar-section-title">{{ section.group.label }}</div>
+                    {% endif %}
 
-            {% for item in managers %}
-                <a href="{{ item.url }}" class="sidebar-item {% if item.active %}active{% endif %}">
-                    <span class="sidebar-icon">▣</span>
-                    <span>{{ item.label }}</span>
-                </a>
-            {% endfor %}
-        </div>
-
+                    {% for item in section.items %}
+                        <a href="{{ item.url }}" class="sidebar-item {% if request.path == item.url %}active{% endif %}">
+                            <span class="sidebar-icon">{{ item.icon }}</span>
+                            <span>{{ item.label }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
     </nav>
-
 </aside>

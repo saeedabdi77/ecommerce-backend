@@ -47,7 +47,15 @@
 
                     {% for cell in row.cells %}
                         <td>
-                            {{ cell }}
+                            {% if column.editable %}
+                                <form method="post" action="{{ column.get_edit_url(request, manager, object) }}">
+                                    {% csrf_token %}
+                                    <input type="text" name="value" value="{{ cell }}">
+                                    <button type="submit">Save</button>
+                                </form>
+                            {% else %}
+                                {{ cell }}
+                            {% endif %}
                         </td>
                     {% endfor %}
 

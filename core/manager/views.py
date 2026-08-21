@@ -59,9 +59,6 @@ class ManagerViewMixin:
     def get_login_url(self):
         return f"{get_manager_root_url(self.request)}login/"
 
-    def get_manager_root_url(self):
-        return self.request.path.split("/manager/")[0]
-
 
 class ManagerLoginView(View):
     def get(self, request, *args, **kwargs):
@@ -333,3 +330,28 @@ class ManagerBulkActionView(ManagerViewMixin, View):
         queryset = self.get_queryset().filter(pk__in=request.POST.getlist("selected"))
 
         return action.handler(request, queryset)
+
+
+class ManagerFieldUpdateView(ManagerViewMixin, View):
+    def post(self, request, *args, **kwargs):
+        manager = self.get_manager()
+        obj = get_object_or_404(self.get_queryset(), pk=kwargs["pk"])
+        field_name = kwargs["field"]
+
+        column = next(
+            (column for column in manager.get_columns(request) if column.field == field_name and column.editable),
+            None,
+        )
+
+        if column is None:
+            raise PermissionDenied
+
+        self.check_permission("edit", obj)
+
+        field = manager.model._meta.get_field(field_name)
+        value = field.to_python(request.POST.get("value"))
+
+        setattr(obj, field_name, value)
+        obj.save(update_fields=[field_name])
+
+        return redirect(request.META.get("HTTP_REFERER", manager.get_list_url(request)))
