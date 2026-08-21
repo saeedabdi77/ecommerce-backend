@@ -39,9 +39,12 @@ class ManagerViewMixin:
 
 class ManagerDashboardView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        managers = registry.all()
+        menu = registry.get_menu(request)
+
         return render(request, "manager/dashboard.html", {
-            "managers": managers,
+            "menu": menu,
+            "dashboard_url": request.path,
+            "is_dashboard": True,
         })
 
 
