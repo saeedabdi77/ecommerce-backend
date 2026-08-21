@@ -7,7 +7,9 @@
         </button>
 
         <div>
-            {% include "manager/includes/breadcrumbs.html" %}
+            {% if not is_dashboard %}
+                {% include "manager/includes/breadcrumbs.html" %}
+            {% endif %}
 
             <h1 class="page-title">
                 {{ manager.get_title }}
