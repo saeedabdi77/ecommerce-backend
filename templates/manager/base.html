@@ -31,7 +31,10 @@
         </div>
 
         <nav class="sidebar-nav">
-
+            <a href="{{ dashboard_url }}"
+               class="sidebar-item {% if is_dashboard %}active{% endif %}">
+                <span class="sidebar-label">Dashboard</span>
+            </a>
             {% for section in menu %}
                 <div class="sidebar-section">
 

@@ -198,6 +198,8 @@ class ManagerListView(ManagerViewMixin, View):
             "rows": rows,
             "menu": self.get_navigation(),
             "bulk_edit_url": reverse(f"manager:{manager.slug}-update-fields"),
+            "dashboard_url": get_manager_root_url(request),
+            "is_dashboard": False,
         })
 
 
@@ -220,6 +222,8 @@ class ManagerCreateView(ManagerViewMixin, View):
             "action": action,
             "form": action.form_class(),
             "menu": self.get_navigation(),
+            "dashboard_url": get_manager_root_url(request),
+            "is_dashboard": False,
         })
 
     def post(self, request, *args, **kwargs):
@@ -236,6 +240,8 @@ class ManagerCreateView(ManagerViewMixin, View):
             "action": action,
             "form": form,
             "menu": self.get_navigation(),
+            "dashboard_url": get_manager_root_url(request),
+            "is_dashboard": False,
         })
 
 
@@ -264,6 +270,8 @@ class ManagerUpdateView(ManagerViewMixin, View):
             "form": action.form_class(instance=obj),
             "object": obj,
             "menu": self.get_navigation(),
+            "dashboard_url": get_manager_root_url(request),
+            "is_dashboard": False,
         })
 
     def post(self, request, *args, **kwargs):
@@ -282,6 +290,8 @@ class ManagerUpdateView(ManagerViewMixin, View):
             "form": form,
             "object": obj,
             "managers": self.get_navigation(),
+            "dashboard_url": get_manager_root_url(request),
+            "is_dashboard": False,
         })
 
 
@@ -308,6 +318,8 @@ class ManagerDetailView(ManagerViewMixin, View):
             "fields": fields,
             "actions": actions,
             "menu": self.get_navigation(),
+            "dashboard_url": get_manager_root_url(request),
+            "is_dashboard": False,
         })
 
 
@@ -333,6 +345,8 @@ class ManagerDeleteView(ManagerViewMixin, View):
             "action": manager.get_action("delete"),
             "object": self.get_object(),
             "menu": self.get_navigation(),
+            "dashboard_url": get_manager_root_url(request),
+            "is_dashboard": False,
         })
 
     def post(self, request, *args, **kwargs):
