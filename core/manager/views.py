@@ -46,16 +46,7 @@ class ManagerViewMixin:
             raise PermissionDenied
 
     def get_navigation(self):
-        navigation = []
-
-        for manager in registry.all():
-            navigation.append({
-                "label": manager.get_title(),
-                "url": manager.get_list_url(self.request),
-                "active": manager.slug == self.get_manager().slug,
-            })
-
-        return navigation
+        return registry.get_menu(self.request)
 
     def get_login_url(self):
         return f"{get_manager_root_url(self.request)}login/"
@@ -205,7 +196,7 @@ class ManagerListView(ManagerViewMixin, View):
             "columns": columns,
             "actions": actions,
             "rows": rows,
-            "managers": self.get_navigation(),
+            "menu": self.get_navigation(),
             "bulk_edit_url": reverse(f"manager:{manager.slug}-update-fields"),
         })
 
@@ -228,7 +219,7 @@ class ManagerCreateView(ManagerViewMixin, View):
             "manager": manager,
             "action": action,
             "form": action.form_class(),
-            "managers": self.get_navigation(),
+            "menu": self.get_navigation(),
         })
 
     def post(self, request, *args, **kwargs):
@@ -244,7 +235,7 @@ class ManagerCreateView(ManagerViewMixin, View):
             "manager": manager,
             "action": action,
             "form": form,
-            "managers": self.get_navigation(),
+            "menu": self.get_navigation(),
         })
 
 
@@ -272,7 +263,7 @@ class ManagerUpdateView(ManagerViewMixin, View):
             "action": action,
             "form": action.form_class(instance=obj),
             "object": obj,
-            "managers": self.get_navigation(),
+            "menu": self.get_navigation(),
         })
 
     def post(self, request, *args, **kwargs):
@@ -316,7 +307,7 @@ class ManagerDetailView(ManagerViewMixin, View):
             "object": obj,
             "fields": fields,
             "actions": actions,
-            "managers": self.get_navigation(),
+            "menu": self.get_navigation(),
         })
 
 
@@ -341,7 +332,7 @@ class ManagerDeleteView(ManagerViewMixin, View):
             "manager": manager,
             "action": manager.get_action("delete"),
             "object": self.get_object(),
-            "managers": self.get_navigation(),
+            "menu": self.get_navigation(),
         })
 
     def post(self, request, *args, **kwargs):
