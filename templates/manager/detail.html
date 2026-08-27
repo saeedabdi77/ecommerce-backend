@@ -4,9 +4,7 @@
 
 <div class="page-toolbar">
     <div>
-        <div class="page-description">
-            Details
-        </div>
+        <div class="page-description">جزئیات</div>
     </div>
 
     <div class="page-actions">
@@ -19,19 +17,12 @@
 </div>
 
 <div class="detail-card">
-
     {% for field in fields %}
         <div class="detail-row">
-            <div class="detail-label">
-                {{ field.label }}
-            </div>
-
-            <div class="detail-value">
-                {{ field.value }}
-            </div>
+            <div class="detail-label">{{ field.label }}</div>
+            <div class="detail-value">{{ field.value }}</div>
         </div>
     {% endfor %}
-
 </div>
 
 {% endblock %}

@@ -37,7 +37,17 @@ class ChoiceFilter(Filter):
 
 class BooleanFilter(Filter):
     def get_form_field(self):
-        return forms.NullBooleanField(label=self.label, required=False)
+        return forms.ChoiceField(
+            label=self.label,
+            required=False,
+            choices=(("", "همه"), ("1", "بله"), ("0", "خیر")),
+        )
+
+    def apply(self, queryset, value):
+        if value in (None, ""):
+            return queryset
+
+        return queryset.filter(**{self.name: value == "1"})
 
 
 class DateFilter(Filter):
@@ -51,12 +61,24 @@ class DateTimeFilter(Filter):
 
 
 class ForeignKeyFilter(Filter):
-    def __init__(self, name, queryset, label=None, *, lookup=None):
+    def __init__(self, name, queryset, label=None, *, lookup=None, limit=200):
         super().__init__(name, label, lookup=lookup)
         self.queryset = queryset
+        self.limit = limit
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        if self.limit is None:
+            return queryset
+
+        if not queryset.query.order_by:
+            queryset = queryset.order_by("pk")
+
+        return queryset[: self.limit]
 
     def get_form_field(self):
-        return forms.ModelChoiceField(label=self.label, required=False, queryset=self.queryset)
+        return forms.ModelChoiceField(label=self.label, required=False, queryset=self.get_queryset())
 
     def apply(self, queryset, value):
         if value is None:
@@ -92,6 +114,33 @@ class FilterSet:
             queryset = filter_.apply(queryset, self.form.cleaned_data.get(filter_.name))
 
         return queryset
+
+    def get_active_filters(self):
+        if not self.form.is_valid():
+            return []
+
+        active = []
+
+        for filter_ in self.filters:
+            value = self.form.cleaned_data.get(filter_.name)
+
+            if value in (None, "", []):
+                continue
+
+            if isinstance(value, bool):
+                display_value = "بله" if value else "خیر"
+            elif value in ("1", "0"):
+                display_value = "بله" if value == "1" else "خیر"
+            else:
+                display_value = str(value)
+
+            active.append({
+                "name": filter_.name,
+                "label": filter_.label,
+                "value": display_value,
+            })
+
+        return active
 
 
 class Search:

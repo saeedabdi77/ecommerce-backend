@@ -1,11 +1,14 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manager Login</title>
+    <title>ورود به پنل مدیریت</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'manager/css/manager.css' %}">
 </head>
 <body>
@@ -13,9 +16,9 @@
 <div class="login-page">
     <div class="login-card">
         <div class="login-header">
-            <div class="sidebar-logo">M</div>
-            <h1>Manager Login</h1>
-            <p>Sign in to continue</p>
+            <div class="sidebar-logo">م</div>
+            <h1>ورود به پنل مدیریت</h1>
+            <p>برای ادامه وارد شوید</p>
         </div>
 
         {% if error %}
@@ -28,17 +31,17 @@
             <input type="hidden" name="next" value="{{ next }}">
 
             <div class="form-field">
-                <label for="username">Username</label>
+                <label for="username">نام کاربری</label>
                 <input type="text" id="username" name="username" required autofocus>
             </div>
 
             <div class="form-field">
-                <label for="password">Password</label>
+                <label for="password">رمز عبور</label>
                 <input type="password" id="password" name="password" required>
             </div>
 
             <button type="submit" class="btn btn-primary login-button">
-                Login
+                ورود
             </button>
         </form>
     </div>

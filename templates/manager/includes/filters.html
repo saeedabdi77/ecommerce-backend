@@ -1,61 +1,63 @@
-<form method="get" class="filters-card">
+{% load manager_tags %}
 
-    <div class="filters-header">
-        <div>
-            <div class="filters-title">
-                Filters
-            </div>
+<form method="get" class="filters-card" id="filters-form">
 
-            <div class="filters-description">
-                Search and filter the records
-            </div>
-        </div>
-    </div>
-
-    <div class="filters-body">
-
+    <div class="filters-top">
         {% if manager.get_search_fields %}
-            <div class="filter-field filter-search">
-                <label for="id_search">Search</label>
-
+            <div class="filter-search-wrap">
+                <label for="id_search" class="sr-only">جستجو</label>
                 <input
                     type="text"
                     id="id_search"
                     name="search"
                     value="{{ search|default:'' }}"
-                    placeholder="Search..."
+                    placeholder="جستجو..."
+                    class="filter-search-input"
                 >
             </div>
         {% endif %}
 
-        {% for field in filter_form %}
-            <div class="filter-field">
+        <div class="filters-top-actions">
+            {% if filter_form.fields %}
+                <button type="button"
+                        class="btn btn-secondary filters-toggle-btn {% if has_active_filters %}is-open{% endif %}"
+                        id="filters-toggle"
+                        aria-expanded="{% if has_active_filters %}true{% else %}false{% endif %}">
+                    فیلترها
+                    <span class="filters-toggle-icon">▼</span>
+                </button>
+            {% endif %}
 
-                {{ field.label_tag }}
+            <button type="submit" class="btn btn-primary">
+                اعمال
+            </button>
+        </div>
+    </div>
 
-                {{ field }}
+    {% if filter_form.fields %}
+        <div class="filters-panel {% if has_active_filters %}is-open{% endif %}" id="filters-panel">
 
-                {% if field.errors %}
-                    <div class="field-errors">
-                        {{ field.errors }}
+            <div class="filters-body">
+                {% for field in filter_form %}
+                    <div class="filter-field">
+                        {{ field.label_tag }}
+                        {{ field }}
+
+                        {% if field.errors %}
+                            <div class="field-errors">
+                                {{ field.errors }}
+                            </div>
+                        {% endif %}
                     </div>
-                {% endif %}
-
+                {% endfor %}
             </div>
-        {% endfor %}
 
-    </div>
+            <div class="filters-footer">
+                <a href="." class="btn btn-secondary">پاک کردن</a>
+                <button type="submit" class="btn btn-primary">اعمال فیلتر</button>
+            </div>
 
-    <div class="filters-footer">
-
-        <a href="." class="btn btn-secondary">
-            Reset
-        </a>
-
-        <button type="submit" class="btn btn-primary">
-            Apply Filters
-        </button>
-
-    </div>
+        </div>
+    {% endif %}
 
 </form>

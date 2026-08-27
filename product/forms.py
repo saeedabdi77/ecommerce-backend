@@ -79,11 +79,17 @@ class ProductTypeForm(forms.ModelForm):
             "tags",
         )
         widgets = {
-            "description": forms.Textarea(attrs={"rows": 5}),
-            "seo_description": forms.Textarea(attrs={"rows": 4}),
-            "seo_keywords": forms.Textarea(attrs={"rows": 3}),
-            "tags": forms.SelectMultiple(attrs={"size": 6}),
+            "description": forms.Textarea(attrs={"rows": 5, "full_width": True}),
+            "seo_description": forms.Textarea(attrs={"rows": 4, "full_width": True}),
+            "seo_keywords": forms.Textarea(attrs={"rows": 3, "full_width": True}),
+            "tags": forms.SelectMultiple(attrs={"size": 6, "full_width": True}),
         }
+        fieldsets = (
+            ("اطلاعات پایه", {"fields": ("category", "brand", "name", "slug", "description", "active")}),
+            ("قیمت و مشخصات", {"fields": ("main_price", "sell_price", "weight", "dimensions")}),
+            ("SEO", {"fields": ("seo_title", "seo_description", "seo_keywords")}),
+            ("برچسب‌ها", {"fields": ("tags",)}),
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

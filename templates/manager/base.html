@@ -1,7 +1,7 @@
-{% load static %}
+{% load static manager_tags %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,10 +10,13 @@
         {% if manager %}
             {{ manager.get_title }}
         {% else %}
-            Management
+            مدیریت
         {% endif %}
     </title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'manager/css/manager.css' %}">
 
     {% block extra_css %}{% endblock %}
@@ -26,21 +29,24 @@
     <aside class="manager-sidebar">
 
         <div class="sidebar-brand">
-            <div class="sidebar-logo">M</div>
-            <div class="sidebar-title">Management</div>
+            <div class="sidebar-logo">م</div>
+            <div class="sidebar-title">مدیریت</div>
         </div>
 
         <nav class="sidebar-nav">
             <a href="{{ dashboard_url }}"
                class="sidebar-item {% if is_dashboard %}active{% endif %}">
-                <span class="sidebar-label">Dashboard</span>
+                <span class="sidebar-icon">⌂</span>
+                <span class="sidebar-label">داشبورد</span>
             </a>
+
             {% for section in menu %}
                 <div class="sidebar-section">
 
-                    <div class="sidebar-section-title">
-                        {{ section.group.label }}
-                    </div>
+                    <button type="button" class="sidebar-section-toggle">
+                        <span class="sidebar-section-title">{{ section.group.label }}</span>
+                        <span class="sidebar-section-chevron">▼</span>
+                    </button>
 
                     <div class="sidebar-items">
 
@@ -51,9 +57,11 @@
                                 <a href="{{ item.url }}"
                                    class="sidebar-item {% if manager and manager.slug == item.manager.slug %}active{% endif %}">
 
-                                <span class="sidebar-label">
-                                    {{ item.label }}
-                                </span>
+                                    {% if item.icon %}
+                                        <span class="sidebar-icon">{{ item.icon|manager_icon }}</span>
+                                    {% endif %}
+
+                                    <span class="sidebar-label">{{ item.label }}</span>
 
                                 </a>
 
@@ -65,9 +73,11 @@
                                             <a href="{{ child.url }}"
                                                class="sidebar-item sidebar-subitem {% if manager and manager.slug == child.manager.slug %}active{% endif %}">
 
-                                            <span class="sidebar-label">
-                                                {{ child.label }}
-                                            </span>
+                                                {% if child.icon %}
+                                                    <span class="sidebar-icon">{{ child.icon|manager_icon }}</span>
+                                                {% endif %}
+
+                                                <span class="sidebar-label">{{ child.label }}</span>
 
                                             </a>
 
@@ -98,7 +108,8 @@
 
                 <button type="button"
                         class="sidebar-toggle"
-                        id="sidebar-toggle">
+                        id="sidebar-toggle"
+                        aria-label="باز و بسته کردن منو">
                     ☰
                 </button>
 
@@ -107,26 +118,20 @@
                     {% if manager %}
 
                         <div class="breadcrumbs">
-                            <a href="{{ dashboard_url }}">
-                                Management
-                            </a>
-
+                            <a href="{{ dashboard_url }}">مدیریت</a>
                             <span>/</span>
-
-                            <span>
-                                {{ manager.get_title }}
-                            </span>
+                            <a href="{{ list_url }}">{{ manager.get_title }}</a>
+                            {% if breadcrumb_action %}
+                                <span>/</span>
+                                <span>{{ breadcrumb_action }}</span>
+                            {% endif %}
                         </div>
 
-                        <h1 class="page-title">
-                            {{ manager.get_title }}
-                        </h1>
+                        <h1 class="page-title">{{ manager.get_title }}</h1>
 
                     {% else %}
 
-                        <h1 class="page-title">
-                            Dashboard
-                        </h1>
+                        <h1 class="page-title">داشبورد</h1>
 
                     {% endif %}
 
@@ -140,14 +145,17 @@
                 {% if request.user.is_authenticated %}
 
                     <div class="user-info">
-                        <div class="user-name">
-                            {{ request.user.get_username }}
-                        </div>
+                        <div class="user-name">{{ request.user.get_username }}</div>
                     </div>
 
                     <div class="user-avatar">
                         {{ request.user.get_username|first|upper }}
                     </div>
+
+                    <form method="post" action="{{ logout_url }}" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-secondary btn-sm">خروج</button>
+                    </form>
 
                 {% endif %}
 
@@ -182,17 +190,7 @@
 
 </div>
 
-
-<script>
-    const sidebarToggle = document.getElementById("sidebar-toggle");
-    const sidebar = document.querySelector(".manager-sidebar");
-
-    if (sidebarToggle && sidebar) {
-        sidebarToggle.addEventListener("click", function () {
-            sidebar.classList.toggle("open");
-        });
-    }
-</script>
+<script src="{% static 'manager/js/manager.js' %}"></script>
 
 {% block extra_js %}{% endblock %}
 

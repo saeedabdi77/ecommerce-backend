@@ -31,7 +31,7 @@ class Action:
 
 class CreateAction(Action):
     name = "create"
-    label = "Create"
+    label = "ایجاد"
 
     def __init__(self, form_class, **kwargs):
         super().__init__(**kwargs)
@@ -43,7 +43,7 @@ class CreateAction(Action):
 
 class UpdateAction(Action):
     name = "update"
-    label = "Edit"
+    label = "ویرایش"
 
     def __init__(self, form_class, **kwargs):
         super().__init__(**kwargs)
@@ -55,7 +55,7 @@ class UpdateAction(Action):
 
 class DetailAction(Action):
     name = "detail"
-    label = "Show"
+    label = "نمایش"
 
     def get_url(self, request, manager, obj=None):
         return reverse(f"manager:{manager.slug}-detail", kwargs={"pk": obj.pk})
@@ -63,7 +63,8 @@ class DetailAction(Action):
 
 class DeleteAction(Action):
     name = "delete"
-    label = "Delete"
+    label = "حذف"
+    confirmation_message = "آیا از حذف این مورد اطمینان دارید؟"
 
     def __init__(self, *, confirm=True, **kwargs):
         super().__init__(**kwargs)
@@ -74,8 +75,8 @@ class DeleteAction(Action):
 
     def execute(self, request, manager, obj=None):
         obj.delete()
-        messages.success(request, "Object deleted successfully.")
-        return redirect(f"manager:{manager.slug}-list")
+        messages.success(request, "مورد با موفقیت حذف شد.")
+        return redirect(reverse(f"manager:{manager.slug}-list"))
 
 
 class CustomAction(Action):

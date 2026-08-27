@@ -43,6 +43,7 @@ class BaseManager:
     select_related = ()
     prefetch_related = ()
     paginate_by = 25
+    paginate_by_options = (25, 50, 100)
 
     permission = None
 
@@ -88,6 +89,14 @@ class BaseManager:
         return self.ordering
 
     def get_paginate_by(self, request):
+        per_page = request.GET.get("per_page")
+
+        if per_page and str(per_page).isdigit():
+            value = int(per_page)
+
+            if value in self.paginate_by_options:
+                return value
+
         return self.paginate_by
 
     def get_permission(self, request):
@@ -223,7 +232,9 @@ class MenuGroup:
 
 
 menu_groups = [
-    MenuGroup("product_management", "Product Management", order=10),
+    MenuGroup("product_management", "مدیریت محصول", order=10),
+    MenuGroup("inventory", "موجودی", order=20),
+    MenuGroup("customers", "مشتریان", order=30),
 ]
 
 

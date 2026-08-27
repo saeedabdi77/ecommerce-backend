@@ -1,25 +1,26 @@
+{% load manager_tags %}
+
 <div class="bulk-toolbar" id="bulk-toolbar">
 
     <div class="bulk-selection">
         <strong id="selected-count">0</strong>
-        selected
+        مورد انتخاب شده
     </div>
 
     <div class="bulk-actions">
 
-        {% for action in actions %}
-            {% if action.bulk %}
-                <button
-                    type="submit"
-                    formaction="{% url 'manager:bulk-action' manager=manager.slug action=action.name %}"
-                    class="btn btn-secondary"
-                    {% if action.confirm %}
-                        onclick="return confirm('{{ action.confirmation_message }}');"
-                    {% endif %}
-                >
-                    {{ action.label }}
-                </button>
-            {% endif %}
+        {% for item in bulk_actions %}
+            <button
+                type="submit"
+                formaction="{{ item.url }}"
+                class="btn btn-secondary bulk-action-btn"
+                disabled
+                {% if item.action.confirm %}
+                    onclick="return confirm('{{ item.action.confirmation_message|escapejs }}');"
+                {% endif %}
+            >
+                {{ item.action.label }}
+            </button>
         {% endfor %}
 
     </div>

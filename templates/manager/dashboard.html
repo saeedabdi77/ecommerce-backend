@@ -1,17 +1,30 @@
 {% extends "manager/base.html" %}
+{% load manager_tags %}
 
 {% block content %}
 
 <div class="page-toolbar">
     <div>
-        <h1 class="page-title">Dashboard</h1>
-        <div class="page-description">
-            Management dashboard
-        </div>
+        <h1 class="page-title">داشبورد</h1>
+        <div class="page-description">خلاصه‌ای از بخش‌های مدیریت</div>
     </div>
 </div>
 
-<div class="dashboard">
+<div class="dashboard-grid">
+    {% for card in cards %}
+        <a href="{{ card.url }}" class="dashboard-card">
+            <div class="dashboard-card-icon">{{ card.icon|manager_icon }}</div>
+            <div class="dashboard-card-body">
+                <div class="dashboard-card-title">{{ card.label }}</div>
+                <div class="dashboard-card-count">{{ card.count }} مورد</div>
+            </div>
+        </a>
+    {% empty %}
+        <div class="empty-panel">
+            <div class="empty-title">بخشی برای نمایش وجود ندارد</div>
+            <div class="empty-description">دسترسی شما به بخش‌های مدیریت محدود است.</div>
+        </div>
+    {% endfor %}
 </div>
 
 {% endblock %}

@@ -1,18 +1,30 @@
 from django.urls import path
 
 from core.manager.managers import registry
-from core.manager.views import ManagerActionView, ManagerBulkActionView, ManagerCreateView, ManagerDeleteView, \
-    ManagerDetailView, ManagerListView, ManagerUpdateView, ManagerDashboardView, ManagerLoginView, \
-    ManagerFieldUpdateView
+from core.manager.views import (
+    ManagerActionView,
+    ManagerBulkActionView,
+    ManagerCreateView,
+    ManagerDashboardView,
+    ManagerDeleteView,
+    ManagerDetailView,
+    ManagerFieldUpdateView,
+    ManagerListView,
+    ManagerLoginView,
+    ManagerLogoutView,
+    ManagerUpdateView,
+)
 
 app_name = "manager"
 
-urlpatterns = []
+urlpatterns = [
+    path("login/", ManagerLoginView.as_view(), name="login"),
+    path("logout/", ManagerLogoutView.as_view(), name="logout"),
+    path("", ManagerDashboardView.as_view(), name="dashboard"),
+]
 
 for manager in registry.all():
     urlpatterns.extend([
-        path("login/", ManagerLoginView.as_view(), name="login"),
-        path("", ManagerDashboardView.as_view(), name="dashboard"),
         path(f"{manager.slug}/", ManagerListView.as_view(manager=manager), name=f"{manager.slug}-list"),
         path(f"{manager.slug}/create/", ManagerCreateView.as_view(manager=manager), name=f"{manager.slug}-create"),
         path(f"{manager.slug}/<int:pk>/", ManagerDetailView.as_view(manager=manager), name=f"{manager.slug}-detail"),

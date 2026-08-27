@@ -1,4 +1,5 @@
 {% extends "manager/base.html" %}
+{% load manager_tags %}
 
 {% block content %}
 
@@ -6,7 +7,7 @@
 
         <div>
             <div class="page-description">
-                Manage {{ manager.get_title|lower }}
+                مدیریت {{ manager.get_title }}
             </div>
         </div>
 
@@ -24,11 +25,54 @@
 
     {% include "manager/includes/filters.html" %}
 
-    <form method="post">
+    {% if active_filters %}
+        <div class="active-filters">
+            <span class="active-filters-label">فیلترهای فعال:</span>
+
+            {% for item in active_filters %}
+                <a href="{% remove_filter item.name %}"
+                   class="filter-chip">
+                    {{ item.label }}: {{ item.value }}
+                    <span class="filter-chip-remove">×</span>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if total_count %}
+        <div class="list-meta">
+            <div class="result-count">
+                نمایش {{ start_index }}–{{ end_index }} از {{ total_count }} مورد
+            </div>
+
+            {% if paginate_by_options %}
+                <form method="get" class="per-page-form">
+                    {% hidden_get_params "per_page" "page" as preserved_params %}
+                    {% for key, value in preserved_params %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    {% endfor %}
+
+                    <label for="per-page-select">تعداد در صفحه</label>
+                    <select id="per-page-select" name="per_page" onchange="this.form.submit()">
+                        {% for option in paginate_by_options %}
+                            <option value="{{ option }}" {% if paginate_by == option %}selected{% endif %}>
+                                {{ option }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <form method="post" class="list-form">
         {% csrf_token %}
 
-        {% include "manager/includes/bulk_actions.html" %}
+        {% for pk in page_pks %}
+            <input type="hidden" name="_page_pks" value="{{ pk }}">
+        {% endfor %}
 
+        {% include "manager/includes/bulk_actions.html" %}
         {% include "manager/includes/table.html" %}
     </form>
 

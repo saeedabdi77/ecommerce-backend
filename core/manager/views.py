@@ -1,12 +1,16 @@
-from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import View
 
 from core.manager.filters import FilterSet, Ordering, Search
+from core.manager.forms import get_form_fieldsets
 from core.manager.managers import registry
+from core.manager.pagination import get_page_window
 from core.manager.utils import get_manager_root_url
 
 
@@ -48,8 +52,18 @@ class ManagerViewMixin:
     def get_navigation(self):
         return registry.get_menu(self.request)
 
-    def get_login_url(self):
-        return f"{get_manager_root_url(self.request)}login/"
+    def get_base_context(self, **extra):
+        manager = self.get_manager()
+        context = {
+            "manager": manager,
+            "menu": self.get_navigation(),
+            "list_url": manager.get_list_url(self.request),
+            "dashboard_url": get_manager_root_url(self.request),
+            "logout_url": f"{get_manager_root_url(self.request)}logout/",
+            "is_dashboard": False,
+        }
+        context.update(extra)
+        return context
 
 
 class ManagerLoginView(View):
@@ -64,7 +78,7 @@ class ManagerLoginView(View):
 
         if user is None:
             return render(request, "manager/login.html", {
-                "error": "Invalid username or password.",
+                "error": "نام کاربری یا رمز عبور اشتباه است.",
                 "next": request.POST.get("next", ""),
             })
 
@@ -73,51 +87,119 @@ class ManagerLoginView(View):
         return redirect(request.POST.get("next") or request.path.rsplit("login/", 1)[0])
 
 
-class ManagerDashboardView(ManagerViewMixin, View):
+class ManagerLogoutView(View):
+    def post(self, request, *args, **kwargs):
+        logout(request)
+        return redirect(get_manager_root_url(request))
+
     def get(self, request, *args, **kwargs):
-        menu = registry.get_menu(request)
+        logout(request)
+        return redirect(get_manager_root_url(request))
+
+
+class ManagerDashboardView(ManagerViewMixin, View):
+    manager = None
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            login_url = f"{get_manager_root_url(request)}login/"
+            return redirect(f"{login_url}?next={request.get_full_path()}")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_manager(self):
+        return None
+
+    def get(self, request, *args, **kwargs):
+        cards = []
+
+        for manager in registry.all():
+            if not manager.menu or not manager.can_access(request):
+                continue
+
+            cards.append({
+                "manager": manager,
+                "label": manager.get_menu_label(),
+                "icon": manager.get_menu_icon(),
+                "url": manager.get_list_url(request),
+                "count": manager.get_queryset(request).values("pk").count(),
+            })
 
         return render(request, "manager/dashboard.html", {
-            "menu": menu,
+            "menu": registry.get_menu(request),
             "dashboard_url": request.path,
+            "logout_url": f"{get_manager_root_url(request)}logout/",
             "is_dashboard": True,
+            "cards": cards,
         })
 
 
 class ManagerListView(ManagerViewMixin, View):
-    def post(self, request, *args, **kwargs):
-        manager = self.get_manager()
-        self.check_permission("edit")
-
-        editable_columns = {
+    def _get_editable_columns(self, request):
+        return {
             column.name: column
-            for column in manager.get_columns(request)
+            for column in self.get_manager().get_columns(request)
             if column.editable
         }
 
-        objects = {
-            str(obj.pk): obj
-            for obj in self.get_queryset()
-            if any(f"{field_name}__{obj.pk}" in request.POST for field_name in editable_columns)
-        }
+    def _build_column_meta(self, manager, columns):
+        model = manager.model
+        meta = []
 
-        for pk, obj in objects.items():
+        for index, column in enumerate(columns):
+            model_field = column.get_model_field(model)
+            meta.append({
+                "column": column,
+                "edit_widget": column.get_edit_widget(model),
+                "use_boolean_badge": isinstance(model_field, models.BooleanField) and not column.editable,
+                "is_primary": index == 0,
+            })
+
+        return meta
+
+    def _save_inline_edits(self, request):
+        manager = self.get_manager()
+        editable_columns = self._get_editable_columns(request)
+        page_pks = request.POST.getlist("_page_pks")
+
+        if page_pks:
+            objects = self.get_queryset().filter(pk__in=page_pks)
+        else:
+            objects = [
+                obj for obj in self.get_queryset()
+                if any(f"{field_name}__{obj.pk}" in request.POST for field_name in editable_columns)
+            ]
+
+        updated = False
+
+        for obj in objects:
             update_fields = []
 
-            for field_name in editable_columns:
-                key = f"{field_name}__{pk}"
+            for field_name, column in editable_columns.items():
+                key = f"{field_name}__{obj.pk}"
+                field = manager.model._meta.get_field(column.get_field_name())
 
-                if key not in request.POST:
-                    continue
-
-                field = manager.model._meta.get_field(field_name)
-                value = field.to_python(request.POST[key])
-
-                setattr(obj, field_name, value)
-                update_fields.append(field_name)
+                if isinstance(field, models.BooleanField):
+                    value = request.POST.get(key) == "1"
+                    if getattr(obj, field_name) != value:
+                        setattr(obj, field_name, value)
+                        update_fields.append(field_name)
+                elif key in request.POST:
+                    value = field.to_python(request.POST[key])
+                    if getattr(obj, field_name) != value:
+                        setattr(obj, field_name, value)
+                        update_fields.append(field_name)
 
             if update_fields:
                 obj.save(update_fields=update_fields)
+                updated = True
+
+        return updated
+
+    def post(self, request, *args, **kwargs):
+        self.check_permission("edit")
+
+        if self._save_inline_edits(request):
+            messages.success(request, "تغییرات ذخیره شد.")
 
         return redirect(request.get_full_path())
 
@@ -141,22 +223,32 @@ class ManagerListView(ManagerViewMixin, View):
         elif manager.get_ordering(request):
             queryset = queryset.order_by(*manager.get_ordering(request))
 
+        total_count = queryset.count()
         paginate_by = manager.get_paginate_by(request)
         paginator = Paginator(queryset, paginate_by) if paginate_by else None
         page_obj = paginator.get_page(request.GET.get("page")) if paginator else None
-        objects = page_obj.object_list if page_obj else queryset
+        objects = list(page_obj.object_list) if page_obj else list(queryset[:paginate_by] if paginate_by else queryset)
 
         columns = manager.get_columns(request)
+        column_meta = self._build_column_meta(manager, columns)
+        detail_action = manager.get_action("detail")
 
-        manager_actions = [action for action in manager.get_actions(request) if action.is_visible(request, manager)]
+        toolbar_actions = []
+        bulk_actions = []
 
-        actions = []
+        for action in manager.get_actions(request):
+            if not action.is_visible(request, manager):
+                continue
 
-        for action in manager_actions:
             if action.name == "create":
-                actions.append({
+                toolbar_actions.append({
                     "action": action,
                     "url": action.get_url(request, manager),
+                })
+            elif getattr(action, "bulk", False):
+                bulk_actions.append({
+                    "action": action,
+                    "url": reverse(f"manager:{manager.slug}-bulk-action", kwargs={"action": action.name}),
                 })
 
         rows = []
@@ -174,33 +266,62 @@ class ManagerListView(ManagerViewMixin, View):
                     "danger": action.name == "delete",
                 })
 
+            detail_url = detail_action.get_url(request, manager, obj) if detail_action else None
+
             rows.append({
                 "object": obj,
+                "detail_url": detail_url,
                 "cells": [
                     {
-                        "column": column,
-                        "value": column.render(obj),
-                        "raw_value": column.get_value(obj),
+                        "column": item["column"],
+                        "value": item["column"].render(obj, manager.model),
+                        "raw_value": item["column"].get_value(obj),
+                        "edit_widget": item["edit_widget"],
+                        "is_primary": item["is_primary"],
                     }
-                    for column in columns
+                    for item in column_meta
                 ],
                 "actions": row_actions,
             })
 
-        return render(request, manager.list_template, {
-            "manager": manager,
-            "objects": objects,
-            "page_obj": page_obj,
-            "filter_form": filter_set.form,
-            "search": search,
-            "columns": columns,
-            "actions": actions,
-            "rows": rows,
-            "menu": self.get_navigation(),
-            "bulk_edit_url": reverse(f"manager:{manager.slug}-update-fields"),
-            "dashboard_url": get_manager_root_url(request),
-            "is_dashboard": False,
-        })
+        if page_obj:
+            start_index = (page_obj.number - 1) * paginate_by + 1
+            end_index = start_index + len(objects) - 1
+        else:
+            start_index = 1 if total_count else 0
+            end_index = total_count
+
+        active_filters = filter_set.get_active_filters()
+
+        if search:
+            active_filters.insert(0, {
+                "name": "search",
+                "label": "جستجو",
+                "value": search,
+            })
+
+        context = self.get_base_context(
+            objects=objects,
+            page_obj=page_obj,
+            page_window=get_page_window(page_obj) if page_obj else [],
+            paginate_by=paginate_by,
+            paginate_by_options=manager.paginate_by_options,
+            filter_form=filter_set.form,
+            search=search,
+            columns=columns,
+            actions=toolbar_actions,
+            bulk_actions=bulk_actions,
+            rows=rows,
+            current_ordering=ordering or "",
+            active_filters=active_filters,
+            total_count=total_count,
+            start_index=start_index,
+            end_index=end_index,
+            has_active_filters=bool(active_filters),
+            page_pks=[str(obj.pk) for obj in objects],
+        )
+
+        return render(request, manager.list_template, context)
 
 
 class ManagerCreateView(ManagerViewMixin, View):
@@ -216,15 +337,14 @@ class ManagerCreateView(ManagerViewMixin, View):
     def get(self, request, *args, **kwargs):
         manager = self.get_manager()
         action = manager.get_action("create")
+        form = action.form_class()
 
-        return render(request, manager.form_template, {
-            "manager": manager,
-            "action": action,
-            "form": action.form_class(),
-            "menu": self.get_navigation(),
-            "dashboard_url": get_manager_root_url(request),
-            "is_dashboard": False,
-        })
+        return render(request, manager.form_template, self.get_base_context(
+            action=action,
+            form=form,
+            fieldsets=get_form_fieldsets(form),
+            breadcrumb_action=action.label,
+        ))
 
     def post(self, request, *args, **kwargs):
         manager = self.get_manager()
@@ -232,17 +352,16 @@ class ManagerCreateView(ManagerViewMixin, View):
         form = action.form_class(request.POST, request.FILES)
 
         if form.is_valid():
-            obj = form.save()
+            form.save()
+            messages.success(request, "مورد جدید با موفقیت ایجاد شد.")
             return redirect(manager.get_list_url(request))
 
-        return render(request, manager.form_template, {
-            "manager": manager,
-            "action": action,
-            "form": form,
-            "menu": self.get_navigation(),
-            "dashboard_url": get_manager_root_url(request),
-            "is_dashboard": False,
-        })
+        return render(request, manager.form_template, self.get_base_context(
+            action=action,
+            form=form,
+            fieldsets=get_form_fieldsets(form),
+            breadcrumb_action=action.label,
+        ))
 
 
 class ManagerUpdateView(ManagerViewMixin, View):
@@ -263,16 +382,15 @@ class ManagerUpdateView(ManagerViewMixin, View):
         manager = self.get_manager()
         action = manager.get_action("update")
         obj = self.get_object()
+        form = action.form_class(instance=obj)
 
-        return render(request, manager.form_template, {
-            "manager": manager,
-            "action": action,
-            "form": action.form_class(instance=obj),
-            "object": obj,
-            "menu": self.get_navigation(),
-            "dashboard_url": get_manager_root_url(request),
-            "is_dashboard": False,
-        })
+        return render(request, manager.form_template, self.get_base_context(
+            action=action,
+            form=form,
+            object=obj,
+            fieldsets=get_form_fieldsets(form),
+            breadcrumb_action=action.label,
+        ))
 
     def post(self, request, *args, **kwargs):
         manager = self.get_manager()
@@ -281,18 +399,17 @@ class ManagerUpdateView(ManagerViewMixin, View):
         form = action.form_class(request.POST, request.FILES, instance=obj)
 
         if form.is_valid():
-            obj = form.save()
+            form.save()
+            messages.success(request, "تغییرات با موفقیت ذخیره شد.")
             return redirect(manager.get_list_url(request))
 
-        return render(request, manager.form_template, {
-            "manager": manager,
-            "action": action,
-            "form": form,
-            "object": obj,
-            "managers": self.get_navigation(),
-            "dashboard_url": get_manager_root_url(request),
-            "is_dashboard": False,
-        })
+        return render(request, manager.form_template, self.get_base_context(
+            action=action,
+            form=form,
+            object=obj,
+            fieldsets=get_form_fieldsets(form),
+            breadcrumb_action=action.label,
+        ))
 
 
 class ManagerDetailView(ManagerViewMixin, View):
@@ -302,7 +419,7 @@ class ManagerDetailView(ManagerViewMixin, View):
         self.check_permission("detail", obj)
 
         fields = [
-            {"label": column.label, "value": column.render(obj)}
+            {"label": column.label, "value": column.render(obj, manager.model)}
             for column in manager.get_columns(request)
         ]
 
@@ -312,15 +429,12 @@ class ManagerDetailView(ManagerViewMixin, View):
             if action.is_visible(request, manager, obj)
         ]
 
-        return render(request, manager.detail_template, {
-            "manager": manager,
-            "object": obj,
-            "fields": fields,
-            "actions": actions,
-            "menu": self.get_navigation(),
-            "dashboard_url": get_manager_root_url(request),
-            "is_dashboard": False,
-        })
+        return render(request, manager.detail_template, self.get_base_context(
+            object=obj,
+            fields=fields,
+            actions=actions,
+            breadcrumb_action="نمایش",
+        ))
 
 
 class ManagerDeleteView(ManagerViewMixin, View):
@@ -339,15 +453,13 @@ class ManagerDeleteView(ManagerViewMixin, View):
 
     def get(self, request, *args, **kwargs):
         manager = self.get_manager()
+        action = manager.get_action("delete")
 
-        return render(request, manager.confirm_template, {
-            "manager": manager,
-            "action": manager.get_action("delete"),
-            "object": self.get_object(),
-            "menu": self.get_navigation(),
-            "dashboard_url": get_manager_root_url(request),
-            "is_dashboard": False,
-        })
+        return render(request, manager.confirm_template, self.get_base_context(
+            action=action,
+            object=self.get_object(),
+            breadcrumb_action=action.label,
+        ))
 
     def post(self, request, *args, **kwargs):
         manager = self.get_manager()
@@ -385,29 +497,36 @@ class ManagerFieldUpdateView(ManagerViewMixin, View):
         self.check_permission("edit")
 
         editable_columns = {
-            column.field: column
+            column.name: column
             for column in manager.get_columns(request)
             if column.editable
         }
 
-        objects = self.get_queryset()
+        page_pks = request.POST.getlist("_page_pks") or request.POST.getlist("selected")
 
-        for obj in objects:
+        if not page_pks:
+            return redirect(request.META.get("HTTP_REFERER", manager.get_list_url(request)))
+
+        for obj in self.get_queryset().filter(pk__in=page_pks):
             update_fields = []
 
-            for field_name in editable_columns:
-                key = f"{field_name}_{obj.pk}"
+            for field_name, column in editable_columns.items():
+                key = f"{field_name}__{obj.pk}"
+                field = manager.model._meta.get_field(column.get_field_name())
 
-                if key not in request.POST:
-                    continue
-
-                field = manager.model._meta.get_field(field_name)
-                value = field.to_python(request.POST[key])
-
-                setattr(obj, field_name, value)
-                update_fields.append(field_name)
+                if isinstance(field, models.BooleanField):
+                    value = request.POST.get(key) == "1"
+                    if getattr(obj, field_name) != value:
+                        setattr(obj, field_name, value)
+                        update_fields.append(field_name)
+                elif key in request.POST:
+                    value = field.to_python(request.POST[key])
+                    if getattr(obj, field_name) != value:
+                        setattr(obj, field_name, value)
+                        update_fields.append(field_name)
 
             if update_fields:
                 obj.save(update_fields=update_fields)
 
+        messages.success(request, "تغییرات ذخیره شد.")
         return redirect(request.META.get("HTTP_REFERER", manager.get_list_url(request)))

@@ -1,94 +1,126 @@
+{% load manager_tags %}
+
 <div class="table-card">
 
-    <form method="post" action="{{ bulk_edit_url }}">
-        {% csrf_token %}
+    <div class="table-wrapper">
 
-        <div class="table-wrapper">
+        <table class="manager-table">
 
-            <table class="manager-table">
+            <thead>
+            <tr>
 
-                <thead>
+                <th class="selection-column">
+                    <input type="checkbox" id="select-all" aria-label="انتخاب همه">
+                </th>
+
+                {% for column in columns %}
+                    <th>
+                        {% if column.sortable %}
+                            <a href="{% sort_url column.ordering_name %}" class="sort-link{% if current_ordering == column.ordering_name or current_ordering == '-'|add:column.ordering_name %} is-active{% endif %}">
+                                {{ column.label }}
+                                {% if current_ordering == column.ordering_name %}
+                                    <span class="sort-indicator">↑</span>
+                                {% elif current_ordering == '-'|add:column.ordering_name %}
+                                    <span class="sort-indicator">↓</span>
+                                {% endif %}
+                            </a>
+                        {% else %}
+                            {{ column.label }}
+                        {% endif %}
+                    </th>
+                {% endfor %}
+
+                <th class="actions-column">عملیات</th>
+
+            </tr>
+            </thead>
+
+            <tbody>
+
+            {% for row in rows %}
                 <tr>
 
-                    <th class="selection-column">
-                        <input type="checkbox" id="select-all">
-                    </th>
+                    <td class="selection-column">
+                        <input
+                            type="checkbox"
+                            name="selected"
+                            value="{{ row.object.pk }}"
+                            class="row-checkbox"
+                            aria-label="انتخاب ردیف"
+                        >
+                    </td>
 
-                    {% for column in columns %}
-                        <th>
-                            {% if column.sortable %}
-                                <a href="?ordering={{ column.ordering_name }}">
-                                    {{ column.label }}
-                                </a>
-                            {% else %}
-                                {{ column.label }}
-                            {% endif %}
-                        </th>
-                    {% endfor %}
-
-                    <th class="actions-column">
-                        Actions
-                    </th>
-
-                </tr>
-                </thead>
-
-                <tbody>
-
-                {% for row in rows %}
-                    <tr>
-
-                        <td class="selection-column">
-                            <input
-                                type="checkbox"
-                                name="selected"
-                                value="{{ row.object.pk }}"
-                                class="row-checkbox"
-                            >
-                        </td>
-
-                        {% for cell in row.cells %}
-                            <td>
-                                {% if cell.column.editable %}
+                    {% for cell in row.cells %}
+                        <td>
+                            {% if cell.column.editable %}
+                                {% if cell.edit_widget == "checkbox" %}
+                                    <input type="hidden" name="{{ cell.column.name }}__{{ row.object.pk }}" value="0">
+                                    <input
+                                        type="checkbox"
+                                        name="{{ cell.column.name }}__{{ row.object.pk }}"
+                                        value="1"
+                                        class="inline-checkbox"
+                                        {% if cell.raw_value %}checked{% endif %}
+                                    >
+                                {% elif cell.edit_widget == "number" %}
+                                    <input
+                                        type="number"
+                                        name="{{ cell.column.name }}__{{ row.object.pk }}"
+                                        value="{{ cell.raw_value|default_if_none:'' }}"
+                                        class="inline-input"
+                                    >
+                                {% else %}
                                     <input
                                         type="text"
                                         name="{{ cell.column.name }}__{{ row.object.pk }}"
                                         value="{{ cell.raw_value|default_if_none:'' }}"
+                                        class="inline-input"
                                     >
-                                {% else %}
-                                    {{ cell.value }}
                                 {% endif %}
-                            </td>
-                        {% endfor %}
-
-                        <td class="row-actions">
-                            {% for item in row.actions %}
-                                <a href="{{ item.url }}"
-                                   class="action-link{% if item.danger %} danger{% endif %}">
-                                    {{ item.action.label }}
-                                </a>
-                            {% endfor %}
+                            {% elif cell.is_primary and row.detail_url %}
+                                <a href="{{ row.detail_url }}" class="primary-link">{{ cell.value }}</a>
+                            {% else %}
+                                {{ cell.value }}
+                            {% endif %}
                         </td>
+                    {% endfor %}
 
-                    </tr>
-                {% empty %}
-                    {% include "manager/includes/empty.html" %}
-                {% endfor %}
+                    <td class="row-actions">
+                        {% for item in row.actions %}
+                            <a href="{{ item.url }}"
+                               class="action-btn{% if item.danger %} danger{% endif %}"
+                               title="{{ item.action.label }}">
+                                {% if item.action.name == "detail" %}
+                                    <span aria-hidden="true">👁</span>
+                                {% elif item.action.name == "update" %}
+                                    <span aria-hidden="true">✎</span>
+                                {% elif item.action.name == "delete" %}
+                                    <span aria-hidden="true">🗑</span>
+                                {% else %}
+                                    {{ item.action.label }}
+                                {% endif %}
+                                <span class="sr-only">{{ item.action.label }}</span>
+                            </a>
+                        {% endfor %}
+                    </td>
 
-                </tbody>
+                </tr>
+            {% empty %}
+                {% include "manager/includes/empty.html" %}
+            {% endfor %}
 
-            </table>
+            </tbody>
 
+        </table>
+
+    </div>
+
+    {% if rows %}
+        <div class="table-footer">
+            <button type="submit" class="btn btn-primary">
+                ذخیره تغییرات
+            </button>
         </div>
-
-        {% if rows %}
-            <div class="table-footer">
-                <button type="submit" class="btn btn-primary">
-                    Save Changes
-                </button>
-            </div>
-        {% endif %}
-
-    </form>
+    {% endif %}
 
 </div>
