@@ -5,7 +5,7 @@ from core.manager.actions import CreateAction, DeleteAction, DetailAction, Updat
 from core.manager.columns import Column
 from core.manager.filters import BooleanFilter, ChoiceFilter, DateFilter, ForeignKeyFilter, TextFilter
 from core.manager.managers import BaseManager, registry
-from product.enums import ProductState
+from product.enums import CatalogActivityEvent, ProductState
 from product.forms import (
     AttributeForm,
     AttributeValueForm,
@@ -23,6 +23,7 @@ from product.models import (
     Attribute,
     AttributeValue,
     Brand,
+    CatalogActivityLog,
     Category,
     Product,
     ProductAttribute,
@@ -32,6 +33,7 @@ from product.models import (
     Review,
     Tag,
 )
+from user.models import User
 
 
 @registry.register
@@ -48,6 +50,7 @@ class CategoryManager(BaseManager):
         Column("name", "نام", sortable=True),
         Column("parent", "والد", sortable=True),
         Column("children_count", "زیرمجموعه", sortable=True),
+        Column("view_count", "بازدید", sortable=True),
         Column("homepage_show", "صفحه اصلی", sortable=True, editable=True),
         Column("order", "ترتیب", sortable=True, editable=True),
     )
@@ -72,6 +75,7 @@ class CategoryManager(BaseManager):
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
             children_count=Count("children", distinct=True),
+            view_count=Count("view_logs", distinct=True),
         )
 
 
@@ -235,6 +239,7 @@ class ProductTypeManager(BaseManager):
         Column("brand", "برند"),
         Column("sell_price", "قیمت فروش", sortable=True, editable=True),
         Column("stock_count", "موجودی", sortable=True),
+        Column("view_count", "بازدید", sortable=True),
         Column("active", "فعال", sortable=True, editable=True),
     )
 
@@ -265,6 +270,7 @@ class ProductTypeManager(BaseManager):
                 filter=Q(products__state="IN_WAREHOUSE"),
                 distinct=True,
             ),
+            view_count=Count("view_logs", distinct=True),
         )
 
 
@@ -480,3 +486,117 @@ class ProductCollectionManager(BaseManager):
         return super().get_queryset(request).annotate(
             product_types_count=Count("product_types", distinct=True),
         )
+
+
+def _activity_user_label(obj):
+    if obj.user_id:
+        return obj.user.phone_number
+    return "ناشناس"
+
+
+@registry.register
+class CatalogSearchLogManager(BaseManager):
+    slug = "catalog-search-logs"
+    model = CatalogActivityLog
+
+    menu_group = "logs"
+    menu_label = "جستجوهای محصول"
+    menu_icon = "log"
+    menu_order = 10
+
+    columns = (
+        Column("user.phone_number", "کاربر", sortable=True, value=_activity_user_label),
+        Column("query", "عبارت جستجو", sortable=True),
+        Column("ip_address", "IP", sortable=True),
+        Column("created_at", "تاریخ", sortable=True),
+    )
+
+    filters = (
+        ForeignKeyFilter("user", queryset=User.objects.all(), label="کاربر"),
+        TextFilter("query", "عبارت جستجو"),
+    )
+
+    actions = (
+        DetailAction(),
+    )
+
+    search_fields = ("user__phone_number", "query", "ip_address")
+    ordering = ("-created_at",)
+    select_related = ("user",)
+
+    def get_queryset(self, request):
+        return CatalogActivityLog.objects.filter(
+            event_type=CatalogActivityEvent.SEARCH,
+        ).select_related("user")
+
+
+@registry.register
+class ProductViewLogManager(BaseManager):
+    slug = "product-view-logs"
+    model = CatalogActivityLog
+
+    menu_group = "logs"
+    menu_label = "بازدید محصولات"
+    menu_icon = "log"
+    menu_order = 20
+
+    columns = (
+        Column("user.phone_number", "کاربر", sortable=True, value=_activity_user_label),
+        Column("product_type.name", "محصول", sortable=True),
+        Column("ip_address", "IP", sortable=True),
+        Column("created_at", "تاریخ", sortable=True),
+    )
+
+    filters = (
+        ForeignKeyFilter("user", queryset=User.objects.all(), label="کاربر"),
+        ForeignKeyFilter("product_type", queryset=ProductType.objects.all(), label="محصول"),
+    )
+
+    actions = (
+        DetailAction(),
+    )
+
+    search_fields = ("user__phone_number", "product_type__name", "ip_address")
+    ordering = ("-created_at",)
+    select_related = ("user", "product_type")
+
+    def get_queryset(self, request):
+        return CatalogActivityLog.objects.filter(
+            event_type=CatalogActivityEvent.PRODUCT_VIEW,
+        ).select_related("user", "product_type")
+
+
+@registry.register
+class CategoryViewLogManager(BaseManager):
+    slug = "category-view-logs"
+    model = CatalogActivityLog
+
+    menu_group = "logs"
+    menu_label = "بازدید دسته‌بندی‌ها"
+    menu_icon = "log"
+    menu_order = 30
+
+    columns = (
+        Column("user.phone_number", "کاربر", sortable=True, value=_activity_user_label),
+        Column("category.name", "دسته‌بندی", sortable=True),
+        Column("ip_address", "IP", sortable=True),
+        Column("created_at", "تاریخ", sortable=True),
+    )
+
+    filters = (
+        ForeignKeyFilter("user", queryset=User.objects.all(), label="کاربر"),
+        ForeignKeyFilter("category", queryset=Category.objects.all(), label="دسته‌بندی"),
+    )
+
+    actions = (
+        DetailAction(),
+    )
+
+    search_fields = ("user__phone_number", "category__name", "ip_address")
+    ordering = ("-created_at",)
+    select_related = ("user", "category")
+
+    def get_queryset(self, request):
+        return CatalogActivityLog.objects.filter(
+            event_type=CatalogActivityEvent.CATEGORY_VIEW,
+        ).select_related("user", "category")

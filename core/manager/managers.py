@@ -263,6 +263,7 @@ menu_groups = [
     MenuGroup("inventory", "موجودی انبار", order=20),
     MenuGroup("customers", "مشتریان", order=30),
     MenuGroup("users", "کاربران", order=35),
+    MenuGroup("logs", "گزارش‌ها", order=36),
     MenuGroup("orders", "سفارش‌ها", order=38),
     MenuGroup("repair", "تعمیرات", order=40),
     MenuGroup("installation", "نصب", order=50),
