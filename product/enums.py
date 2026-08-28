@@ -6,3 +6,9 @@ class ProductState(models.TextChoices):
     RESERVED = "RESERVED", "رزرو شده"
     SOLD = 'SOLD', 'فروخته شده'
     LOST = 'LOST', 'مفقود شده'
+
+
+class CatalogActivityEvent(models.TextChoices):
+    SEARCH = 'search', 'جستجو'
+    PRODUCT_VIEW = 'product_view', 'بازدید محصول'
+    CATEGORY_VIEW = 'category_view', 'بازدید دسته‌بندی'
