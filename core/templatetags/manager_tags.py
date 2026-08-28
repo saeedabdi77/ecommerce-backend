@@ -94,5 +94,9 @@ def manager_icon(icon_name):
         "repair": "🔧",
         "install": "💿",
         "game": "🎮",
+        "location": "📍",
+        "address": "🏠",
+        "log": "📜",
+        "order": "🛒",
     }
     return icons.get(icon_name, "•")
