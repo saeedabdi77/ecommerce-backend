@@ -53,3 +53,14 @@ class ProductListSerializer(CustomModelSerializer):
         model = ProductType
         fields = ('id', 'name', 'slug', 'description', 'main_price', 'sell_price', 'stock', 'category', 'category_name',
                   'brand', 'brand_name', 'images', 'tags', 'attributes', 'active', 'created_at')
+
+
+class ProductDetailSerializer(ProductListSerializer):
+    class Meta(ProductListSerializer.Meta):
+        fields = ProductListSerializer.Meta.fields + (
+            'weight',
+            'dimensions',
+            'seo_title',
+            'seo_description',
+            'seo_keywords',
+        )
