@@ -233,8 +233,10 @@ class MenuGroup:
 
 menu_groups = [
     MenuGroup("product_management", "مدیریت محصول", order=10),
-    MenuGroup("inventory", "موجودی", order=20),
+    MenuGroup("inventory", "موجودی انبار", order=20),
     MenuGroup("customers", "مشتریان", order=30),
+    MenuGroup("repair", "تعمیرات", order=40),
+    MenuGroup("installation", "نصب", order=50),
 ]
 
 

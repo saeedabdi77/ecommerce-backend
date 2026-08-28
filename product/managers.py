@@ -40,7 +40,7 @@ class CategoryManager(BaseManager):
     model = Category
 
     menu_group = "product_management"
-    menu_label = "Categories"
+    menu_label = "دسته‌بندی‌ها"
     menu_icon = "folder"
     menu_order = 10
 
@@ -81,7 +81,7 @@ class BrandManager(BaseManager):
     model = Brand
 
     menu_group = "product_management"
-    menu_label = "Brands"
+    menu_label = "برندها"
     menu_icon = "tag"
     menu_order = 20
 
@@ -119,7 +119,7 @@ class AttributeManager(BaseManager):
     model = Attribute
 
     menu_group = "product_management"
-    menu_label = "Attributes"
+    menu_label = "ویژگی‌ها"
     menu_icon = "sliders"
     menu_order = 30
 
@@ -155,7 +155,7 @@ class AttributeValueManager(BaseManager):
     model = AttributeValue
 
     menu_group = "product_management"
-    menu_label = "Attribute Values"
+    menu_label = "مقادیر ویژگی"
     menu_icon = "list"
     menu_order = 40
 
@@ -189,7 +189,7 @@ class TagManager(BaseManager):
     model = Tag
 
     menu_group = "product_management"
-    menu_label = "Tags"
+    menu_label = "برچسب‌ها"
     menu_icon = "tag"
     menu_order = 50
 
@@ -225,7 +225,7 @@ class ProductTypeManager(BaseManager):
     model = ProductType
 
     menu_group = "product_management"
-    menu_label = "Product Types"
+    menu_label = "انواع محصول"
     menu_icon = "box"
     menu_order = 60
 
@@ -273,7 +273,7 @@ class ProductAttributeManager(BaseManager):
     model = ProductAttribute
 
     menu_group = "product_management"
-    menu_label = "Product Attributes"
+    menu_label = "ویژگی‌های محصول"
     menu_icon = "sliders"
     menu_order = 70
 
@@ -317,7 +317,7 @@ class ProductImageManager(BaseManager):
     model = ProductImage
 
     menu_group = "product_management"
-    menu_label = "Product Images"
+    menu_label = "تصاویر محصول"
     menu_icon = "image"
     menu_order = 80
 
@@ -350,7 +350,7 @@ class ProductManager(BaseManager):
     model = Product
 
     menu_group = "inventory"
-    menu_label = "Products"
+    menu_label = "محصولات"
     menu_icon = "package"
     menu_order = 10
 
@@ -398,7 +398,7 @@ class ReviewManager(BaseManager):
     model = Review
 
     menu_group = "customers"
-    menu_label = "Reviews"
+    menu_label = "نظرات"
     menu_icon = "message"
     menu_order = 20
 
@@ -446,7 +446,7 @@ class ProductCollectionManager(BaseManager):
     model = ProductCollection
 
     menu_group = "product_management"
-    menu_label = "Collections"
+    menu_label = "مجموعه‌ها"
     menu_icon = "layers"
     menu_order = 90
 
