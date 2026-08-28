@@ -24,6 +24,7 @@ services:
       - "8000:8000"
     depends_on:
       - db
+      - redis
     env_file:
       - .env
     volumes:
@@ -48,37 +49,43 @@ services:
       - ./nginx/server.crt:/etc/nginx/conf.d/server.crt
       - ./nginx/server.key:/etc/nginx/conf.d/server.key
 
-#  redis:
-#    image: redis:6
-#
-#  celery:
-#    build: .
-#    command: celery -A config worker --loglevel=info
-#    env_file:
-#      - .env
-#    depends_on:
-#      - redis
-#      - db
-#
-#  celery-beat:
-#    build: .
-#    command: celery -A config beat --loglevel=info
-#    env_file:
-#      - .env
-#    depends_on:
-#      - redis
-#      - db
-#
-#  flower:
-#    build: .
-#    command: celery -A config flower --port=5555
-#    ports:
-#      - "5555:5555"
-#    environment:
-#      - CELERY_BROKER_URL=redis://redis:6379/0
-#    depends_on:
-#      - redis
-#      - celery
+  redis:
+    image: redis:6
+    restart: unless-stopped
+
+  celery:
+    build: .
+    command: celery -A config worker --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+    restart: unless-stopped
+
+  celery-beat:
+    build: .
+    command: celery -A config beat --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+    restart: unless-stopped
+
+  flower:
+    build: .
+    command: celery -A config flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - celery
+    restart: unless-stopped
 
 volumes:
   postgres_data:
