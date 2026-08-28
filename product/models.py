@@ -2,8 +2,8 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 from django.utils import timezone
-from core.models import BaseModel
-from product.enums import ProductState
+from core.models import BaseModel, LogBaseModel
+from product.enums import CatalogActivityEvent, ProductState
 
 
 class Category(BaseModel):
@@ -247,3 +247,47 @@ class ProductCollection(BaseModel):
 
     def __str__(self):
         return f"{self.name}"
+
+
+class CatalogActivityLog(LogBaseModel):
+    user = models.ForeignKey(
+        'user.User',
+        verbose_name='کاربر',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='catalog_activity_logs',
+    )
+    event_type = models.CharField('نوع رویداد', max_length=32, choices=CatalogActivityEvent.choices, db_index=True)
+    query = models.CharField('عبارت جستجو', max_length=255, blank=True)
+    product_type = models.ForeignKey(
+        ProductType,
+        verbose_name='محصول',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='view_logs',
+    )
+    category = models.ForeignKey(
+        Category,
+        verbose_name='دسته‌بندی',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='view_logs',
+    )
+    ip_address = models.GenericIPAddressField('IP', null=True, blank=True)
+    user_agent = models.TextField('User agent', blank=True)
+
+    class Meta:
+        verbose_name = 'لاگ فعالیت کاتالوگ'
+        verbose_name_plural = 'لاگ‌های فعالیت کاتالوگ'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['event_type', 'created_at']),
+            models.Index(fields=['product_type']),
+            models.Index(fields=['category']),
+        ]
+
+    def __str__(self):
+        return f"{self.event_type} @ {self.created_at}"
