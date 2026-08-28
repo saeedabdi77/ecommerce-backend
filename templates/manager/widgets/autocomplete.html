@@ -1,0 +1,11 @@
+<div class="manager-autocomplete" data-app-label="{{ widget.app_label }}" data-model-name="{{ widget.model_name }}">
+    <input
+        type="text"
+        class="autocomplete-search"
+        value="{{ widget.display_value|default:'' }}"
+        placeholder="حداقل ۲ حرف بنویسید..."
+        autocomplete="off"
+    >
+    <input type="hidden" name="{{ widget.name }}" value="{{ widget.value|default:'' }}" class="autocomplete-value">
+    <div class="autocomplete-dropdown" hidden></div>
+</div>

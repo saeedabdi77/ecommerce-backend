@@ -1,6 +1,9 @@
 from django import forms
 from django.db.models import Q
 
+from core.manager.autocomplete import uses_autocomplete
+from core.manager.fields import AutocompleteModelChoiceField
+
 
 class Filter:
     field_class = forms.CharField
@@ -61,13 +64,23 @@ class DateTimeFilter(Filter):
 
 
 class ForeignKeyFilter(Filter):
-    def __init__(self, name, queryset, label=None, *, lookup=None, limit=200):
+    def __init__(self, name, queryset, label=None, *, lookup=None, limit=200, autocomplete=None):
         super().__init__(name, label, lookup=lookup)
         self.queryset = queryset
         self.limit = limit
+        self.autocomplete = autocomplete
+
+    def use_autocomplete(self):
+        if self.autocomplete is not None:
+            return self.autocomplete
+
+        return uses_autocomplete(self.queryset.model)
 
     def get_queryset(self):
         queryset = self.queryset
+
+        if self.use_autocomplete():
+            return queryset.model._default_manager.none()
 
         if self.limit is None:
             return queryset
@@ -78,6 +91,13 @@ class ForeignKeyFilter(Filter):
         return queryset[: self.limit]
 
     def get_form_field(self):
+        if self.use_autocomplete():
+            return AutocompleteModelChoiceField(
+                label=self.label,
+                required=False,
+                queryset=self.queryset.model._default_manager.all(),
+            )
+
         return forms.ModelChoiceField(label=self.label, required=False, queryset=self.get_queryset())
 
     def apply(self, queryset, value):
@@ -104,7 +124,18 @@ class FilterSet:
     def _build_form(self, data):
         fields = {filter_.name: filter_.get_form_field() for filter_ in self.filters}
         form_class = type("ManagerFilterForm", (forms.Form,), fields)
-        return form_class(data=data)
+        form = form_class(data=data)
+
+        if data:
+            for filter_ in self.filters:
+                field = form.fields.get(filter_.name)
+
+                if hasattr(field, "set_display_from_pk"):
+                    value = data.get(filter_.name)
+                    if value:
+                        field.set_display_from_pk(value)
+
+        return form
 
     def apply(self, queryset):
         if not self.form.is_valid():

@@ -69,7 +69,6 @@ class RepairProblemTypeManager(BaseManager):
 
     search_fields = ("name",)
     ordering = ("order", "name")
-    prefetch_related = ("device_types",)
 
 
 @registry.register

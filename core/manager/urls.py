@@ -3,6 +3,7 @@ from django.urls import path
 from core.manager.managers import registry
 from core.manager.views import (
     ManagerActionView,
+    ManagerAutocompleteView,
     ManagerBulkActionView,
     ManagerCreateView,
     ManagerDashboardView,
@@ -21,6 +22,11 @@ urlpatterns = [
     path("login/", ManagerLoginView.as_view(), name="login"),
     path("logout/", ManagerLogoutView.as_view(), name="logout"),
     path("", ManagerDashboardView.as_view(), name="dashboard"),
+    path(
+        "autocomplete/<str:app_label>/<str:model_name>/",
+        ManagerAutocompleteView.as_view(),
+        name="autocomplete",
+    ),
 ]
 
 for manager in registry.all():

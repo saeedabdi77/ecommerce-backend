@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.views import View
 
 from core.manager.filters import FilterSet, Ordering, Search
-from core.manager.forms import get_form_fieldsets
+from core.manager.forms import apply_autocomplete, get_form_fieldsets
 from core.manager.managers import registry
 from core.manager.pagination import get_page_window
 from core.manager.utils import get_manager_root_url
@@ -300,6 +300,8 @@ class ManagerListView(ManagerViewMixin, View):
                 "value": search,
             })
 
+        search_fields = manager.get_search_fields(request)
+
         context = self.get_base_context(
             objects=objects,
             page_obj=page_obj,
@@ -308,6 +310,8 @@ class ManagerListView(ManagerViewMixin, View):
             paginate_by_options=manager.paginate_by_options,
             filter_form=filter_set.form,
             search=search,
+            has_search=bool(search_fields),
+            search_placeholder=manager.get_search_placeholder(request),
             columns=columns,
             actions=toolbar_actions,
             bulk_actions=bulk_actions,
@@ -338,6 +342,7 @@ class ManagerCreateView(ManagerViewMixin, View):
         manager = self.get_manager()
         action = manager.get_action("create")
         form = action.form_class()
+        apply_autocomplete(form)
 
         return render(request, manager.form_template, self.get_base_context(
             action=action,
@@ -350,6 +355,7 @@ class ManagerCreateView(ManagerViewMixin, View):
         manager = self.get_manager()
         action = manager.get_action("create")
         form = action.form_class(request.POST, request.FILES)
+        apply_autocomplete(form)
 
         if form.is_valid():
             form.save()
@@ -383,6 +389,7 @@ class ManagerUpdateView(ManagerViewMixin, View):
         action = manager.get_action("update")
         obj = self.get_object()
         form = action.form_class(instance=obj)
+        apply_autocomplete(form)
 
         return render(request, manager.form_template, self.get_base_context(
             action=action,
@@ -397,6 +404,7 @@ class ManagerUpdateView(ManagerViewMixin, View):
         action = manager.get_action("update")
         obj = self.get_object()
         form = action.form_class(request.POST, request.FILES, instance=obj)
+        apply_autocomplete(form)
 
         if form.is_valid():
             form.save()
@@ -530,3 +538,31 @@ class ManagerFieldUpdateView(ManagerViewMixin, View):
 
         messages.success(request, "تغییرات ذخیره شد.")
         return redirect(request.META.get("HTTP_REFERER", manager.get_list_url(request)))
+
+
+class ManagerAutocompleteView(View):
+    def get(self, request, app_label, model_name, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(get_manager_root_url(request))
+
+        from django.http import JsonResponse
+
+        from core.manager.autocomplete import search_models, uses_autocomplete
+        from core.manager.autocomplete import get_model as get_autocomplete_model
+
+        model = get_autocomplete_model(app_label, model_name)
+
+        if not uses_autocomplete(model):
+            return JsonResponse({"results": []})
+
+        query = request.GET.get("q", "").strip()
+        pk = request.GET.get("pk")
+
+        if pk:
+            results = search_models(app_label, model_name, pk=pk, limit=1)
+        elif len(query) < 2:
+            return JsonResponse({"results": []})
+        else:
+            results = search_models(app_label, model_name, query=query)
+
+        return JsonResponse({"results": results})

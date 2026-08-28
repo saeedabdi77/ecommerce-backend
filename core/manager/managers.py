@@ -39,6 +39,7 @@ class BaseManager:
     filters = ()
     actions = ()
     search_fields = ()
+    search_placeholder = None
     ordering = ()
     select_related = ()
     prefetch_related = ()
@@ -84,6 +85,32 @@ class BaseManager:
 
     def get_search_fields(self, request):
         return self.search_fields
+
+    def get_search_placeholder(self, request):
+        if self.search_placeholder:
+            return self.search_placeholder
+
+        if not self.search_fields:
+            return ""
+
+        labels = []
+
+        for field_name in self.search_fields:
+            part = field_name.split("__")[0]
+
+            for column in self.columns:
+                column_field = column.name.split(".")[0]
+
+                if column_field == part or column.name.replace(".", "__") == field_name:
+                    labels.append(column.label)
+                    break
+            else:
+                labels.append(part.replace("_", " "))
+
+        if not labels:
+            return "جستجو در رکوردها..."
+
+        return "جستجو در: " + "، ".join(dict.fromkeys(labels))
 
     def get_ordering(self, request):
         return self.ordering

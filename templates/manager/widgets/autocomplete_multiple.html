@@ -1,0 +1,22 @@
+<div class="manager-autocomplete manager-autocomplete-multiple" data-app-label="{{ widget.app_label }}" data-model-name="{{ widget.model_name }}" data-field-name="{{ widget.name }}">
+    <div class="autocomplete-selected">
+        {% for item in widget.selected %}
+            <span class="autocomplete-chip" data-id="{{ item.id }}">
+                {{ item.label }}
+                <button type="button" class="autocomplete-chip-remove" aria-label="حذف">×</button>
+            </span>
+        {% endfor %}
+    </div>
+    <input
+        type="text"
+        class="autocomplete-search"
+        placeholder="حداقل ۲ حرف بنویسید..."
+        autocomplete="off"
+    >
+    <div class="autocomplete-dropdown" hidden></div>
+    <div class="autocomplete-hidden-inputs">
+        {% for item in widget.selected %}
+            <input type="hidden" name="{{ widget.name }}" value="{{ item.id }}">
+        {% endfor %}
+    </div>
+</div>

@@ -67,7 +67,7 @@ class CategoryManager(BaseManager):
 
     search_fields = ("name", "slug")
     ordering = ("order", "name")
-    prefetch_related = ("children",)
+    select_related = ("parent",)
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
@@ -234,7 +234,7 @@ class ProductTypeManager(BaseManager):
         Column("category", "دسته بندی", sortable=True),
         Column("brand", "برند"),
         Column("sell_price", "قیمت فروش", sortable=True, editable=True),
-        Column("stock", "موجودی", sortable=True),
+        Column("stock_count", "موجودی", sortable=True),
         Column("active", "فعال", sortable=True, editable=True),
     )
 
@@ -253,6 +253,7 @@ class ProductTypeManager(BaseManager):
     )
 
     search_fields = ("name", "slug", "category__name", "brand__name")
+    search_placeholder = "نام، اسلاگ، دسته‌بندی، برند"
     ordering = ("-id",)
 
     select_related = ("category", "brand")
@@ -381,7 +382,7 @@ class ProductManager(BaseManager):
         "product_type__name",
         "product_type__slug",
     )
-
+    search_placeholder = "سریال، نام محصول"
     ordering = ("-id",)
 
     select_related = (

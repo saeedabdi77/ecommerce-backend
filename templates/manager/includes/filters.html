@@ -2,45 +2,45 @@
 
 <form method="get" class="filters-card" id="filters-form">
 
-    <div class="filters-top">
-        {% if manager.get_search_fields %}
-            <div class="filter-search-wrap">
-                <label for="id_search" class="sr-only">جستجو</label>
+    {% if has_search %}
+        <div class="record-search">
+            <label for="id_search" class="record-search-label">جستجو در رکوردها</label>
+            <div class="record-search-row">
                 <input
-                    type="text"
+                    type="search"
                     id="id_search"
                     name="search"
                     value="{{ search|default:'' }}"
-                    placeholder="جستجو..."
+                    placeholder="{{ search_placeholder }}"
                     class="filter-search-input"
                 >
+                <button type="submit" class="btn btn-primary">جستجو</button>
+                {% if search %}
+                    <a href="{% remove_filter 'search' %}" class="btn btn-secondary">پاک کردن</a>
+                {% endif %}
             </div>
-        {% endif %}
+        </div>
+    {% endif %}
 
-        <div class="filters-top-actions">
-            {% if filter_form.fields %}
+    {% if filter_form.fields %}
+        <div class="filters-top">
+            <div class="filters-top-actions">
                 <button type="button"
                         class="btn btn-secondary filters-toggle-btn {% if has_active_filters %}is-open{% endif %}"
                         id="filters-toggle"
                         aria-expanded="{% if has_active_filters %}true{% else %}false{% endif %}">
-                    فیلترها
+                    فیلترهای پیشرفته
                     <span class="filters-toggle-icon">▼</span>
                 </button>
-            {% endif %}
-
-            <button type="submit" class="btn btn-primary">
-                اعمال
-            </button>
+            </div>
         </div>
-    </div>
 
-    {% if filter_form.fields %}
         <div class="filters-panel {% if has_active_filters %}is-open{% endif %}" id="filters-panel">
 
             <div class="filters-body">
                 {% for field in filter_form %}
                     <div class="filter-field">
-                        {{ field.label_tag }}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                         {{ field }}
 
                         {% if field.errors %}
@@ -53,7 +53,7 @@
             </div>
 
             <div class="filters-footer">
-                <a href="." class="btn btn-secondary">پاک کردن</a>
+                <a href="." class="btn btn-secondary">پاک کردن فیلترها</a>
                 <button type="submit" class="btn btn-primary">اعمال فیلتر</button>
             </div>
 
