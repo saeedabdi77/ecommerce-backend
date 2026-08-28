@@ -5,3 +5,6 @@ class InstallationConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'installation'
     verbose_name = 'نصب'
+
+    def ready(self):
+        from installation import managers

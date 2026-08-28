@@ -87,5 +87,12 @@ def manager_icon(icon_name):
         "list": "📋",
         "settings": "⚙",
         "collection": "📚",
+        "package": "📦",
+        "message": "💬",
+        "layers": "🗂",
+        "sliders": "🎚",
+        "repair": "🔧",
+        "install": "💿",
+        "game": "🎮",
     }
     return icons.get(icon_name, "•")
