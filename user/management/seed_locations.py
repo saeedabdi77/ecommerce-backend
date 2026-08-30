@@ -9,33 +9,43 @@ from user.models import City, Province
 class Command(BaseCommand):
     help = 'Seed Iranian provinces and cities'
 
-    @transaction.atomic
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--database',
+            default='default',
+            choices=['default', 'repair_console_db'],
+        )
+
     def handle(self, *args, **options):
-        provinces = {}
-        cities = []
+        database = options['database']
+        locations = Iran.all
 
-        for province in Iran.all:
-            province_obj, _ = Province.objects.get_or_create(
-                name=province['name'],
-            )
-            provinces[province['id']] = province_obj
+        with transaction.atomic(using=database):
+            provinces = {}
 
-            cities.extend(
+            for province in locations:
+                province_obj, _ = Province.objects.using(database).get_or_create(
+                    name=province['name'],
+                )
+                provinces[province['id']] = province_obj
+
+            cities = [
                 City(
-                    province=province_obj,
+                    province=provinces[province['id']],
                     name=city,
                 )
+                for province in locations
                 for city in province['cities']
-            )
+            ]
 
-        City.objects.bulk_create(
-            cities,
-            ignore_conflicts=True,
-        )
+            City.objects.using(database).bulk_create(
+                cities,
+                ignore_conflicts=True,
+            )
 
         self.stdout.write(
             self.style.SUCCESS(
                 f'Successfully seeded {len(provinces)} provinces '
-                f'and {len(cities)} cities.'
+                f'and {len(cities)} cities into "{database}".'
             )
         )
