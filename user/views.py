@@ -90,8 +90,10 @@ class ProvinceView(CustomListAPIView):
 class CityView(CustomListAPIView):
     serializer_class = CitySerializer
     queryset = City.objects.all()
-    lookup_field = 'province__id'
     pagination_class = None
+
+    def get_queryset(self):
+        return self.queryset.filter(province_id=self.kwargs["province_id"])
 
 
 class ChangePasswordView(CustomCreateAPIView):
