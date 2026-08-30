@@ -83,13 +83,13 @@ class AddressViewSet(CustomCreateListUpdateDestroyViewSet):
 
 class ProvinceView(CustomListAPIView):
     serializer_class = ProvinceSerializer
-    queryset = Province.objects.all()
+    queryset = Province.objects.all().order_by("name")
     pagination_class = None
 
 
 class CityView(CustomListAPIView):
     serializer_class = CitySerializer
-    queryset = City.objects.all()
+    queryset = City.objects.all().order_by("name")
     pagination_class = None
 
     def get_queryset(self):
