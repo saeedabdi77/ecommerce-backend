@@ -38,6 +38,12 @@ class City(BaseModel):
     class Meta:
         verbose_name = 'شهر'
         verbose_name_plural = 'شهرها'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['province', 'name'],
+                name='unique_city_per_province',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.province.name} - {self.name}"
