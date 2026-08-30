@@ -27,11 +27,11 @@ class Command(BaseCommand):
                 province_obj, _ = Province.objects.using(database).get_or_create(
                     name=province['name'],
                 )
-                provinces[province['id']] = province_obj
+                provinces[province['id']] = province_obj.pk
 
             cities = [
                 City(
-                    province=provinces[province['id']],
+                    province_id=provinces[province['id']],
                     name=city,
                 )
                 for province in locations
