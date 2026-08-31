@@ -2,7 +2,6 @@ from core.manager.actions import CreateAction, DeleteAction, DetailAction, Updat
 from core.manager.columns import Column
 from core.manager.filters import BooleanFilter, ChoiceFilter, ForeignKeyFilter, ManyToManyFilter, TextFilter
 from core.manager.managers import BaseManager, registry
-from installation.enums import GameRateSource, InstallationRequestStatus
 from installation.forms import (
     GameForm,
     GameRateForm,
@@ -98,7 +97,7 @@ class GameRateManager(BaseManager):
 
     filters = (
         ForeignKeyFilter("game", queryset=Game.objects.all(), label="بازی"),
-        ChoiceFilter("source", GameRateSource.choices, label="منبع"),
+        ChoiceFilter.from_field(GameRate, "source", label="منبع"),
     )
 
     actions = (
@@ -136,7 +135,7 @@ class InstallationRequestManager(BaseManager):
     filters = (
         TextFilter("tracking_code", "کد پیگیری", lookup="exact"),
         ForeignKeyFilter("device_type", queryset=InstallationDeviceType.objects.all(), label="نوع دستگاه"),
-        ChoiceFilter("status", InstallationRequestStatus.choices, label="وضعیت"),
+        ChoiceFilter.from_field(InstallationRequest, "status", label="وضعیت"),
     )
 
     actions = (

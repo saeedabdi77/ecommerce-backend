@@ -30,12 +30,38 @@ class TextFilter(Filter):
 
 
 class ChoiceFilter(Filter):
-    def __init__(self, name, choices, label=None, *, lookup=None):
+    def __init__(self, name, choices=None, label=None, *, lookup=None, model=None, field_name=None):
         super().__init__(name, label, lookup=lookup)
-        self.choices = choices
+        self.model = model
+        self.field_name = field_name
+
+        if model is not None and field_name is not None:
+            field = model._meta.get_field(field_name)
+            self.choices = list(field.flatchoices)
+            if label is None:
+                self.label = field.verbose_name
+        else:
+            self.choices = list(choices or ())
+
+    @classmethod
+    def from_field(cls, model, field_name, *, label=None, lookup=None):
+        return cls(field_name, model=model, field_name=field_name, label=label, lookup=lookup)
+
+    def get_choices(self):
+        if self.model is not None and self.field_name is not None:
+            return list(self.model._meta.get_field(self.field_name).flatchoices)
+
+        return self.choices
 
     def get_form_field(self):
-        return forms.ChoiceField(label=self.label, required=False, choices=(("", "---------"), *self.choices))
+        choices = self.get_choices()
+        field = forms.ChoiceField(
+            label=self.label,
+            required=False,
+            choices=(("", "---------"), *choices),
+        )
+        field.widget.choices = field.choices
+        return field
 
 
 class BooleanFilter(Filter):

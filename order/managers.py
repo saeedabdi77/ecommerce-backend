@@ -2,7 +2,6 @@ from core.manager.actions import CreateAction, DeleteAction, DetailAction, Updat
 from core.manager.columns import Column
 from core.manager.filters import ChoiceFilter, ForeignKeyFilter, TextFilter
 from core.manager.managers import BaseManager, registry
-from order.enums import OrderStatus
 from order.forms import OrderForm, OrderItemForm, OrderItemProductForm
 from order.models import Order, OrderItem, OrderItemProduct
 from product.models import Product, ProductType
@@ -30,7 +29,7 @@ class OrderManager(BaseManager):
     filters = (
         TextFilter("tracking_code", "کد پیگیری", lookup="exact"),
         ForeignKeyFilter("user", queryset=User.objects.all(), label="کاربر"),
-        ChoiceFilter("status", OrderStatus.choices, label="وضعیت"),
+        ChoiceFilter.from_field(Order, "status", label="وضعیت"),
     )
 
     actions = (

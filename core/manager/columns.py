@@ -61,10 +61,21 @@ class Column:
         if isinstance(field, models.BooleanField):
             return "checkbox"
 
+        if field is not None and getattr(field, "choices", None):
+            return "select"
+
         if isinstance(field, (models.IntegerField, models.FloatField, models.DecimalField, models.PositiveIntegerField)):
             return "number"
 
         return "text"
+
+    def get_edit_choices(self, model):
+        field = self.get_model_field(model)
+
+        if field is not None and getattr(field, "choices", None):
+            return list(field.flatchoices)
+
+        return ()
 
     def get_value(self, obj):
         if self.value:
@@ -90,9 +101,14 @@ class Column:
         if self.formatter:
             value = self.formatter(value, obj)
             is_html = True
-        elif model is not None and isinstance(self.get_model_field(model), models.BooleanField) and not self.editable:
-            value = boolean_badge(value)
-            is_html = True
+        elif model is not None:
+            model_field = self.get_model_field(model)
+
+            if isinstance(model_field, models.BooleanField) and not self.editable:
+                value = boolean_badge(value)
+                is_html = True
+            elif model_field is not None and getattr(model_field, "choices", None) and not self.editable:
+                value = dict(model_field.flatchoices).get(value, value)
 
         if value is None:
             return ""

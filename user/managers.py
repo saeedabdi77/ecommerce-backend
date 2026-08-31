@@ -2,7 +2,6 @@ from core.manager.actions import CreateAction, DeleteAction, DetailAction, Updat
 from core.manager.columns import Column
 from core.manager.filters import BooleanFilter, ChoiceFilter, ForeignKeyFilter, TextFilter
 from core.manager.managers import BaseManager, registry
-from user.enums import LoginMethod
 from user.forms import AddressForm, CityForm, ProvinceForm, UserForm
 from user.logs.models import LoginLog
 from user.models import Address, City, Province, User
@@ -172,7 +171,7 @@ class LoginLogManager(BaseManager):
 
     filters = (
         ForeignKeyFilter("user", queryset=User.objects.all(), label="کاربر"),
-        ChoiceFilter("method", LoginMethod.choices, label="روش ورود"),
+        ChoiceFilter.from_field(LoginLog, "method", label="روش ورود"),
     )
 
     actions = (

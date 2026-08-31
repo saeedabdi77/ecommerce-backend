@@ -656,12 +656,18 @@ textarea {
     text-decoration: underline;
 }
 
-.inline-input {
+.inline-input,
+.inline-select {
     min-width: 100px;
     min-height: 34px;
     padding: 6px 8px;
     border: 1px solid #d1d5db;
     border-radius: 6px;
+    background: #fff;
+}
+
+.inline-select {
+    min-width: 140px;
 }
 
 .inline-checkbox {

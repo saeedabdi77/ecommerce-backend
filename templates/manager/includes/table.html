@@ -69,6 +69,17 @@
                                         value="{{ cell.raw_value|default_if_none:'' }}"
                                         class="inline-input"
                                     >
+                                {% elif cell.edit_widget == "select" %}
+                                    <select
+                                        name="{{ cell.column.name }}__{{ row.object.pk }}"
+                                        class="inline-select"
+                                    >
+                                        {% for value, label in cell.edit_choices %}
+                                            <option value="{{ value }}"{% if cell.raw_value == value %} selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
                                 {% else %}
                                     <input
                                         type="text"

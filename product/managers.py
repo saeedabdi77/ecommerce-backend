@@ -5,7 +5,7 @@ from core.manager.actions import CreateAction, DeleteAction, DetailAction, Updat
 from core.manager.columns import Column
 from core.manager.filters import BooleanFilter, ChoiceFilter, DateFilter, ForeignKeyFilter, TextFilter
 from core.manager.managers import BaseManager, registry
-from product.enums import CatalogActivityEvent, ProductState
+from product.enums import CatalogActivityEvent
 from product.forms import (
     AttributeForm,
     AttributeValueForm,
@@ -373,7 +373,7 @@ class ProductManager(BaseManager):
     filters = (
         TextFilter("serial", "سریال"),
         ForeignKeyFilter("product_type", queryset=ProductType.objects.all(), label="نوع محصول"),
-        ChoiceFilter("state", ProductState.choices, label="وضعیت"),
+        ChoiceFilter.from_field(Product, "state", label="وضعیت"),
     )
 
     actions = (

@@ -2,7 +2,6 @@ from core.manager.actions import CreateAction, DeleteAction, DetailAction, Updat
 from core.manager.columns import Column
 from core.manager.filters import BooleanFilter, ChoiceFilter, ForeignKeyFilter, TextFilter
 from core.manager.managers import BaseManager, registry
-from repair.enums import RepairRequestStatus
 from repair.forms import RepairDeviceTypeForm, RepairProblemTypeForm, RepairRequestForm
 from repair.models import RepairDeviceType, RepairProblemType, RepairRequest
 
@@ -99,7 +98,7 @@ class RepairRequestManager(BaseManager):
         TextFilter("tracking_code", "کد پیگیری", lookup="exact"),
         ForeignKeyFilter("device_type", queryset=RepairDeviceType.objects.all(), label="نوع دستگاه"),
         ForeignKeyFilter("problem_type", queryset=RepairProblemType.objects.all(), label="نوع مشکل"),
-        ChoiceFilter("status", RepairRequestStatus.choices, label="وضعیت"),
+        ChoiceFilter.from_field(RepairRequest, "status", label="وضعیت"),
     )
 
     actions = (

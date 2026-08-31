@@ -4,7 +4,6 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 from django.views import View
 
 from core.manager.filters import FilterSet, Ordering, Search
@@ -147,9 +146,11 @@ class ManagerListView(ManagerViewMixin, View):
 
         for index, column in enumerate(columns):
             model_field = column.get_model_field(model)
+            edit_widget = column.get_edit_widget(model)
             meta.append({
                 "column": column,
-                "edit_widget": column.get_edit_widget(model),
+                "edit_widget": edit_widget,
+                "edit_choices": column.get_edit_choices(model) if edit_widget == "select" else None,
                 "use_boolean_badge": isinstance(model_field, models.BooleanField) and not column.editable,
                 "is_primary": index == 0,
             })
@@ -248,7 +249,7 @@ class ManagerListView(ManagerViewMixin, View):
             elif getattr(action, "bulk", False):
                 bulk_actions.append({
                     "action": action,
-                    "url": reverse(f"manager:{manager.slug}-bulk-action", kwargs={"action": action.name}),
+                    "url": manager.get_bulk_action_url(request, action.name),
                 })
 
         rows = []
@@ -277,6 +278,7 @@ class ManagerListView(ManagerViewMixin, View):
                         "value": item["column"].render(obj, manager.model),
                         "raw_value": item["column"].get_value(obj),
                         "edit_widget": item["edit_widget"],
+                        "edit_choices": item["edit_choices"],
                         "is_primary": item["is_primary"],
                     }
                     for item in column_meta
