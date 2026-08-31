@@ -151,6 +151,12 @@ class BaseManager:
     def get_delete_url(self, request, obj):
         return f"{self.get_manager_url(request)}{obj.pk}/delete/"
 
+    def get_bulk_action_url(self, request, action_name):
+        return f"{self.get_manager_url(request)}bulk/{action_name}/"
+
+    def get_custom_action_url(self, request, obj, action_name):
+        return f"{self.get_manager_url(request)}{obj.pk}/action/{action_name}/"
+
     def get_menu_label(self):
         return self.menu_label or self.get_title()
 

@@ -1,6 +1,5 @@
 from django.contrib import messages
 from django.shortcuts import redirect
-from django.urls import reverse
 
 
 class Action:
@@ -38,7 +37,7 @@ class CreateAction(Action):
         self.form_class = form_class
 
     def get_url(self, request, manager, obj=None):
-        return reverse(f"manager:{manager.slug}-create")
+        return manager.get_create_url(request)
 
 
 class UpdateAction(Action):
@@ -50,7 +49,7 @@ class UpdateAction(Action):
         self.form_class = form_class
 
     def get_url(self, request, manager, obj=None):
-        return reverse(f"manager:{manager.slug}-update", kwargs={"pk": obj.pk})
+        return manager.get_update_url(request, obj)
 
 
 class DetailAction(Action):
@@ -58,7 +57,7 @@ class DetailAction(Action):
     label = "نمایش"
 
     def get_url(self, request, manager, obj=None):
-        return reverse(f"manager:{manager.slug}-detail", kwargs={"pk": obj.pk})
+        return manager.get_detail_url(request, obj)
 
 
 class DeleteAction(Action):
@@ -71,12 +70,12 @@ class DeleteAction(Action):
         self.confirm = confirm
 
     def get_url(self, request, manager, obj=None):
-        return reverse(f"manager:{manager.slug}-delete", kwargs={"pk": obj.pk})
+        return manager.get_delete_url(request, obj)
 
     def execute(self, request, manager, obj=None):
         obj.delete()
         messages.success(request, "مورد با موفقیت حذف شد.")
-        return redirect(reverse(f"manager:{manager.slug}-list"))
+        return redirect(manager.get_list_url(request))
 
 
 class CustomAction(Action):
@@ -86,7 +85,7 @@ class CustomAction(Action):
         self.confirmation_message = confirmation_message
 
     def get_url(self, request, manager, obj=None):
-        return reverse(f"manager:{manager.slug}-action", kwargs={"pk": obj.pk, "action": self.name})
+        return manager.get_custom_action_url(request, obj, self.name)
 
 
 class BulkAction(Action):
@@ -96,3 +95,6 @@ class BulkAction(Action):
         super().__init__(name, label, confirm=confirm)
         self.handler = handler
         self.confirmation_message = confirmation_message
+
+    def get_url(self, request, manager, obj=None):
+        return manager.get_bulk_action_url(request, self.name)

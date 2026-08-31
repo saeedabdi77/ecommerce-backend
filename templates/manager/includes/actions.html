@@ -2,7 +2,7 @@
     {% if action.bulk %}
         <button
             type="submit"
-            formaction="{% url 'manager:bulk-action' manager=manager.slug action=action.name %}"
+            formaction="{{ action.url }}"
             class="btn btn-secondary"
             {% if action.confirm %}onclick="return confirm('{{ action.confirmation_message }}');"{% endif %}
         >
