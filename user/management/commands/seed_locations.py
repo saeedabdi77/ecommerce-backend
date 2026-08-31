@@ -13,7 +13,6 @@ class Command(BaseCommand):
         parser.add_argument(
             '--database',
             default='default',
-            choices=['default', 'repair_console_db'],
         )
 
     def handle(self, *args, **options):
