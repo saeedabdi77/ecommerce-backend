@@ -107,7 +107,15 @@ DATABASES = {
         'PASSWORD': config('DATABASE_PASSWORD'),
         'HOST': config('DATABASE_HOST'),
         'PORT': config('DATABASE_PORT'),
-    }
+    },
+    'phone_case_db': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('PHONE_CASE_DATABASE_NAME'),
+        'USER': config('DATABASE_USERNAME'),
+        'PASSWORD': config('DATABASE_PASSWORD'),
+        'HOST': config('DATABASE_HOST'),
+        'PORT': config('DATABASE_PORT'),
+    },
 }
 
 

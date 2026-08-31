@@ -16,11 +16,14 @@ class TenantDatabaseMiddleware(MiddlewareMixin):
                 tenant_code = 'test'
             elif path.startswith(f'/{config("ADMIN_URL")}/fix-bazi/') or path.startswith(f'/{config("MANAGER_URL")}/fix-bazi/'):
                 tenant_code = 'fix-bazi'
+            elif path.startswith(f'/{config("ADMIN_URL")}/shop-ghab/') or path.startswith(f'/{config("MANAGER_URL")}/shop-ghab/'):
+                tenant_code = 'shop-ghab'
 
         tenant_mapping = {
             'default': 'default',
             'test': 'default',
             'fix-bazi': 'repair_console_db',
+            'shop-ghab': 'phone_case_db',
         }
 
         db_name = tenant_mapping.get(tenant_code)
