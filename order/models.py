@@ -10,6 +10,7 @@ class DeliveryMethod(BaseModel):
     name = models.CharField('نام', max_length=100)
     description = models.TextField('توضیحات', blank=True)
     is_active = models.BooleanField('فعال', default=True)
+    is_tehran_only = models.BooleanField('فقط تهران', default=False)
 
     class Meta:
         verbose_name = 'روش ارسال'
