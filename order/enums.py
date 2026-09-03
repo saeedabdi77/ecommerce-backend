@@ -8,3 +8,11 @@ class OrderStatus(models.TextChoices):
     SHIPPED = "shipped", "ارسال شده"
     DELIVERED = "delivered", "تحویل شده"
     CANCELED = "canceled", "لغو شده"
+
+
+class DeliveryPricingStrategy(models.TextChoices):
+    FIXED = "fixed", "ثابت"
+    BY_WEIGHT = "by_weight", "بر اساس وزن"
+    BY_LOCATION = "by_location", "بر اساس موقعیت"
+    BY_ORDER_TOTAL = "by_order_total", "بر اساس مبلغ سفارش"
+    BY_DISTANCE = "by_distance", "بر اساس فاصله"

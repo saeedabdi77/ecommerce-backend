@@ -3,7 +3,7 @@ from django.db.models import Sum, F
 
 from core.models import BaseModel
 from user.models import Address
-from order.enums import OrderStatus
+from order.enums import OrderStatus, DeliveryPricingStrategy
 
 
 class DeliveryMethod(BaseModel):
@@ -20,15 +20,8 @@ class DeliveryMethod(BaseModel):
 
 
 class DeliveryPricing(BaseModel):
-    class Strategy(models.TextChoices):
-        FIXED = 'fixed', 'ثابت'
-        BY_WEIGHT = 'by_weight', 'بر اساس وزن'
-        BY_LOCATION = 'by_location', 'بر اساس موقعیت'
-        BY_ORDER_TOTAL = 'by_order_total', 'بر اساس مبلغ سفارش'
-        BY_DISTANCE = 'by_distance', 'بر اساس فاصله'
-
     delivery_method = models.ForeignKey(DeliveryMethod, on_delete=models.CASCADE, related_name='pricings')
-    strategy = models.CharField('نوع محاسبه', max_length=30, choices=Strategy.choices)
+    strategy = models.CharField('نوع محاسبه', max_length=30, choices=DeliveryPricingStrategy.choices)
 
     class Meta:
         verbose_name = 'قیمت‌گذاری ارسال'
