@@ -2,7 +2,40 @@ from django.db import models
 from django.db.models import Sum, F
 
 from core.models import BaseModel
+from user.models import Address
 from order.enums import OrderStatus
+
+
+class DeliveryMethod(BaseModel):
+    name = models.CharField('نام', max_length=100)
+    description = models.TextField('توضیحات', blank=True)
+    is_active = models.BooleanField('فعال', default=True)
+
+    class Meta:
+        verbose_name = 'روش ارسال'
+        verbose_name_plural = 'روش‌های ارسال'
+
+    def __str__(self):
+        return self.name
+
+
+class DeliveryPricing(BaseModel):
+    class Strategy(models.TextChoices):
+        FIXED = 'fixed', 'ثابت'
+        BY_WEIGHT = 'by_weight', 'بر اساس وزن'
+        BY_LOCATION = 'by_location', 'بر اساس موقعیت'
+        BY_ORDER_TOTAL = 'by_order_total', 'بر اساس مبلغ سفارش'
+        BY_DISTANCE = 'by_distance', 'بر اساس فاصله'
+
+    delivery_method = models.ForeignKey(DeliveryMethod, on_delete=models.CASCADE, related_name='pricings')
+    strategy = models.CharField('نوع محاسبه', max_length=30, choices=Strategy.choices)
+
+    class Meta:
+        verbose_name = 'قیمت‌گذاری ارسال'
+        verbose_name_plural = 'قیمت‌گذاری‌های ارسال'
+
+    def __str__(self):
+        return f'{self.delivery_method} - {self.get_strategy_display()}'
 
 
 class Order(BaseModel):
@@ -14,6 +47,12 @@ class Order(BaseModel):
                               default=OrderStatus.DRAFT, db_index=True)
     total_price = models.BigIntegerField("مبلغ کل", null=True, blank=True)
     admin_note = models.TextField("یادداشت ادمین", null=True, blank=True)
+
+    delivery_address = models.ForeignKey(Address, on_delete=models.PROTECT, related_name='orders', null=True,
+                                         blank=True)
+    delivery_method = models.ForeignKey(DeliveryMethod, on_delete=models.PROTECT, related_name='orders', null=True,
+                                        blank=True, )
+    delivery_cost = models.BigIntegerField('هزینه ارسال', default=0)
 
     class Meta:
         ordering = ("-created_at",)
