@@ -94,3 +94,51 @@ def get_available_delivery_methods(order):
 
     return DeliveryMethod.objects.filter(is_active=True).filter(
         Q(is_tehran_city_only=False) | Q(is_tehran_city_only=is_tehran))
+
+
+def calculate_delivery_method_cost(order, delivery_method):
+    pricings = delivery_method.pricings.all()
+
+    for pricing in pricings:
+        if pricing.strategy == DeliveryPricingStrategy.FIXED:
+            return pricing.price
+
+        if pricing.strategy == DeliveryPricingStrategy.BY_ORDER_TOTAL:
+            min_price = pricing.condition.get("min", 0)
+            max_price = pricing.condition.get("max")
+
+            if order.total_price >= min_price and (
+                max_price is None or order.total_price <= max_price
+            ):
+                return pricing.price
+
+        if pricing.strategy == DeliveryPricingStrategy.BY_WEIGHT:
+            weight = sum(
+                item.product_type.weight * item.count
+                for item in order.items.select_related("product_type")
+            )
+
+            min_weight = pricing.condition.get("min", 0)
+            max_weight = pricing.condition.get("max")
+
+            if weight >= min_weight and (
+                max_weight is None or weight <= max_weight
+            ):
+                return pricing.price
+
+        if pricing.strategy == DeliveryPricingStrategy.BY_LOCATION:
+            if order.delivery_address.city_id in pricing.condition.get("city_ids", []):
+                return pricing.price
+
+        if pricing.strategy == DeliveryPricingStrategy.BY_DISTANCE:
+            if not order.delivery_address:
+                continue
+
+            distance = calculate_distance(order)
+
+            max_distance = pricing.condition.get("max")
+
+            if max_distance is None or distance <= max_distance:
+                return pricing.price
+
+    return 0
