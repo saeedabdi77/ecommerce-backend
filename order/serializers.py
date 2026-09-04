@@ -3,10 +3,11 @@ from rest_framework import serializers
 
 from core.base_serializers import CustomModelSerializer
 from core.utilities import create_object
-from order.models import Order, OrderItem
+from order.models import Order, OrderItem, DeliveryMethod
 from order.utilities import get_or_create_draft_order, sync_draft_order
 from product.enums import ProductState
 from product.models import ProductType
+from user.serializers import GetAddressSerializer
 
 
 class OrderItemProductTypeSerializer(CustomModelSerializer):
@@ -23,13 +24,22 @@ class OrderItemSerializer(CustomModelSerializer):
         fields = ("id", "product_type", "count", "price")
 
 
+class DeliveryMethodSerializer(CustomModelSerializer):
+    class Meta:
+        model = DeliveryMethod
+        fields = ("id", "name", "description", "is_active", "is_tehran_city_only",)
+
+
 class OrderRetrieveSerializer(CustomModelSerializer):
     clear_guest_uid = serializers.SerializerMethodField()
     items = OrderItemSerializer(many=True)
+    delivery_address = GetAddressSerializer(read_only=True)
+    delivery_method = DeliveryMethodSerializer(read_only=True)
 
     class Meta:
         model = Order
-        fields = ("id", "guest_uid", "total_price", "admin_note", "clear_guest_uid", "items", "status",)
+        fields = ("id", "guest_uid", "total_price", "admin_note", "clear_guest_uid", "items", "status", "delivery_address",
+            "delivery_method", "delivery_cost")
 
     def get_clear_guest_uid(self, obj):
         return bool(
