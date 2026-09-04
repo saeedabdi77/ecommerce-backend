@@ -6,6 +6,17 @@ from user.models import Address
 from order.enums import OrderStatus, DeliveryPricingStrategy
 
 
+class OrderConfig(BaseModel):
+    reservation_duration = models.PositiveIntegerField('مدت زمان رزرو', default=30, help_text='مدت زمان رزرو کالا به دقیقه')
+
+    class Meta:
+        verbose_name = 'تنظیمات سفارش'
+        verbose_name_plural = 'تنظیمات سفارشات'
+
+    def __str__(self):
+        return 'تنظیمات سفارش'
+
+
 class DeliveryMethod(BaseModel):
     name = models.CharField('نام', max_length=100)
     description = models.TextField('توضیحات', blank=True)

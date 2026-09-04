@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from order.models import Order, OrderItem, OrderItemProduct, DeliveryPricing, DeliveryMethod
+from order.models import Order, OrderItem, OrderItemProduct, DeliveryPricing, DeliveryMethod, OrderConfig
 
 
 class OrderItemProductInline(admin.TabularInline):
@@ -120,3 +120,14 @@ class DeliveryPricingAdmin(admin.ModelAdmin):
         "strategy",
         "delivery_method",
     )
+
+
+@admin.register(OrderConfig)
+class OrderConfigAdmin(admin.ModelAdmin):
+    list_display = ('reservation_duration',)
+
+    def has_add_permission(self, request):
+        return not OrderConfig.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
