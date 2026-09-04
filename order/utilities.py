@@ -1,7 +1,7 @@
 from django.db import transaction
 
 from order.enums import OrderStatus
-from order.models import Order, OrderItem
+from order.models import Order, OrderItem, DeliveryMethod
 from product.enums import ProductState
 
 
@@ -87,3 +87,10 @@ def get_draft_order(user=None, guest_uid=None):
             return Order.objects.filter(guest_uid=guest_uid, user__isnull=True, status=OrderStatus.DRAFT).first()
 
         return None
+
+
+def get_available_delivery_methods(order):
+    is_tehran = order.delivery_address.city.name == "تهران"
+
+    return DeliveryMethod.objects.filter(is_active=True).filter(
+        Q(is_tehran_city_only=False) | Q(is_tehran_city_only=is_tehran))
