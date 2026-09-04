@@ -10,7 +10,7 @@ from rest_framework.response import Response
 
 from core.base_views import CustomRetrieveAPIView, CustomCreateListUpdateDestroyViewSet
 from order.models import OrderItem
-from order.serializers import OrderRetrieveSerializer, AddCartItemSerializer
+from order.serializers import OrderRetrieveSerializer, AddCartItemSerializer, SelectDeliveryAddressSerializer
 from order.utilities import sync_draft_order, get_draft_order
 
 
@@ -121,3 +121,16 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
     def get_serializer_class(self):
         if self.request.method == "POST":
             return AddCartItemSerializer
+
+
+class SelectDeliveryAddressView(CustomUpdateAPIView):
+    serializer_class = SelectDeliveryAddressSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        order = get_draft_order(self.request.user)
+
+        if not order:
+            raise Http404
+
+        return order

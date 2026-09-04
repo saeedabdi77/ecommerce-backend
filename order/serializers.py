@@ -102,3 +102,27 @@ class AddCartItemSerializer(CustomModelSerializer):
         order.calculate_total_price()
 
         return order_item
+
+
+class SelectDeliveryAddressSerializer(serializers.Serializer):
+    address_id = serializers.IntegerField()
+
+    def validate_address_id(self, value):
+        if not Address.objects.filter(
+            id=value,
+            user=self.context["request"].user,
+        ).exists():
+            raise serializers.ValidationError("آدرس معتبر نیست.")
+
+        return value
+
+    def update(self, instance, validated_data):
+        instance.delivery_address_id = validated_data["address_id"]
+        instance.delivery_method = None
+        instance.delivery_cost = 0
+        instance.save(update_fields=[
+            "delivery_address",
+            "delivery_method",
+            "delivery_cost",
+        ])
+        return instance
