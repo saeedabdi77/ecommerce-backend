@@ -23,6 +23,8 @@ class DeliveryMethod(BaseModel):
 class DeliveryPricing(BaseModel):
     delivery_method = models.ForeignKey(DeliveryMethod, on_delete=models.CASCADE, related_name='pricings')
     strategy = models.CharField('نوع محاسبه', max_length=30, choices=DeliveryPricingStrategy.choices)
+    condition = models.JSONField(default=dict)
+    price = models.BigIntegerField()
 
     class Meta:
         verbose_name = 'قیمت‌گذاری ارسال'
