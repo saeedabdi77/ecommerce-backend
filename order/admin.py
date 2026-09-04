@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from order.models import Order, OrderItem, OrderItemProduct
+from order.models import Order, OrderItem, OrderItemProduct, DeliveryPricing, DeliveryMethod
 
 
 class OrderItemProductInline(admin.TabularInline):
@@ -92,4 +92,31 @@ class OrderItemProductAdmin(admin.ModelAdmin):
     readonly_fields = (
         "created_at",
         "updated_at",
+    )
+
+
+@admin.register(DeliveryMethod)
+class DeliveryMethodAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "is_active",
+        "is_tehran_city_only",
+    )
+    list_filter = (
+        "is_active",
+        "is_tehran_city_only",
+    )
+    search_fields = ("name",)
+
+
+@admin.register(DeliveryPricing)
+class DeliveryPricingAdmin(admin.ModelAdmin):
+    list_display = (
+        "delivery_method",
+        "strategy",
+        "price",
+    )
+    list_filter = (
+        "strategy",
+        "delivery_method",
     )
