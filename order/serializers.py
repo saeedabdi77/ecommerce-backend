@@ -27,7 +27,7 @@ class OrderItemSerializer(CustomModelSerializer):
 class DeliveryMethodSerializer(CustomModelSerializer):
     class Meta:
         model = DeliveryMethod
-        fields = ("id", "name", "description", "is_active", "is_tehran_city_only",)
+        fields = ("id", "name", "description", "is_active", "is_tehran_city_only", "delivery_time")
 
 
 class OrderRetrieveSerializer(CustomModelSerializer):
