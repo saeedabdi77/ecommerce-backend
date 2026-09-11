@@ -151,7 +151,7 @@ class DeliveryMethodListView(CustomListAPIView):
             raise Http404
 
         if not order.delivery_address:
-            raise ValidationError("ابتدا آدرس ارسال را انتخاب کنید.")
+            raise ValidationError({"message": "ابتدا آدرس ارسال را انتخاب کنید.", "reason": "delivery_address"})
 
         self.order = order
         return get_available_delivery_methods(order)
