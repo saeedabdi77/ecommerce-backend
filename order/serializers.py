@@ -159,6 +159,7 @@ class SelectDeliveryMethodSerializer(CustomSerializer):
 
         if not order.delivery_address:
             error_obj.append_errors({"message": "ابتدا آدرس ارسال را انتخاب کنید.", "reason": "delivery_address"})
+            return attrs
 
         delivery_method = get_available_delivery_methods(order).filter(id=attrs["delivery_method_id"]).first()
 
