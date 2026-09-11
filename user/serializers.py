@@ -12,7 +12,7 @@ from core.base_serializers import CustomSerializer, CustomModelSerializer
 from core.services import SMSService
 from core.utilities import update_object, create_object
 from user.enums import LoginMethod
-from user.models import User, Address, Province
+from user.models import User, Address, Province, City
 from user.logs.models import LoginLog
 
 from decouple import config
@@ -312,7 +312,23 @@ class UpdateProfileSerializer(CustomModelSerializer):
         return validated_data
 
 
+class ProvinceSerializer(CustomModelSerializer):
+
+    class Meta:
+        model = Province
+        fields = ('id', 'name')
+
+
+class CitySerializer(CustomModelSerializer):
+    province = ProvinceSerializer()
+
+    class Meta:
+        model = City
+        fields = ('id', 'name', 'province')
+
+
 class GetAddressSerializer(CustomModelSerializer):
+    city = CitySerializer()
 
     class Meta:
         model = Address
