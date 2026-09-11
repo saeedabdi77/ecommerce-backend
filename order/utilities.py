@@ -131,15 +131,15 @@ def calculate_delivery_method_cost(order, delivery_method):
             if order.delivery_address.city_id in pricing.condition.get("city_ids", []):
                 return pricing.price
 
-        if pricing.strategy == DeliveryPricingStrategy.BY_DISTANCE:
-            if not order.delivery_address:
-                continue
-
-            distance = calculate_distance(order)
-
-            max_distance = pricing.condition.get("max")
-
-            if max_distance is None or distance <= max_distance:
-                return pricing.price
+        # if pricing.strategy == DeliveryPricingStrategy.BY_DISTANCE:
+        #     if not order.delivery_address:
+        #         continue
+        #
+        #     distance = calculate_distance(order)
+        #
+        #     max_distance = pricing.condition.get("max")
+        #
+        #     if max_distance is None or distance <= max_distance:
+        #         return pricing.price
 
     return 0
