@@ -117,7 +117,7 @@ class AddCartItemSerializer(CustomModelSerializer):
 
 
 class SelectDeliveryAddressSerializer(CustomSerializer):
-    address_id = serializers.IntegerField(source="delivery_address_id")
+    address_id = serializers.IntegerField(write_only=True)
 
     def validate_serializer(self, attrs, error_obj):
         if not Address.objects.filter(id=attrs["address_id"], user=self.context["request"].user).exists():
