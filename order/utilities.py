@@ -1,6 +1,7 @@
 from django.db import transaction
+from django.db.models import Q
 
-from order.enums import OrderStatus
+from order.enums import OrderStatus, DeliveryPricingStrategy
 from order.models import Order, OrderItem, DeliveryMethod
 from product.enums import ProductState
 
