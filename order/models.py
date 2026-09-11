@@ -3,7 +3,7 @@ from django.db.models import Sum, F
 
 from core.models import BaseModel
 from user.models import Address
-from order.enums import OrderStatus, DeliveryPricingStrategy
+from order.enums import OrderStatus, DeliveryPricingStrategy, PaymentStatus
 
 
 class OrderConfig(BaseModel):
@@ -108,3 +108,37 @@ class OrderItemProduct(BaseModel):
 
     def __str__(self):
         return f"{self.order_item} - {self.product}"
+
+
+class PaymentMethod(BaseModel):
+    name = models.CharField("نام", max_length=100)
+    code = models.CharField("کد", max_length=50, unique=True)
+    description = models.TextField("توضیحات", blank=True)
+    is_active = models.BooleanField("فعال", default=True)
+
+    class Meta:
+        verbose_name = "روش پرداخت"
+        verbose_name_plural = "روش‌های پرداخت"
+
+    def __str__(self):
+        return self.name
+
+
+class Payment(BaseModel):
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name="payments")
+    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.PROTECT, related_name="payments")
+    amount = models.BigIntegerField("مبلغ")
+    status = models.CharField("وضعیت", max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.PENDING)
+    tracking_code = models.CharField("کد پیگیری", max_length=100, blank=True)
+    gateway_transaction_id = models.CharField("شناسه تراکنش درگاه", max_length=200, blank=True)
+    paid_at = models.DateTimeField("زمان پرداخت", null=True, blank=True)
+
+    class Meta:
+        verbose_name = "پرداخت"
+        verbose_name_plural = "پرداخت‌ها"
+        indexes = [
+            models.Index(fields=("order", "status")),
+        ]
+
+    def __str__(self):
+        return f"{self.order} - {self.amount}"

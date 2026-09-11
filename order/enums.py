@@ -16,3 +16,10 @@ class DeliveryPricingStrategy(models.TextChoices):
     BY_LOCATION = "by_location", "بر اساس موقعیت"
     BY_ORDER_TOTAL = "by_order_total", "بر اساس مبلغ سفارش"
     BY_DISTANCE = "by_distance", "بر اساس فاصله"
+
+
+class PaymentStatus(models.TextChoices):
+    PENDING = "pending", "در انتظار پرداخت"
+    SUCCESS = "success", "موفق"
+    FAILED = "failed", "ناموفق"
+    CANCELED = "canceled", "لغو شده"
