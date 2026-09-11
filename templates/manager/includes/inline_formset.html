@@ -1,0 +1,108 @@
+<div class="inline-formset" data-prefix="{{ item.prefix }}">
+    <div class="inline-formset-header">
+        <h2 class="form-section-title">{{ item.inline.get_verbose_name_plural }}</h2>
+        <button type="button" class="btn btn-secondary inline-add-row">+ افزودن ردیف</button>
+    </div>
+
+    {{ item.formset.management_form }}
+
+    {% if item.formset.non_form_errors %}
+        <div class="inline-formset-errors">
+            {{ item.formset.non_form_errors }}
+        </div>
+    {% endif %}
+
+    <div class="table-card inline-formset-card">
+        <div class="table-wrapper">
+            <table class="manager-table inline-formset-table">
+                <thead>
+                <tr>
+                    {% for form in item.formset.forms %}
+                        {% if forloop.first %}
+                            {% for field in form.visible_fields %}
+                                {% if field.name != "id" and field.name != "DELETE" %}
+                                    <th>{{ field.label }}</th>
+                                {% endif %}
+                            {% endfor %}
+                            {% if item.inline.can_delete %}
+                                <th class="inline-delete-column">حذف</th>
+                            {% endif %}
+                        {% endif %}
+                    {% empty %}
+                        {% for field in item.formset.empty_form.visible_fields %}
+                            {% if field.name != "id" and field.name != "DELETE" %}
+                                <th>{{ field.label }}</th>
+                            {% endif %}
+                        {% endfor %}
+                        {% if item.inline.can_delete %}
+                            <th class="inline-delete-column">حذف</th>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody class="inline-formset-body">
+                {% for form in item.formset.forms %}
+                    <tr class="inline-formset-row{% if form.errors %} inline-formset-row-error{% endif %}">
+                        {% for field in form.hidden_fields %}
+                            {{ field }}
+                        {% endfor %}
+
+                        {% for field in form.visible_fields %}
+                            {% if field.name != "DELETE" %}
+                                <td>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="field-errors">{{ field.errors }}</div>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if item.inline.can_delete %}
+                            <td class="inline-delete-column">
+                                {% for field in form.visible_fields %}
+                                    {% if field.name == "DELETE" %}
+                                        <label class="inline-delete-label">
+                                            {{ field }}
+                                            <span>حذف</span>
+                                        </label>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <template class="inline-empty-row-template">
+        <tr class="inline-formset-row inline-formset-row-empty">
+            {% with form=item.formset.empty_form %}
+                {% for field in form.hidden_fields %}
+                    {{ field }}
+                {% endfor %}
+
+                {% for field in form.visible_fields %}
+                    {% if field.name != "DELETE" %}
+                        <td>{{ field }}</td>
+                    {% endif %}
+                {% endfor %}
+
+                {% if item.inline.can_delete %}
+                    <td class="inline-delete-column">
+                        {% for field in form.visible_fields %}
+                            {% if field.name == "DELETE" %}
+                                <label class="inline-delete-label">
+                                    {{ field }}
+                                    <span>حذف</span>
+                                </label>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                {% endif %}
+            {% endwith %}
+        </tr>
+    </template>
+</div>
