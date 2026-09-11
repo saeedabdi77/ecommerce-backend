@@ -169,6 +169,7 @@ class DeliveryMethodListView(CustomListAPIView):
 class SelectDeliveryMethodView(CustomUpdateAPIView):
     serializer_class = SelectDeliveryMethodSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ["put"]
 
     def get_object(self):
         order = get_draft_order(self.request.user)
