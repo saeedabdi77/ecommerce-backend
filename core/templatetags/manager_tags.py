@@ -101,5 +101,7 @@ def manager_icon(icon_name):
         "order_config": "⏱",
         "delivery_method": "🚚",
         "delivery_pricing": "💰",
+        "payment_method": "💳",
+        "payment": "💵",
     }
     return icons.get(icon_name, "•")

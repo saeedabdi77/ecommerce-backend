@@ -11,7 +11,8 @@ from order.forms import (
     OrderItemForm,
     OrderItemProductForm,
 )
-from order.models import DeliveryMethod, DeliveryPricing, Order, OrderItem, OrderItemProduct, OrderConfig
+from order.models import DeliveryMethod, DeliveryPricing, Order, OrderItem, OrderItemProduct, OrderConfig, \
+    PaymentMethod, Payment
 from product.models import Product, ProductType
 from user.models import User
 
@@ -186,3 +187,61 @@ class OrderConfigManager(BaseManager):
         UpdateAction(OrderConfigForm),
         DeleteAction(),
     )
+
+
+@registry.register
+class PaymentMethodManager(BaseManager):
+    slug = "payment-method"
+    model = PaymentMethod
+
+    menu_group = "orders"
+    menu_label = "روش های پرداخت"
+    menu_icon = "payment_method"
+    menu_order = 50
+
+    columns = (
+        Column("name", "نام", editable=True),
+        Column("code", "کد"),
+        Column("description", "توضیحات", editable=True),
+        Column("is_active", "فعال", editable=True),
+    )
+
+    actions = (
+        DetailAction(),
+    )
+
+
+@registry.register
+class PaymentManager(BaseManager):
+    slug = "payment"
+    model = Payment
+
+    menu_group = "orders"
+    menu_label = "پرداختی ها"
+    menu_icon = "payment"
+    menu_order = 51
+
+    columns = (
+        Column("order.tracking_code", "شماره سفارش", sortable=True),
+        Column("order.user.phone_number", "موبایل"),
+        Column("payment_method.name", "شیوه پرداخت"),
+        Column("status", "وضعیت"),
+        Column("amount", "مبلغ", sortable=True),
+        Column("tracking_code", "کد پیگیری", sortable=True),
+        Column("gateway_transaction_id", "شناسه تراکنش درگاه"),
+        Column("paid_at", "زمان پرداخت", sortable=True),
+    )
+
+    filters = (
+        ChoiceFilter.from_field(Payment, "status", label="وضعیت"),
+        ForeignKeyFilter("payment_method", queryset=PaymentMethod.objects.all(), label="شیوه پرداخت"),
+    )
+
+    actions = (
+        DetailAction(),
+    )
+
+    search_fields = ("order__tracking_code", "order__user__phone_number", "tracking_code", "gateway_transaction_id")
+    ordering = ("-created_at",)
+
+    select_related = ("order", "order__user")
