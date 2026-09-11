@@ -2,12 +2,19 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.db import models
+from django.db import models, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
 from core.manager.filters import FilterSet, Ordering, Search
-from core.manager.forms import apply_autocomplete, get_form_fieldsets
+from core.manager.forms import (
+    apply_autocomplete,
+    build_inline_formsets,
+    get_form_fieldsets,
+    get_inline_detail_tables,
+    inline_formsets_are_valid,
+    save_inline_formsets,
+)
 from core.manager.managers import registry
 from core.manager.pagination import get_page_window
 from core.manager.utils import get_manager_root_url
@@ -345,11 +352,13 @@ class ManagerCreateView(ManagerViewMixin, View):
         action = manager.get_action("create")
         form = action.form_class()
         apply_autocomplete(form)
+        inline_formsets = build_inline_formsets(manager)
 
         return render(request, manager.form_template, self.get_base_context(
             action=action,
             form=form,
             fieldsets=get_form_fieldsets(form),
+            inline_formsets=inline_formsets,
             breadcrumb_action=action.label,
         ))
 
@@ -358,9 +367,15 @@ class ManagerCreateView(ManagerViewMixin, View):
         action = manager.get_action("create")
         form = action.form_class(request.POST, request.FILES)
         apply_autocomplete(form)
+        inline_formsets = build_inline_formsets(manager, data=request.POST, files=request.FILES)
 
-        if form.is_valid():
-            form.save()
+        if form.is_valid() and inline_formsets_are_valid(inline_formsets):
+            with transaction.atomic():
+                parent = form.save()
+                for item in inline_formsets:
+                    item["formset"].instance = parent
+                save_inline_formsets(inline_formsets)
+
             messages.success(request, "مورد جدید با موفقیت ایجاد شد.")
             return redirect(manager.get_list_url(request))
 
@@ -368,6 +383,7 @@ class ManagerCreateView(ManagerViewMixin, View):
             action=action,
             form=form,
             fieldsets=get_form_fieldsets(form),
+            inline_formsets=inline_formsets,
             breadcrumb_action=action.label,
         ))
 
@@ -392,12 +408,14 @@ class ManagerUpdateView(ManagerViewMixin, View):
         obj = self.get_object()
         form = action.form_class(instance=obj)
         apply_autocomplete(form)
+        inline_formsets = build_inline_formsets(manager, parent_instance=obj)
 
         return render(request, manager.form_template, self.get_base_context(
             action=action,
             form=form,
             object=obj,
             fieldsets=get_form_fieldsets(form),
+            inline_formsets=inline_formsets,
             breadcrumb_action=action.label,
         ))
 
@@ -407,9 +425,18 @@ class ManagerUpdateView(ManagerViewMixin, View):
         obj = self.get_object()
         form = action.form_class(request.POST, request.FILES, instance=obj)
         apply_autocomplete(form)
+        inline_formsets = build_inline_formsets(
+            manager,
+            parent_instance=obj,
+            data=request.POST,
+            files=request.FILES,
+        )
 
-        if form.is_valid():
-            form.save()
+        if form.is_valid() and inline_formsets_are_valid(inline_formsets):
+            with transaction.atomic():
+                form.save()
+                save_inline_formsets(inline_formsets)
+
             messages.success(request, "تغییرات با موفقیت ذخیره شد.")
             return redirect(manager.get_list_url(request))
 
@@ -418,6 +445,7 @@ class ManagerUpdateView(ManagerViewMixin, View):
             form=form,
             object=obj,
             fieldsets=get_form_fieldsets(form),
+            inline_formsets=inline_formsets,
             breadcrumb_action=action.label,
         ))
 
@@ -439,10 +467,13 @@ class ManagerDetailView(ManagerViewMixin, View):
             if action.is_visible(request, manager, obj)
         ]
 
+        inline_tables = get_inline_detail_tables(manager, obj) if manager.get_inlines(request) else []
+
         return render(request, manager.detail_template, self.get_base_context(
             object=obj,
             fields=fields,
             actions=actions,
+            inline_tables=inline_tables,
             breadcrumb_action="نمایش",
         ))
 

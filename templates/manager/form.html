@@ -49,6 +49,12 @@
             </div>
         {% endfor %}
 
+        {% if inline_formsets %}
+            {% for item in inline_formsets %}
+                {% include "manager/includes/inline_formset.html" %}
+            {% endfor %}
+        {% endif %}
+
         <div class="form-actions form-actions-sticky">
             <a href="{{ list_url }}" class="btn btn-secondary">انصراف</a>
             <button type="submit" class="btn btn-primary">ذخیره</button>

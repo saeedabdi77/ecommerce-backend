@@ -38,6 +38,7 @@ class BaseManager:
     columns = ()
     filters = ()
     actions = ()
+    inlines = ()
     search_fields = ()
     search_placeholder = None
     ordering = ()
@@ -79,6 +80,9 @@ class BaseManager:
 
     def get_actions(self, request, obj=None):
         return tuple(action for action in self.actions if action.is_visible(request, self, obj))
+
+    def get_inlines(self, request):
+        return self.inlines
 
     def get_action(self, name):
         return next((action for action in self.actions if action.name == name), None)

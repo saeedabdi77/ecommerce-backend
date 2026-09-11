@@ -25,4 +25,39 @@
     {% endfor %}
 </div>
 
+{% if inline_tables %}
+{% for table in inline_tables %}
+    <div class="inline-detail-section">
+        <h2 class="form-section-title">{{ table.title }}</h2>
+
+        {% if table.rows %}
+            <div class="table-card">
+                <div class="table-wrapper">
+                    <table class="manager-table">
+                        <thead>
+                        <tr>
+                            {% for label in table.field_labels %}
+                                <th>{{ label }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for row in table.rows %}
+                            <tr>
+                                {% for cell in row.cells %}
+                                    <td{% if cell.css_class %} class="{{ cell.css_class }}"{% endif %}>{{ cell.value }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="empty-panel">موردی ثبت نشده است.</div>
+        {% endif %}
+    </div>
+{% endfor %}
+{% endif %}
+
 {% endblock %}

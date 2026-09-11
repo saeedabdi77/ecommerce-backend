@@ -883,6 +883,95 @@ textarea {
     font-weight: 700;
 }
 
+.inline-formset {
+    margin-top: 28px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+}
+
+.inline-formset-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.inline-formset-header .form-section-title {
+    margin: 0;
+}
+
+.inline-formset-card {
+    margin-bottom: 0;
+}
+
+.inline-formset-table input:not([type="checkbox"]),
+.inline-formset-table select,
+.inline-formset-table textarea {
+    width: 100%;
+    min-height: 36px;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.inline-formset-table textarea {
+    min-height: 72px;
+    resize: vertical;
+}
+
+.inline-json-field,
+.json-field {
+    direction: ltr;
+    text-align: left;
+    font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    unicode-bidi: isolate;
+}
+
+.inline-detail-section td.json-value {
+    direction: ltr;
+    text-align: left;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
+    unicode-bidi: isolate;
+}
+
+.inline-delete-column {
+    width: 80px;
+    text-align: center;
+}
+
+.inline-delete-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.inline-formset-row-error {
+    background: #fef2f2;
+}
+
+.inline-formset-errors,
+.inline-formset-row .field-errors {
+    color: var(--danger);
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.inline-detail-section {
+    margin-top: 20px;
+}
+
+.inline-detail-section .form-section-title {
+    margin: 0 0 12px;
+}
+
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -267,11 +267,69 @@
         document.querySelectorAll(".manager-autocomplete").forEach(initAutocompleteField);
     }
 
+    function replaceInlinePrefix(root, index) {
+        root.querySelectorAll("[name]").forEach(function (element) {
+            if (element.name.indexOf("__prefix__") !== -1) {
+                element.name = element.name.replace(/__prefix__/g, String(index));
+            }
+        });
+
+        root.querySelectorAll("[id]").forEach(function (element) {
+            if (element.id.indexOf("__prefix__") !== -1) {
+                element.id = element.id.replace(/__prefix__/g, String(index));
+            }
+        });
+
+        root.querySelectorAll("label[for]").forEach(function (element) {
+            if (element.htmlFor.indexOf("__prefix__") !== -1) {
+                element.htmlFor = element.htmlFor.replace(/__prefix__/g, String(index));
+            }
+        });
+    }
+
+    function initInlineFormsets() {
+        document.querySelectorAll(".inline-formset").forEach(function (wrapper) {
+            const prefix = wrapper.dataset.prefix;
+            const body = wrapper.querySelector(".inline-formset-body");
+            const template = wrapper.querySelector(".inline-empty-row-template");
+            const addButton = wrapper.querySelector(".inline-add-row");
+            const totalFormsInput = wrapper.querySelector('input[name="' + prefix + '-TOTAL_FORMS"]');
+            const maxFormsInput = wrapper.querySelector('input[name="' + prefix + '-MAX_NUM_FORMS"]');
+
+            if (!body || !template || !addButton || !totalFormsInput) {
+                return;
+            }
+
+            addButton.addEventListener("click", function () {
+                const totalForms = parseInt(totalFormsInput.value, 10) || 0;
+                const maxForms = maxFormsInput ? parseInt(maxFormsInput.value, 10) : Number.MAX_SAFE_INTEGER;
+
+                if (totalForms >= maxForms) {
+                    return;
+                }
+
+                const rowTemplate = template.content
+                    ? template.content.querySelector("tr")
+                    : null;
+
+                if (!rowTemplate) {
+                    return;
+                }
+
+                const row = rowTemplate.cloneNode(true);
+                replaceInlinePrefix(row, totalForms);
+                body.appendChild(row);
+                totalFormsInput.value = totalForms + 1;
+            });
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         initSidebarToggle();
         initBulkSelection();
         initFilterPanel();
         initSidebarSections();
         initAutocompleteFields();
+        initInlineFormsets();
     });
 })();
