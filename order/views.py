@@ -130,6 +130,7 @@ class CartItemViewSet(CustomCreateListUpdateDestroyViewSet):
 class SelectDeliveryAddressView(CustomUpdateAPIView):
     serializer_class = SelectDeliveryAddressSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ["put"]
 
     def get_object(self):
         order = get_draft_order(self.request.user)
