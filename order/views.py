@@ -14,7 +14,7 @@ from core.base_views import CustomRetrieveAPIView, CustomCreateListUpdateDestroy
     CustomListAPIView
 from order.models import OrderItem
 from order.serializers import OrderRetrieveSerializer, AddCartItemSerializer, SelectDeliveryAddressSerializer, \
-    DeliveryMethodListSerializer
+    DeliveryMethodListSerializer, SelectDeliveryMethodSerializer
 from order.utilities import sync_draft_order, get_draft_order, get_available_delivery_methods
 
 
@@ -160,3 +160,16 @@ class DeliveryMethodListView(CustomListAPIView):
         context = super().get_serializer_context()
         context["order"] = self.order
         return context
+
+
+class SelectDeliveryMethodView(CustomUpdateAPIView):
+    serializer_class = SelectDeliveryMethodSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        order = get_draft_order(self.request.user)
+
+        if not order:
+            raise Http404
+
+        return order

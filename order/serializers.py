@@ -1,12 +1,14 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from core.base_serializers import CustomModelSerializer
+from core.base_serializers import CustomModelSerializer, CustomSerializer
 from core.utilities import create_object
 from order.models import Order, OrderItem, DeliveryMethod
-from order.utilities import get_or_create_draft_order, sync_draft_order, calculate_delivery_method_cost
+from order.utilities import get_or_create_draft_order, sync_draft_order, calculate_delivery_method_cost, \
+    get_available_delivery_methods
 from product.enums import ProductState
 from product.models import ProductType
+from user.models import Address
 from user.serializers import GetAddressSerializer
 
 
@@ -147,3 +149,28 @@ class DeliveryMethodListSerializer(CustomModelSerializer):
 
     def get_cost(self, obj):
         return calculate_delivery_method_cost(self.context["order"], obj)
+
+
+class SelectDeliveryMethodSerializer(CustomSerializer):
+    delivery_method_id = serializers.IntegerField()
+
+    def validate_serializer(self, attrs, error_obj):
+        order = self.instance
+
+        if not order.delivery_address:
+            error_obj.append_errors({"message": "ابتدا آدرس ارسال را انتخاب کنید.", "reason": "delivery_address"})
+
+        delivery_method = get_available_delivery_methods(order).filter(id=attrs["delivery_method_id"]).first()
+
+        if not delivery_method:
+            error_obj.append_errors({"message": "روش ارسال معتبر نیست.", "reason": "delivery_method_id"})
+
+        attrs["delivery_method"] = delivery_method
+        return attrs
+
+    def update(self, instance, validated_data):
+        delivery_method = validated_data["delivery_method"]
+        instance.delivery_method = delivery_method
+        instance.delivery_cost = calculate_delivery_method_cost(instance, delivery_method)
+        instance.save(update_fields=("delivery_method", "delivery_cost"))
+        return instance
