@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from order.models import Order, OrderItem, OrderItemProduct, DeliveryPricing, DeliveryMethod, OrderConfig
+from order.models import Order, OrderItem, OrderItemProduct, DeliveryPricing, DeliveryMethod, OrderConfig, Payment, \
+    PaymentMethod
 
 
 class OrderItemProductInline(admin.TabularInline):
@@ -131,3 +132,21 @@ class OrderConfigAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(PaymentMethod)
+class PaymentMethodAdmin(admin.ModelAdmin):
+    list_display = ("name", "code", "is_active", "created_at")
+    list_filter = ("is_active",)
+    search_fields = ("name", "code")
+    ordering = ("name",)
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ("id", "order", "payment_method", "amount", "status", "tracking_code", "paid_at", "created_at")
+    list_filter = ("status", "payment_method", "created_at")
+    search_fields = ("tracking_code", "gateway_transaction_id", "order__tracking_code")
+    readonly_fields = ("created_at", "updated_at", "paid_at")
+    autocomplete_fields = ("order", "payment_method")
+    ordering = ("-created_at",)
