@@ -6,13 +6,16 @@ from drf_yasg import openapi
 from django.http import Http404
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from core.base_views import CustomRetrieveAPIView, CustomCreateListUpdateDestroyViewSet, CustomUpdateAPIView
+from core.base_views import CustomRetrieveAPIView, CustomCreateListUpdateDestroyViewSet, CustomUpdateAPIView, \
+    CustomListAPIView
 from order.models import OrderItem
-from order.serializers import OrderRetrieveSerializer, AddCartItemSerializer, SelectDeliveryAddressSerializer
-from order.utilities import sync_draft_order, get_draft_order
+from order.serializers import OrderRetrieveSerializer, AddCartItemSerializer, SelectDeliveryAddressSerializer, \
+    DeliveryMethodListSerializer
+from order.utilities import sync_draft_order, get_draft_order, get_available_delivery_methods
 
 
 class CartRetrieveView(CustomRetrieveAPIView):
@@ -135,3 +138,25 @@ class SelectDeliveryAddressView(CustomUpdateAPIView):
             raise Http404
 
         return order
+
+
+class DeliveryMethodListView(CustomListAPIView):
+    serializer_class = DeliveryMethodListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        order = get_draft_order(self.request.user)
+
+        if not order:
+            raise Http404
+
+        if not order.delivery_address:
+            raise ValidationError("ابتدا آدرس ارسال را انتخاب کنید.")
+
+        self.order = order
+        return get_available_delivery_methods(order)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["order"] = self.order
+        return context

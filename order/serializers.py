@@ -4,7 +4,7 @@ from rest_framework import serializers
 from core.base_serializers import CustomModelSerializer
 from core.utilities import create_object
 from order.models import Order, OrderItem, DeliveryMethod
-from order.utilities import get_or_create_draft_order, sync_draft_order
+from order.utilities import get_or_create_draft_order, sync_draft_order, calculate_delivery_method_cost
 from product.enums import ProductState
 from product.models import ProductType
 from user.serializers import GetAddressSerializer
@@ -136,3 +136,14 @@ class SelectDeliveryAddressSerializer(serializers.Serializer):
             "delivery_cost",
         ])
         return instance
+
+
+class DeliveryMethodListSerializer(CustomModelSerializer):
+    cost = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DeliveryMethod
+        fields = ("id", "name", "description", "delivery_time", "cost")
+
+    def get_cost(self, obj):
+        return calculate_delivery_method_cost(self.context["order"], obj)
