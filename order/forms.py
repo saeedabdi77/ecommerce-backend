@@ -1,6 +1,6 @@
 from django import forms
 
-from order.models import Order, OrderItem, OrderItemProduct
+from order.models import Order, OrderItem, OrderItemProduct, OrderConfig
 from product.models import Product, ProductType
 from user.models import User
 
@@ -39,3 +39,10 @@ class OrderItemProductForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["order_item"].queryset = OrderItem.objects.select_related("order", "product_type").order_by("-created_at")
         self.fields["product"].queryset = Product.objects.select_related("product_type").order_by("-id")
+
+
+
+class OrderConfigForm(forms.ModelForm):
+    class Meta:
+        model = OrderConfig
+        fields = ("reservation_duration",)

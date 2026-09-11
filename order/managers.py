@@ -2,8 +2,8 @@ from core.manager.actions import CreateAction, DeleteAction, DetailAction, Updat
 from core.manager.columns import Column
 from core.manager.filters import ChoiceFilter, ForeignKeyFilter, TextFilter
 from core.manager.managers import BaseManager, registry
-from order.forms import OrderForm, OrderItemForm, OrderItemProductForm
-from order.models import Order, OrderItem, OrderItemProduct
+from order.forms import OrderForm, OrderItemForm, OrderItemProductForm, OrderConfigForm
+from order.models import Order, OrderItem, OrderItemProduct, OrderConfig
 from product.models import Product, ProductType
 from user.models import User
 
@@ -16,7 +16,7 @@ class OrderManager(BaseManager):
     menu_group = "orders"
     menu_label = "سفارش‌ها"
     menu_icon = "order"
-    menu_order = 10
+    menu_order = 11
 
     columns = (
         Column("tracking_code", "کد پیگیری", sortable=True),
@@ -112,3 +112,24 @@ class OrderItemProductManager(BaseManager):
     ordering = ("-created_at",)
 
     select_related = ("order_item", "order_item__order", "order_item__product_type", "product", "product__product_type")
+
+
+@registry.register
+class OrderConfigManager(BaseManager):
+    slug = "order-config"
+    model = OrderConfig
+
+    menu_group = "orders"
+    menu_label = "تنظمیات سفارش"
+    menu_icon = "order_config"
+    menu_order = 10
+
+    columns = (
+        Column("reservation_duration", "مدت زمان رزرو", editable=True),
+    )
+
+    actions = (
+        DetailAction(),
+        UpdateAction(OrderConfigForm),
+        DeleteAction(),
+    )
