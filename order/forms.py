@@ -1,6 +1,9 @@
-from django import forms
+import json
 
-from order.models import Order, OrderItem, OrderItemProduct, OrderConfig
+from django import forms
+from django.core.exceptions import ValidationError
+
+from order.models import DeliveryMethod, DeliveryPricing, Order, OrderItem, OrderItemProduct, OrderConfig
 from product.models import Product, ProductType
 from user.models import User
 
@@ -46,3 +49,62 @@ class OrderConfigForm(forms.ModelForm):
     class Meta:
         model = OrderConfig
         fields = ("reservation_duration",)
+
+
+class DeliveryMethodForm(forms.ModelForm):
+    class Meta:
+        model = DeliveryMethod
+        fields = ("name", "description", "delivery_time", "is_active", "is_tehran_city_only")
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3, "full_width": True}),
+        }
+
+
+class DeliveryPricingInlineForm(forms.ModelForm):
+    condition = forms.CharField(
+        label="شرط",
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 4,
+                "dir": "ltr",
+                "placeholder": '{"min": 0, "max": 100000}',
+                "class": "inline-json-field",
+                "spellcheck": "false",
+                "autocomplete": "off",
+            },
+        ),
+    )
+
+    class Meta:
+        model = DeliveryPricing
+        fields = ("strategy", "condition", "price")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance.pk and isinstance(self.instance.condition, dict):
+            self.initial["condition"] = json.dumps(
+                self.instance.condition,
+                ensure_ascii=False,
+                indent=2,
+            )
+
+    def clean_condition(self):
+        value = self.cleaned_data.get("condition")
+
+        if value in (None, ""):
+            return {}
+
+        if isinstance(value, dict):
+            return value
+
+        try:
+            parsed = json.loads(value)
+        except (TypeError, json.JSONDecodeError) as exc:
+            raise ValidationError("شرط باید یک JSON معتبر باشد.") from exc
+
+        if not isinstance(parsed, dict):
+            raise ValidationError("شرط باید یک شیء JSON باشد.")
+
+        return parsed

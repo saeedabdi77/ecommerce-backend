@@ -1,11 +1,64 @@
 from core.manager.actions import CreateAction, DeleteAction, DetailAction, UpdateAction
 from core.manager.columns import Column
-from core.manager.filters import ChoiceFilter, ForeignKeyFilter, TextFilter
+from core.manager.filters import BooleanFilter, ChoiceFilter, ForeignKeyFilter, TextFilter
+from core.manager.inlines import Inline
 from core.manager.managers import BaseManager, registry
-from order.forms import OrderForm, OrderItemForm, OrderItemProductForm, OrderConfigForm
-from order.models import Order, OrderItem, OrderItemProduct, OrderConfig
+from order.forms import (
+    DeliveryMethodForm,
+    DeliveryPricingInlineForm,
+    OrderConfigForm,
+    OrderForm,
+    OrderItemForm,
+    OrderItemProductForm,
+)
+from order.models import DeliveryMethod, DeliveryPricing, Order, OrderItem, OrderItemProduct, OrderConfig
 from product.models import Product, ProductType
 from user.models import User
+
+
+@registry.register
+class DeliveryMethodManager(BaseManager):
+    slug = "delivery-methods"
+    model = DeliveryMethod
+
+    menu_group = "orders"
+    menu_label = "روش‌های ارسال"
+    menu_icon = "order"
+    menu_order = 12
+
+    columns = (
+        Column("name", "نام", sortable=True),
+        Column("delivery_time", "زمان تحویل"),
+        Column("is_active", "فعال", sortable=True, editable=True),
+        Column("is_tehran_city_only", "فقط تهران", sortable=True, editable=True),
+        Column("pricings_count", "تعداد قیمت", value=lambda obj: obj.pricings.count()),
+    )
+
+    filters = (
+        TextFilter("name", "نام"),
+        BooleanFilter("is_active", "فعال"),
+        BooleanFilter("is_tehran_city_only", "فقط تهران"),
+    )
+
+    inlines = (
+        Inline(
+            model=DeliveryPricing,
+            form_class=DeliveryPricingInlineForm,
+            fk_name="delivery_method",
+            extra=0,
+        ),
+    )
+
+    actions = (
+        CreateAction(DeliveryMethodForm),
+        DetailAction(),
+        UpdateAction(DeliveryMethodForm),
+        DeleteAction(),
+    )
+
+    search_fields = ("name", "description", "delivery_time")
+    ordering = ("name",)
+    prefetch_related = ("pricings",)
 
 
 @registry.register
