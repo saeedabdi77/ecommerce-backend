@@ -5,14 +5,14 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
-from order.enums import OrderStatus
-from order.models import Order, OrderConfig, OrderItemProduct
-from product.enums import ProductState
-from product.models import Product
-
 
 @shared_task
 def expire_submitted_orders():
+    from order.enums import OrderStatus
+    from order.models import Order, OrderConfig, OrderItemProduct
+    from product.enums import ProductState
+    from product.models import Product
+
     now = timezone.now()
 
     report = {
