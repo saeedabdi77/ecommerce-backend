@@ -320,19 +320,19 @@ class ProvinceSerializer(CustomModelSerializer):
 
 
 class CitySerializer(CustomModelSerializer):
-    province = ProvinceSerializer()
 
     class Meta:
-        model = City
-        fields = ('id', 'name', 'province')
+        model = Province
+        fields = ('id', 'name')
 
 
 class GetAddressSerializer(CustomModelSerializer):
     city = CitySerializer()
+    province = ProvinceSerializer(source='city.province')
 
     class Meta:
         model = Address
-        fields = ('id', 'title', 'city', 'address_detail', 'postal_code', 'latitude', 'longitude')
+        fields = ('id', 'title', 'city', 'province', 'address_detail', 'postal_code', 'latitude', 'longitude')
 
 
 class CreateAddressSerializer(CustomModelSerializer):
@@ -366,20 +366,6 @@ class UpdateAddressSerializer(CustomModelSerializer):
     def create(self, validated_data):
         update_object(self.instance, validated_data)
         return validated_data
-
-
-class ProvinceSerializer(CustomModelSerializer):
-
-    class Meta:
-        model = Province
-        fields = ('id', 'name')
-
-
-class CitySerializer(CustomModelSerializer):
-
-    class Meta:
-        model = Province
-        fields = ('id', 'name')
 
 
 class ChangePasswordSerializer(CustomSerializer):
