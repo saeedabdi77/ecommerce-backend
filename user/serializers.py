@@ -312,27 +312,13 @@ class UpdateProfileSerializer(CustomModelSerializer):
         return validated_data
 
 
-class ProvinceSerializer(CustomModelSerializer):
-
-    class Meta:
-        model = Province
-        fields = ('id', 'name')
-
-
-class CitySerializer(CustomModelSerializer):
-    province = ProvinceSerializer()
-
-    class Meta:
-        model = City
-        fields = ('id', 'name', 'province')
-
-
 class GetAddressSerializer(CustomModelSerializer):
     city = CitySerializer()
+    province = ProvinceSerializer(source='city.province')
 
     class Meta:
         model = Address
-        fields = ('id', 'title', 'city', 'address_detail', 'postal_code', 'latitude', 'longitude')
+        fields = ('id', 'title', 'city', 'province', 'address_detail', 'postal_code', 'latitude', 'longitude')
 
 
 class CreateAddressSerializer(CustomModelSerializer):
