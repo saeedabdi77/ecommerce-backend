@@ -125,7 +125,8 @@ class DeliveryPricingAdmin(admin.ModelAdmin):
 
 @admin.register(OrderConfig)
 class OrderConfigAdmin(admin.ModelAdmin):
-    list_display = ('reservation_duration',)
+    list_display = ('id', 'registration_enabled', 'reservation_duration')
+    list_editable = ('registration_enabled',)
 
     def has_add_permission(self, request):
         return not OrderConfig.objects.exists()

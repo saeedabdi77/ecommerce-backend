@@ -2,14 +2,39 @@ from django.db import transaction
 from django.db.models import Q
 
 from order.enums import OrderStatus, DeliveryPricingStrategy
-from order.models import Order, OrderItem, DeliveryMethod
+from order.models import Order, OrderItem, DeliveryMethod, OrderConfig
 from product.enums import ProductState
+
+ORDER_REGISTRATION_DISABLED_MESSAGE = "ثبت سفارش در حال حاضر غیرفعال است."
+
+
+def get_order_config():
+    return OrderConfig.objects.first()
+
+
+def is_order_registration_enabled():
+    config = get_order_config()
+    return True if config is None else config.registration_enabled
+
+
+def append_registration_disabled_error(error_obj):
+    if is_order_registration_enabled():
+        return False
+
+    error_obj.append_errors({
+        "message": ORDER_REGISTRATION_DISABLED_MESSAGE,
+        "reason": "registration_enabled",
+    })
+    return True
 
 
 def get_or_create_draft_order(user=None, guest_uid=None):
     draft_order = get_draft_order(user, guest_uid)
     if draft_order:
         return draft_order
+
+    if not is_order_registration_enabled():
+        return None
 
     if user and user.is_authenticated:
         return Order.objects.create(user=user)

@@ -48,7 +48,7 @@ class OrderItemProductForm(forms.ModelForm):
 class OrderConfigForm(forms.ModelForm):
     class Meta:
         model = OrderConfig
-        fields = ("reservation_duration",)
+        fields = ("registration_enabled", "reservation_duration")
 
 
 class DeliveryMethodForm(forms.ModelForm):

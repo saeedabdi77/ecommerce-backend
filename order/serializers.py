@@ -3,13 +3,19 @@ from rest_framework import serializers
 
 from core.base_serializers import CustomModelSerializer, CustomSerializer
 from core.utilities import create_object
-from order.models import Order, OrderItem, DeliveryMethod
+from order.models import Order, OrderItem, DeliveryMethod, OrderConfig
 from order.utilities import get_or_create_draft_order, sync_draft_order, calculate_delivery_method_cost, \
-    get_available_delivery_methods
+    get_available_delivery_methods, append_registration_disabled_error
 from product.enums import ProductState
 from product.models import ProductType
 from user.models import Address
 from user.serializers import GetAddressSerializer
+
+
+class OrderConfigSerializer(CustomModelSerializer):
+    class Meta:
+        model = OrderConfig
+        fields = ("registration_enabled",)
 
 
 class OrderItemProductTypeSerializer(CustomModelSerializer):
@@ -61,6 +67,9 @@ class AddCartItemSerializer(CustomModelSerializer):
         return getattr(self, "_clear_guest_uid", False)
 
     def validate_serializer(self, attrs, error_obj):
+        if append_registration_disabled_error(error_obj):
+            return attrs
+
         user = self.context["request"].user
         guest_uid = attrs.get("guest_uid")
         product_type = attrs.get("product_type")
@@ -120,6 +129,9 @@ class SelectDeliveryAddressSerializer(CustomSerializer):
     address_id = serializers.IntegerField(write_only=True)
 
     def validate_serializer(self, attrs, error_obj):
+        if append_registration_disabled_error(error_obj):
+            return attrs
+
         if not Address.objects.filter(id=attrs["address_id"], user=self.context["request"].user).exists():
             error_obj.append_errors({"message": "آدرس معتبر نیست.", "reason": "address_id"})
 
@@ -148,6 +160,9 @@ class SelectDeliveryMethodSerializer(CustomSerializer):
     delivery_method_id = serializers.IntegerField()
 
     def validate_serializer(self, attrs, error_obj):
+        if append_registration_disabled_error(error_obj):
+            return attrs
+
         order = self.instance
 
         if not order.delivery_address:

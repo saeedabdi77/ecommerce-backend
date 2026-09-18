@@ -7,15 +7,23 @@ from django.http import Http404
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from core.base_views import CustomRetrieveAPIView, CustomCreateListUpdateDestroyViewSet, CustomUpdateAPIView, \
     CustomListAPIView
-from order.models import OrderItem
+from order.models import OrderConfig, OrderItem
 from order.serializers import OrderRetrieveSerializer, AddCartItemSerializer, SelectDeliveryAddressSerializer, \
-    DeliveryMethodListSerializer, SelectDeliveryMethodSerializer
-from order.utilities import sync_draft_order, get_draft_order, get_available_delivery_methods
+    DeliveryMethodListSerializer, SelectDeliveryMethodSerializer, OrderConfigSerializer
+from order.utilities import sync_draft_order, get_draft_order, get_available_delivery_methods, get_order_config
+
+
+class OrderConfigRetrieveView(CustomRetrieveAPIView):
+    serializer_class = OrderConfigSerializer
+    permission_classes = [AllowAny]
+
+    def get_object(self):
+        return get_order_config() or OrderConfig()
 
 
 class CartRetrieveView(CustomRetrieveAPIView):

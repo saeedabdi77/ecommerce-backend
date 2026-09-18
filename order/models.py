@@ -7,6 +7,11 @@ from order.enums import OrderStatus, DeliveryPricingStrategy, PaymentStatus
 
 
 class OrderConfig(BaseModel):
+    registration_enabled = models.BooleanField(
+        'امکان ثبت سفارش',
+        default=True,
+        help_text='با غیرفعال کردن این گزینه، کاربران امکان ثبت سفارش جدید نخواهند داشت.',
+    )
     reservation_duration = models.PositiveIntegerField('مدت زمان رزرو', default=30, help_text='مدت زمان رزرو کالا به دقیقه')
 
     class Meta:

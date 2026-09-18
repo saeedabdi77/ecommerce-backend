@@ -179,6 +179,7 @@ class OrderConfigManager(BaseManager):
     menu_order = 10
 
     columns = (
+        Column("registration_enabled", "امکان ثبت سفارش", editable=True),
         Column("reservation_duration", "مدت زمان رزرو", editable=True),
     )
 
