@@ -27,7 +27,7 @@ from drf_yasg import openapi
 
 from decouple import config
 
-from config.admin_sites import default_admin, test_admin, fix_bazi, shop_ghab
+from config.admin_sites import default_admin, test_admin, fix_bazi, shop_ghab, fashion_jewelry
 
 VERSION = 1
 
@@ -49,11 +49,13 @@ urlpatterns = [
     path(f"{config('ADMIN_URL')}/test/", test_admin.urls),
     path(f"{config('ADMIN_URL')}/fix-bazi/", fix_bazi.urls),
     path(f"{config('ADMIN_URL')}/shop-ghab/", shop_ghab.urls),
+    path(f"{config('ADMIN_URL')}/fashion-jewelry/", fashion_jewelry.urls),
     path(f'{config("SWAGGER_URL")}/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path(f"{config('MANAGER_URL')}/default/", include("core.manager.urls")),
     path(f"{config('MANAGER_URL')}/test/", include("core.manager.urls")),
     path(f"{config('MANAGER_URL')}/fix-bazi/", include("core.manager.urls")),
     path(f"{config('MANAGER_URL')}/shop-ghab/", include("core.manager.urls")),
+    path(f"{config('MANAGER_URL')}/fashion-jewelry/", include("core.manager.urls")),
     path(f'api/v{VERSION}/product/', include('product.urls')),
     path(f'api/v{VERSION}/auth/', include('user.auth_urls')),
     path(f'api/v{VERSION}/user/', include('user.urls')),

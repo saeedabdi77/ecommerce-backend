@@ -116,6 +116,14 @@ DATABASES = {
         'HOST': config('DATABASE_HOST'),
         'PORT': config('DATABASE_PORT'),
     },
+    'fashion_jewelry_db': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('FASHION_JEWELRY_DATABASE_NAME'),
+        'USER': config('DATABASE_USERNAME'),
+        'PASSWORD': config('DATABASE_PASSWORD'),
+        'HOST': config('DATABASE_HOST'),
+        'PORT': config('DATABASE_PORT'),
+    },
 }
 
 
