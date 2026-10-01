@@ -10,12 +10,11 @@ import jwt
 
 from core.base_serializers import CustomSerializer, CustomModelSerializer
 from core.services import SMSService
+from core.site_config import get_master_otp_code
 from core.utilities import update_object, create_object
 from user.enums import LoginMethod
 from user.models import User, Address, Province, City
 from user.logs.models import LoginLog
-
-from decouple import config
 
 class SendOTPSerializer(CustomSerializer):
     phone_number = serializers.CharField(max_length=11, min_length=11)
