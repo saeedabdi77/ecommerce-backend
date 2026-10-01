@@ -1,7 +1,25 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from core.models import SMSPattern, SMSLog
+from core.models import SMSPattern, SMSLog, SiteSettings
+
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    list_display = ('admin_phone_numbers', 'master_otp_code', 'mediana_from_number', 'mediana_base_url')
+    fields = (
+        'admin_phone_numbers',
+        'master_otp_code',
+        'mediana_base_url',
+        'mediana_api_key',
+        'mediana_from_number',
+    )
+
+    def has_add_permission(self, request):
+        return not SiteSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(SMSPattern)
