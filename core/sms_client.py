@@ -1,21 +1,23 @@
 import requests
 
-from django.conf import settings
-
 
 class MedianaAPIError(Exception):
     pass
 
 
 class MedianaClient:
-    def __init__(self, timeout: int = 15):
+    def __init__(self, base_url: str, api_key: str, from_number: str, timeout: int = 15):
+        if not base_url or not api_key or not from_number:
+            raise MedianaAPIError("Mediana is not configured for this website.")
+
         self.timeout = timeout
-        self.base_url = settings.MEDIANA_BASE_URL.rstrip("/")
+        self.base_url = base_url.rstrip("/")
+        self.from_number = from_number
         self.session = requests.Session()
 
         self.session.headers.update(
             {
-                "Authorization": settings.MEDIANA_API_KEY,
+                "Authorization": api_key,
                 "Accept": "application/json",
                 "Content-Type": "application/json",
             }
@@ -60,6 +62,6 @@ class MedianaClient:
                 "recipients": recipients,
                 "code": pattern_code,
                 "params": parameters,
-                "from_number": settings.MEDIANA_FROM_NUMBER,
+                "from_number": self.from_number,
             },
         )

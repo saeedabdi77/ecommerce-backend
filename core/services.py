@@ -1,11 +1,18 @@
-from config import settings
 from core.sms_client import MedianaClient
 from core.enums import SMSPatternType
 from core.models import SMSPattern, SMSLog
+from core.site_config import get_admin_phone_numbers, get_mediana_credentials
 
 
 class SMSService:
-    client = MedianaClient()
+    @classmethod
+    def _client(cls):
+        credentials = get_mediana_credentials()
+        return MedianaClient(
+            base_url=credentials['base_url'],
+            api_key=credentials['api_key'],
+            from_number=credentials['from_number'],
+        )
 
     @staticmethod
     def _get_pattern(pattern_type: SMSPatternType):
@@ -19,7 +26,7 @@ class SMSService:
     def send_otp(cls, phone: str, code: str):
         pattern = cls._get_pattern(SMSPatternType.OTP)
 
-        return cls.client.send_pattern(
+        return cls._client().send_pattern(
             recipients=[phone],
             pattern_code=pattern.pattern_code,
             parameters={
@@ -52,7 +59,7 @@ class SMSService:
             }
 
         try:
-            response = cls.client.send_pattern(
+            response = cls._client().send_pattern(
                 recipients=[phone] if isinstance(phone, str) else phone,
                 pattern_code=pattern.pattern_code,
                 parameters=parameters,
@@ -75,7 +82,7 @@ class SMSService:
 
     @classmethod
     def notify_admins(cls, pattern_type: SMSPatternType, **parameters):
-        admins = getattr(settings, 'ADMIN_PHONE_NUMBERS', '').split(',')
+        admins = get_admin_phone_numbers()
 
         if not admins:
             return {
