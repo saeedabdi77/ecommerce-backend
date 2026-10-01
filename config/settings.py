@@ -289,8 +289,9 @@ SWAGGER_SETTINGS = {
     ],
 }
 
-MEDIANA_BASE_URL = config("MEDIANA_BASE_URL", default="https://api.mediana.ir")
-MEDIANA_API_KEY = config("MEDIANA_API_KEY")
-MEDIANA_FROM_NUMBER = config("MEDIANA_FROM_NUMBER")
-
-ADMIN_PHONE_NUMBERS = config("ADMIN_PHONE_NUMBERS", default=[])
+# Fallback only. Each website stores its own values on SiteSettings.
+MEDIANA_BASE_URL = config("MEDIANA_BASE_URL", default="https://edge.ippanel.com")
+MEDIANA_API_KEY = config("MEDIANA_API_KEY", default="")
+MEDIANA_FROM_NUMBER = config("MEDIANA_FROM_NUMBER", default="")
+MASTER_OTP_CODE = config("MASTER_OTP_CODE", default="")
+ADMIN_PHONE_NUMBERS = config("ADMIN_PHONE_NUMBERS", default="")
