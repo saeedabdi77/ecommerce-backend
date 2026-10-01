@@ -1,7 +1,23 @@
+import logging
+
+from config.middleware import _tenant_local
 from core.sms_client import MedianaClient
 from core.enums import SMSPatternType
 from core.models import SMSPattern, SMSLog
 from core.site_config import get_admin_phone_numbers, get_mediana_credentials
+
+logger = logging.getLogger(__name__)
+
+
+def _db_alias():
+    return getattr(_tenant_local, 'db', 'default')
+
+
+def _enqueue(task, *args):
+    try:
+        task.delay(*args, _db_alias())
+    except Exception:
+        logger.exception('Failed to enqueue SMS task')
 
 
 class SMSService:
@@ -81,7 +97,7 @@ class SMSService:
             )
 
     @classmethod
-    def notify_admins(cls, pattern_type: SMSPatternType, **parameters):
+    def deliver_notify_admins(cls, pattern_type: SMSPatternType, **parameters):
         admins = get_admin_phone_numbers()
 
         if not admins:
@@ -104,14 +120,22 @@ class SMSService:
             cls.send_pattern(admin, pattern_type, **parameters)
 
     @classmethod
+    def notify_admins(cls, pattern_type: SMSPatternType, **parameters):
+        from core.tasks import notify_admins_sms
+
+        _enqueue(notify_admins_sms, str(pattern_type), parameters)
+
+    @classmethod
     def notify_repair_request(cls, repair_request):
+        from core.tasks import send_pattern_sms
+
         cls.notify_admins(
             SMSPatternType.NEW_REPAIR_REQUEST,
             orderTracking=repair_request.tracking_code,
         )
-
-        cls.send_pattern(
+        _enqueue(
+            send_pattern_sms,
             repair_request.phone_number,
-            SMSPatternType.REPAIR_REQUEST_CONFIRMATION,
-            orderTracking=repair_request.tracking_code,
+            str(SMSPatternType.REPAIR_REQUEST_CONFIRMATION),
+            {'orderTracking': repair_request.tracking_code},
         )
