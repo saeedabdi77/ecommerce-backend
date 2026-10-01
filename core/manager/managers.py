@@ -277,6 +277,7 @@ menu_groups = [
     MenuGroup("orders", "سفارش‌ها", order=38),
     MenuGroup("repair", "تعمیرات", order=40),
     MenuGroup("installation", "نصب", order=50),
+    MenuGroup("settings", "تنظیمات", order=60),
 ]
 
 
