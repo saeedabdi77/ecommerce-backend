@@ -48,6 +48,8 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./nginx/server.crt:/etc/nginx/conf.d/server.crt
       - ./nginx/server.key:/etc/nginx/conf.d/server.key
+      - ./nginx/maria.crt:/etc/nginx/conf.d/maria.crt
+      - ./nginx/maria.key:/etc/nginx/conf.d/maria.key
 
   redis:
     image: redis:6
