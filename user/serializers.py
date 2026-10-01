@@ -52,7 +52,7 @@ class VerifyOTPSerializer(CustomSerializer):
         phone_number = attrs.get('phone_number')
         otp_received = attrs.get('otp')
 
-        master_otp = config('MASTER_OTP_CODE')
+        master_otp = get_master_otp_code()
         cached_otp = cache.get(f"otp_{phone_number}")
 
         if not ((master_otp and otp_received == str(master_otp)) or (otp_received == cached_otp)):
@@ -197,7 +197,7 @@ class PasswordResetVerifySerializer(CustomSerializer):
         phone_number = attrs.get('phone_number')
         otp_received = attrs.get('otp')
 
-        master_otp = config('MASTER_OTP_CODE')
+        master_otp = get_master_otp_code()
         cached_otp = cache.get(f"reset_otp_{phone_number}")
 
         if not ((master_otp and otp_received == str(master_otp)) or (otp_received == cached_otp)):
