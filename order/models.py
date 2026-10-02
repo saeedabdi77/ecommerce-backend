@@ -147,3 +147,59 @@ class Payment(BaseModel):
 
     def __str__(self):
         return f"{self.order} - {self.amount}"
+
+
+class OrderStatusMessage(BaseModel):
+    name = models.CharField('عنوان', max_length=100)
+    status = models.CharField('وضعیت سفارش', max_length=20, choices=OrderStatus.choices)
+    pattern_code = models.CharField('کد پترن', max_length=100)
+    is_active = models.BooleanField('فعال', default=True)
+    tracking_code_param = models.CharField(
+        'متغیر کد پیگیری',
+        max_length=50,
+        blank=True,
+        help_text='نام متغیر کد پیگیری در پترن مدیانا. خالی یعنی ارسال نشود. مثال: orderTracking',
+    )
+    full_name_param = models.CharField(
+        'متغیر نام خریدار',
+        max_length=50,
+        blank=True,
+        help_text='نام متغیر نام خریدار در پترن مدیانا. خالی یعنی ارسال نشود. مثال: fullName',
+    )
+
+    class Meta:
+        verbose_name = 'پیام وضعیت سفارش'
+        verbose_name_plural = 'پیام‌های وضعیت سفارش'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('status',),
+                condition=models.Q(is_deleted=False),
+                name='unique_order_status_message',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.name} - {self.get_status_display()}'
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        existing = OrderStatusMessage.objects.filter(status=self.status)
+        if self.pk:
+            existing = existing.exclude(pk=self.pk)
+        if existing.exists():
+            raise ValidationError({'status': 'برای این وضعیت قبلاً پیام ثبت شده است.'})
+
+    def parameters_for(self, order):
+        parameters = {}
+        tracking_param = (self.tracking_code_param or '').strip()
+        full_name_param = (self.full_name_param or '').strip()
+
+        if tracking_param:
+            parameters[tracking_param] = order.tracking_code
+
+        if full_name_param:
+            user = order.user if order.user_id else None
+            parameters[full_name_param] = user.get_full_name().strip() if user else ''
+
+        return parameters
