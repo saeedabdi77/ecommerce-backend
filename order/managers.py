@@ -7,12 +7,13 @@ from order.forms import (
     DeliveryMethodForm,
     DeliveryPricingInlineForm,
     OrderConfigForm,
+    OrderStatusMessageForm,
     OrderForm,
     OrderItemForm,
     OrderItemProductForm,
 )
 from order.models import DeliveryMethod, DeliveryPricing, Order, OrderItem, OrderItemProduct, OrderConfig, \
-    PaymentMethod, Payment
+    OrderStatusMessage, PaymentMethod, Payment
 from product.models import Product, ProductType
 from user.models import User
 
@@ -188,6 +189,40 @@ class OrderConfigManager(BaseManager):
         UpdateAction(OrderConfigForm),
         DeleteAction(),
     )
+
+
+@registry.register
+class OrderStatusMessageManager(BaseManager):
+    slug = "order-status-messages"
+    model = OrderStatusMessage
+
+    menu_group = "orders"
+    menu_label = "پیام وضعیت سفارش"
+    menu_icon = "order"
+    menu_order = 11
+
+    columns = (
+        Column("name", "عنوان"),
+        Column("status", "وضعیت"),
+        Column("pattern_code", "کد پترن"),
+        Column("is_active", "فعال", editable=True),
+        Column("tracking_code_param", "متغیر کد پیگیری"),
+        Column("full_name_param", "متغیر نام خریدار"),
+    )
+
+    filters = (
+        ChoiceFilter("status", model=OrderStatusMessage, field_name="status"),
+        BooleanFilter("is_active", "فعال"),
+    )
+
+    actions = (
+        CreateAction(OrderStatusMessageForm),
+        DetailAction(),
+        UpdateAction(OrderStatusMessageForm),
+        DeleteAction(),
+    )
+
+    ordering = ("status",)
 
 
 @registry.register

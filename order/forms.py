@@ -3,7 +3,15 @@ import json
 from django import forms
 from django.core.exceptions import ValidationError
 
-from order.models import DeliveryMethod, DeliveryPricing, Order, OrderItem, OrderItemProduct, OrderConfig
+from order.models import (
+    DeliveryMethod,
+    DeliveryPricing,
+    Order,
+    OrderItem,
+    OrderItemProduct,
+    OrderConfig,
+    OrderStatusMessage,
+)
 from product.models import Product, ProductType
 from user.models import User
 
@@ -49,6 +57,28 @@ class OrderConfigForm(forms.ModelForm):
     class Meta:
         model = OrderConfig
         fields = ("registration_enabled", "reservation_duration")
+
+
+class OrderStatusMessageForm(forms.ModelForm):
+    class Meta:
+        model = OrderStatusMessage
+        fields = (
+            "name",
+            "status",
+            "pattern_code",
+            "is_active",
+            "tracking_code_param",
+            "full_name_param",
+        )
+        widgets = {
+            "pattern_code": forms.TextInput(attrs={"dir": "ltr"}),
+            "tracking_code_param": forms.TextInput(attrs={"dir": "ltr"}),
+            "full_name_param": forms.TextInput(attrs={"dir": "ltr"}),
+        }
+        fieldsets = (
+            ("پیام", {"fields": ("name", "status", "pattern_code", "is_active")}),
+            ("متغیرهای پترن", {"fields": ("tracking_code_param", "full_name_param")}),
+        )
 
 
 class DeliveryMethodForm(forms.ModelForm):
