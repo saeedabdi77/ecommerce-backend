@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from order.models import Order, OrderItem, OrderItemProduct, DeliveryPricing, DeliveryMethod, OrderConfig, Payment, \
-    PaymentMethod
+    PaymentMethod, OrderStatusMessage
 
 
 class OrderItemProductInline(admin.TabularInline):
@@ -121,6 +121,14 @@ class DeliveryPricingAdmin(admin.ModelAdmin):
         "strategy",
         "delivery_method",
     )
+
+
+@admin.register(OrderStatusMessage)
+class OrderStatusMessageAdmin(admin.ModelAdmin):
+    list_display = ("name", "status", "pattern_code", "is_active", "tracking_code_param", "full_name_param")
+    list_filter = ("status", "is_active")
+    list_editable = ("is_active",)
+    search_fields = ("name", "pattern_code")
 
 
 @admin.register(OrderConfig)
