@@ -126,6 +126,30 @@ class SMSService:
         _enqueue(notify_admins_sms, str(pattern_type), parameters)
 
     @classmethod
+    def send_by_pattern_code(cls, phone, pattern_code, parameters, log_type):
+        try:
+            response = cls._client().send_pattern(
+                recipients=[phone],
+                pattern_code=pattern_code,
+                parameters=parameters,
+            )
+            return cls._log_sms(
+                log_type,
+                phone,
+                parameters,
+                'sent',
+                response.get('bulk_id'),
+            )
+        except Exception as e:
+            return cls._log_sms(
+                log_type,
+                phone,
+                parameters,
+                'failed',
+                error=str(e),
+            )
+
+    @classmethod
     def notify_repair_request(cls, repair_request):
         from core.tasks import send_pattern_sms
 

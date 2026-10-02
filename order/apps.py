@@ -8,3 +8,4 @@ class OrderConfig(AppConfig):
 
     def ready(self):
         from order import managers
+        from order import signals

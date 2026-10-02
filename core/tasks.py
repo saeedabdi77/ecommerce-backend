@@ -30,6 +30,21 @@ def send_pattern_sms(phone, pattern_type, parameters=None, db_alias='default'):
 
 
 @shared_task
+def send_pattern_code_sms(phone, pattern_code, parameters=None, log_type='pattern', db_alias='default'):
+    from core.services import SMSService
+
+    return _run_on_tenant(
+        db_alias,
+        lambda: SMSService.send_by_pattern_code(
+            phone,
+            pattern_code,
+            parameters or {},
+            log_type,
+        ),
+    )
+
+
+@shared_task
 def notify_admins_sms(pattern_type, parameters=None, db_alias='default'):
     from core.services import SMSService
 
