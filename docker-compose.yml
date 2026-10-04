@@ -15,8 +15,8 @@ services:
       - .env
 
   django-web:
-    build: .
-#    image: backend-django-web:latest
+#    build: .
+    image: backend-django-web:latest
     container_name: django-docker
     # collect static is temporarily because of IRAN server
     command: bash -c "python manage.py collectstatic --noinput && python manage.py migrate_all && gunicorn --bind 0.0.0.0:8000 --pythonpath /app config.wsgi:application"
@@ -28,14 +28,13 @@ services:
     env_file:
       - .env
     volumes:
-      # .:/app is temporarily because of IRAN server
-#      - .:/app
+      - .:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
 
   nginx:
-    build: ./nginx
-#    image: atashin_gallery_dev-nginx:latest
+#    build: ./nginx
+    image: backend-nginx:latest
     ports:
       - "80:80"
       - "443:443"
@@ -56,27 +55,36 @@ services:
     restart: unless-stopped
 
   celery:
-    build: .
+#    build: .
+    image: backend-celery:latest
     command: celery -A config worker --loglevel=info
     env_file:
       - .env
+    volumes:
+      - .:/app
     depends_on:
       - redis
       - db
     restart: unless-stopped
 
   celery-beat:
-    build: .
+#    build: .
+    image: backend-celery-beat:latest
     command: celery -A config beat --loglevel=info
     env_file:
       - .env
+    volumes:
+      - .:/app
     depends_on:
       - redis
       - db
     restart: unless-stopped
 
   flower:
-    build: .
+#    build: .
+    image: backend-flower:latest
+    volumes:
+      - .:/app
     command: celery -A config flower --port=5555
     ports:
       - "5555:5555"
