@@ -290,6 +290,7 @@ SWAGGER_SETTINGS = {
 }
 
 # Fallback only. Each website stores its own values on SiteSettings.
+MEDIANA_PANEL = config("MEDIANA_PANEL", default="edge")
 MEDIANA_BASE_URL = config("MEDIANA_BASE_URL", default="https://edge.ippanel.com")
 MEDIANA_API_KEY = config("MEDIANA_API_KEY", default="")
 MEDIANA_FROM_NUMBER = config("MEDIANA_FROM_NUMBER", default="")
