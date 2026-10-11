@@ -28,6 +28,7 @@ class SMSService:
             base_url=credentials['base_url'],
             api_key=credentials['api_key'],
             from_number=credentials['from_number'],
+            panel=credentials['panel'],
         )
 
     @staticmethod
@@ -85,7 +86,7 @@ class SMSService:
                 phone,
                 parameters,
                 'sent',
-                response.get('bulk_id')
+                MedianaClient.request_id(response),
             )
         except Exception as e:
             return cls._log_sms(
@@ -138,7 +139,7 @@ class SMSService:
                 phone,
                 parameters,
                 'sent',
-                response.get('bulk_id'),
+                MedianaClient.request_id(response),
             )
         except Exception as e:
             return cls._log_sms(

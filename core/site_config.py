@@ -25,11 +25,13 @@ def get_mediana_credentials():
     site = get_site_settings()
     if site is not None:
         return {
+            'panel': (site.mediana_panel or '').strip(),
             'base_url': (site.mediana_base_url or '').strip(),
             'api_key': (site.mediana_api_key or '').strip(),
             'from_number': (site.mediana_from_number or '').strip(),
         }
     return {
+        'panel': (getattr(settings, 'MEDIANA_PANEL', '') or '').strip(),
         'base_url': (getattr(settings, 'MEDIANA_BASE_URL', '') or '').strip(),
         'api_key': (getattr(settings, 'MEDIANA_API_KEY', '') or '').strip(),
         'from_number': (getattr(settings, 'MEDIANA_FROM_NUMBER', '') or '').strip(),
