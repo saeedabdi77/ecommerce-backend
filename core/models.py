@@ -5,7 +5,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from core.enums import SMSPatternType
+from core.enums import MedianaPanel, SMSPatternType
+from core.sms_client import PANEL_BASE_URLS
 
 
 def parse_phone_numbers(raw):
@@ -130,12 +131,24 @@ class SiteSettings(BaseModel):
         blank=True,
         help_text='اگر پر شود، این کد به‌جای پیامک هم پذیرفته می‌شود. خالی یعنی غیرفعال.',
     )
+    mediana_panel = models.CharField(
+        'نسخه پنل مدیانا',
+        max_length=16,
+        choices=MedianaPanel.choices,
+        default=MedianaPanel.EDGE,
+        help_text='هر دیتابیس نسخه خودش را دارد. پنل قبلی edge.ippanel.com است و پنل جدید api.mediana.ir.',
+    )
     mediana_base_url = models.URLField(
         'آدرس API مدیانا',
         default='https://edge.ippanel.com',
+        help_text='با تغییر نسخه پنل، آدرس پیش‌فرض همان نسخه جایگزین می‌شود.',
     )
     mediana_api_key = models.CharField('کلید API مدیانا', max_length=512)
-    mediana_from_number = models.CharField('شماره خط ارسال', max_length=32)
+    mediana_from_number = models.CharField(
+        'شماره خط ارسال',
+        max_length=32,
+        help_text='در پنل جدید همان شماره ارسال (sendingNumber) است.',
+    )
 
     class Meta:
         verbose_name = 'تنظیمات سایت'
@@ -173,8 +186,20 @@ class SiteSettings(BaseModel):
         else:
             self.mediana_api_key = self.mediana_api_key.strip()
 
-        if not (self.mediana_base_url or '').strip():
+        panel = (self.mediana_panel or '').strip()
+        if panel not in MedianaPanel.values:
+            errors['mediana_panel'] = 'نسخه پنل نامعتبر است.'
+        else:
+            self.mediana_panel = panel
+
+        base_url = (self.mediana_base_url or '').strip().rstrip('/')
+        official_urls = {url.rstrip('/') for url in PANEL_BASE_URLS.values()}
+        if panel in PANEL_BASE_URLS and (not base_url or base_url in official_urls):
+            self.mediana_base_url = PANEL_BASE_URLS[panel]
+        elif not base_url:
             errors['mediana_base_url'] = 'آدرس API را وارد کنید.'
+        else:
+            self.mediana_base_url = base_url
 
         if errors:
             raise ValidationError(errors)

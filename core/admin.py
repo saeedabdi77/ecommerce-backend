@@ -6,10 +6,11 @@ from core.models import SMSPattern, SMSLog, SiteSettings
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ('admin_phone_numbers', 'master_otp_code', 'mediana_from_number', 'mediana_base_url')
+    list_display = ('admin_phone_numbers', 'master_otp_code', 'mediana_panel', 'mediana_from_number', 'mediana_base_url')
     fields = (
         'admin_phone_numbers',
         'master_otp_code',
+        'mediana_panel',
         'mediana_base_url',
         'mediana_api_key',
         'mediana_from_number',

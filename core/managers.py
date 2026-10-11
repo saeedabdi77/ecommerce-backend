@@ -30,6 +30,7 @@ class SiteSettingsManager(BaseManager):
     columns = (
         Column('admin_phone_numbers', 'شماره‌های ادمین'),
         Column('master_otp_code', 'کد OTP اصلی'),
+        Column('mediana_panel', 'نسخه پنل'),
         Column('mediana_from_number', 'شماره خط ارسال'),
         Column('mediana_base_url', 'آدرس API'),
     )

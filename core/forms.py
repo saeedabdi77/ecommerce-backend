@@ -10,6 +10,7 @@ class SiteSettingsForm(forms.ModelForm):
         fields = (
             'admin_phone_numbers',
             'master_otp_code',
+            'mediana_panel',
             'mediana_base_url',
             'mediana_api_key',
             'mediana_from_number',
@@ -23,7 +24,7 @@ class SiteSettingsForm(forms.ModelForm):
         }
         fieldsets = (
             ('اعلان‌ها', {'fields': ('admin_phone_numbers', 'master_otp_code')}),
-            ('پیامک مدیانا', {'fields': ('mediana_base_url', 'mediana_api_key', 'mediana_from_number')}),
+            ('پیامک مدیانا', {'fields': ('mediana_panel', 'mediana_base_url', 'mediana_api_key', 'mediana_from_number')}),
         )
 
     def clean(self):

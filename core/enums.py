@@ -1,6 +1,11 @@
 from django.db import models
 
 
+class MedianaPanel(models.TextChoices):
+    EDGE = 'edge', 'پنل قبلی'
+    NEW = 'new', 'پنل جدید'
+
+
 class SMSPatternType(models.TextChoices):
     OTP = "OTP", "OTP"
     NEW_REPAIR_REQUEST = "new_repair_request", "درخواست جدید تعمیر"
