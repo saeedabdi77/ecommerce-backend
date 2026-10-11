@@ -42,13 +42,30 @@ class SMSService:
     @classmethod
     def send_otp(cls, phone: str, code: str):
         pattern = cls._get_pattern(SMSPatternType.OTP)
+        parameters = {"otp": code}
 
-        return cls._client().send_pattern(
-            recipients=[phone],
-            pattern_code=pattern.pattern_code,
-            parameters={
-                "otp": code,
-            },
+        try:
+            response = cls._client().send_pattern(
+                recipients=[phone],
+                pattern_code=pattern.pattern_code,
+                parameters=parameters,
+            )
+        except Exception as e:
+            cls._log_sms(
+                SMSPatternType.OTP,
+                phone,
+                parameters,
+                'failed',
+                error=str(e),
+            )
+            raise
+
+        return cls._log_sms(
+            SMSPatternType.OTP,
+            phone,
+            parameters,
+            'sent',
+            MedianaClient.request_id(response),
         )
 
     @classmethod
