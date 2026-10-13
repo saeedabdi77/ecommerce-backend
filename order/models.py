@@ -77,8 +77,10 @@ class Order(BaseModel):
 
     def calculate_total_price(self):
         total = self.items.aggregate(total=Sum(F("price") * F("count")))["total"] or 0
-        self.total_price = total
-        self.save(update_fields=("total_price",))
+        if self.total_price != total:
+            self.total_price = total
+            self.save(update_fields=("total_price",))
+        return total
 
     def save(self, *args, **kwargs):
         if not self.pk:
