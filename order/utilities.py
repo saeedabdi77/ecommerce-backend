@@ -44,7 +44,11 @@ def get_or_create_draft_order(user=None, guest_uid=None):
     return None
 
 
-def sync_order_item_quantity(order_item, *, refresh_price=False):
+def sync_order_item_quantity(order_item, *, is_draft=False):
+    if is_draft and not order_item.product_type.active:
+        order_item.force_delete()
+        return None
+
     available_count = order_item.product_type.products.filter(state=ProductState.IN_WAREHOUSE).count()
 
     if available_count == 0:
@@ -57,7 +61,7 @@ def sync_order_item_quantity(order_item, *, refresh_price=False):
         order_item.count = available_count
         update_fields.append("count")
 
-    if refresh_price and order_item.price != order_item.product_type.sell_price:
+    if is_draft and order_item.price != order_item.product_type.sell_price:
         order_item.price = order_item.product_type.sell_price
         update_fields.append("price")
 
@@ -68,11 +72,11 @@ def sync_order_item_quantity(order_item, *, refresh_price=False):
 
 
 def sync_draft_order(order):
-    refresh_price = order.status == OrderStatus.DRAFT
+    is_draft = order.status == OrderStatus.DRAFT
     items = OrderItem.objects.filter(order=order).select_related("product_type")
 
     for item in items:
-        sync_order_item_quantity(item, refresh_price=refresh_price)
+        sync_order_item_quantity(item, is_draft=is_draft)
 
     if not OrderItem.objects.filter(order=order).exists():
         order.force_delete()
