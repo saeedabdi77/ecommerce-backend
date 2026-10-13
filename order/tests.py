@@ -3,8 +3,8 @@ import uuid
 from django.test import TestCase
 
 from order.enums import DeliveryPricingStrategy, OrderStatus
-from order.models import DeliveryMethod, DeliveryPricing, Order, OrderItem
-from order.utilities import sync_draft_order
+from order.models import DeliveryMethod, DeliveryPricing, Order, OrderItem, PaymentMethod
+from order.utilities import get_available_payment_methods, sync_draft_order
 from product.enums import ProductState
 from product.models import Brand, Category, Product, ProductType
 from user.models import Address, City, Province, User
@@ -238,3 +238,14 @@ class DraftDeliverySyncTests(TestCase):
 
         self.assertEqual(order.delivery_method_id, self.method.id)
         self.assertEqual(order.delivery_cost, 10)
+
+
+class PaymentMethodListTests(TestCase):
+    def test_active_methods_are_listed_for_a_draft_order(self):
+        PaymentMethod.objects.create(name="Card", code="card", description="Card", is_active=True)
+        PaymentMethod.objects.create(name="Old", code="old", is_active=False)
+        order = Order.objects.create(guest_uid=uuid.uuid4())
+
+        codes = set(get_available_payment_methods(order).values_list("code", flat=True))
+
+        self.assertEqual(codes, {"card"})
