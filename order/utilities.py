@@ -83,6 +83,8 @@ def sync_draft_order(order):
         return None
 
     order.calculate_total_price()
+    if is_draft:
+        sync_draft_delivery(order)
     return order
 
 
@@ -181,4 +183,43 @@ def resolve_delivery_method_cost(order, delivery_method):
         #     if max_distance is None or distance <= max_distance:
         #         return pricing.price
 
-    return 0
+    return None
+
+
+def calculate_delivery_method_cost(order, delivery_method):
+    cost = resolve_delivery_method_cost(order, delivery_method)
+    if cost is None:
+        return 0
+    return cost
+
+
+def clear_draft_delivery(order):
+    if order.delivery_method_id is None and order.delivery_cost == 0:
+        return
+
+    order.delivery_method = None
+    order.delivery_cost = 0
+    order.save(update_fields=("delivery_method", "delivery_cost"))
+
+
+def sync_draft_delivery(order):
+    if not order.delivery_method_id:
+        return
+
+    if not order.delivery_address_id:
+        clear_draft_delivery(order)
+        return
+
+    method = order.delivery_method
+    if not get_available_delivery_methods(order).filter(pk=method.pk).exists():
+        clear_draft_delivery(order)
+        return
+
+    cost = resolve_delivery_method_cost(order, method)
+    if cost is None:
+        clear_draft_delivery(order)
+        return
+
+    if order.delivery_cost != cost:
+        order.delivery_cost = cost
+        order.save(update_fields=("delivery_cost",))
