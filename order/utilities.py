@@ -68,10 +68,11 @@ def sync_order_item_quantity(order_item, *, refresh_price=False):
 
 
 def sync_draft_order(order):
+    refresh_price = order.status == OrderStatus.DRAFT
     items = OrderItem.objects.filter(order=order).select_related("product_type")
 
     for item in items:
-        sync_order_item_quantity(item)
+        sync_order_item_quantity(item, refresh_price=refresh_price)
 
     if not OrderItem.objects.filter(order=order).exists():
         order.force_delete()
