@@ -120,7 +120,7 @@ class AddCartItemSerializer(CustomModelSerializer):
         else:
             order_item = create_object(OrderItem, validated_data)
 
-        order.calculate_total_price()
+        sync_draft_order(order)
 
         return order_item
 

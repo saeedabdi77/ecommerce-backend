@@ -159,6 +159,11 @@ class DeliveryMethodListView(CustomListAPIView):
         if not order:
             raise Http404
 
+        order = sync_draft_order(order)
+
+        if not order:
+            raise Http404
+
         if not order.delivery_address:
             raise ValidationError({
                 "message": "Invalid inputs",
@@ -181,6 +186,11 @@ class SelectDeliveryMethodView(CustomUpdateAPIView):
 
     def get_object(self):
         order = get_draft_order(self.request.user)
+
+        if not order:
+            raise Http404
+
+        order = sync_draft_order(order)
 
         if not order:
             raise Http404
