@@ -5,7 +5,7 @@ from core.base_serializers import CustomModelSerializer, CustomSerializer
 from core.utilities import create_object
 from order.models import Order, OrderItem, DeliveryMethod, OrderConfig
 from order.utilities import get_or_create_draft_order, sync_draft_order, calculate_delivery_method_cost, \
-    get_available_delivery_methods, append_registration_disabled_error
+    get_available_delivery_methods, append_registration_disabled_error, resolve_delivery_method_cost
 from product.enums import ProductState
 from product.models import ProductType
 from user.models import Address
