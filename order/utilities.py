@@ -136,7 +136,7 @@ def get_available_delivery_methods(order):
         Q(is_tehran_city_only=False) | Q(is_tehran_city_only=is_tehran))
 
 
-def calculate_delivery_method_cost(order, delivery_method):
+def resolve_delivery_method_cost(order, delivery_method):
     pricings = delivery_method.pricings.all()
 
     for pricing in pricings:

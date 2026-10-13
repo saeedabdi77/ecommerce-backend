@@ -173,13 +173,19 @@ class SelectDeliveryMethodSerializer(CustomSerializer):
 
         if not delivery_method:
             error_obj.append_errors({"message": "روش ارسال معتبر نیست.", "reason": "delivery_method_id"})
+            return attrs
+
+        delivery_cost = resolve_delivery_method_cost(order, delivery_method)
+        if delivery_cost is None:
+            error_obj.append_errors({"message": "روش ارسال معتبر نیست.", "reason": "delivery_method_id"})
+            return attrs
 
         attrs["delivery_method"] = delivery_method
+        attrs["delivery_cost"] = delivery_cost
         return attrs
 
     def update(self, instance, validated_data):
-        delivery_method = validated_data["delivery_method"]
-        instance.delivery_method = delivery_method
-        instance.delivery_cost = calculate_delivery_method_cost(instance, delivery_method)
+        instance.delivery_method = validated_data["delivery_method"]
+        instance.delivery_cost = validated_data["delivery_cost"]
         instance.save(update_fields=("delivery_method", "delivery_cost"))
         return instance
