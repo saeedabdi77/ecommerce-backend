@@ -14,8 +14,9 @@ from core.base_views import CustomRetrieveAPIView, CustomCreateListUpdateDestroy
     CustomListAPIView
 from order.models import OrderConfig, OrderItem
 from order.serializers import OrderRetrieveSerializer, AddCartItemSerializer, SelectDeliveryAddressSerializer, \
-    DeliveryMethodListSerializer, SelectDeliveryMethodSerializer, OrderConfigSerializer
-from order.utilities import sync_draft_order, get_draft_order, get_available_delivery_methods, get_order_config
+    DeliveryMethodListSerializer, SelectDeliveryMethodSerializer, OrderConfigSerializer, PaymentMethodListSerializer
+from order.utilities import sync_draft_order, get_draft_order, get_available_delivery_methods, get_order_config, \
+    get_available_payment_methods
 
 
 class OrderConfigRetrieveView(CustomRetrieveAPIView):
@@ -147,6 +148,30 @@ class SelectDeliveryAddressView(CustomUpdateAPIView):
             raise Http404
 
         return order
+
+
+class PaymentMethodListView(CustomListAPIView):
+    serializer_class = PaymentMethodListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        order = get_draft_order(self.request.user)
+
+        if not order:
+            raise Http404
+
+        order = sync_draft_order(order)
+
+        if not order:
+            raise Http404
+
+        self.order = order
+        return get_available_payment_methods(order)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["order"] = self.order
+        return context
 
 
 class DeliveryMethodListView(CustomListAPIView):

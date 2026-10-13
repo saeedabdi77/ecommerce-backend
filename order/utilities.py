@@ -2,7 +2,7 @@ from django.db import transaction
 from django.db.models import Q
 
 from order.enums import OrderStatus, DeliveryPricingStrategy
-from order.models import Order, OrderItem, DeliveryMethod, OrderConfig
+from order.models import Order, OrderItem, DeliveryMethod, OrderConfig, PaymentMethod
 from product.enums import ProductState
 
 ORDER_REGISTRATION_DISABLED_MESSAGE = "ثبت سفارش در حال حاضر غیرفعال است."
@@ -129,6 +129,13 @@ def get_draft_order(user=None, guest_uid=None):
             return Order.objects.filter(guest_uid=guest_uid, user__isnull=True, status=OrderStatus.DRAFT).first()
 
         return None
+
+
+def get_available_payment_methods(order):
+    if order is None:
+        return PaymentMethod.objects.none()
+
+    return PaymentMethod.objects.filter(is_active=True)
 
 
 def get_available_delivery_methods(order):
