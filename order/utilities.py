@@ -44,16 +44,25 @@ def get_or_create_draft_order(user=None, guest_uid=None):
     return None
 
 
-def sync_order_item_quantity(order_item):
+def sync_order_item_quantity(order_item, *, refresh_price=False):
     available_count = order_item.product_type.products.filter(state=ProductState.IN_WAREHOUSE).count()
 
     if available_count == 0:
         order_item.force_delete()
         return None
 
+    update_fields = []
+
     if order_item.count > available_count:
         order_item.count = available_count
-        order_item.save(update_fields=("count",))
+        update_fields.append("count")
+
+    if refresh_price and order_item.price != order_item.product_type.sell_price:
+        order_item.price = order_item.product_type.sell_price
+        update_fields.append("price")
+
+    if update_fields:
+        order_item.save(update_fields=update_fields)
 
     return order_item
 
