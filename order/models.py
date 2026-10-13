@@ -67,6 +67,10 @@ class Order(BaseModel):
                                         blank=True, )
     delivery_cost = models.BigIntegerField('هزینه ارسال', default=0)
 
+    @property
+    def payable_total(self):
+        return (self.total_price or 0) + (self.delivery_cost or 0)
+
     class Meta:
         ordering = ("-created_at",)
         verbose_name = "سفارش"

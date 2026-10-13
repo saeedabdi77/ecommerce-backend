@@ -46,8 +46,8 @@ class OrderRetrieveSerializer(CustomModelSerializer):
 
     class Meta:
         model = Order
-        fields = ("id", "guest_uid", "total_price", "admin_note", "clear_guest_uid", "items", "status", "delivery_address",
-            "delivery_method", "delivery_cost")
+        fields = ("id", "guest_uid", "total_price", "delivery_cost", "payable_total", "admin_note", "clear_guest_uid", "items", "status", "delivery_address",
+            "delivery_method")
 
     def get_clear_guest_uid(self, obj):
         return bool(

@@ -179,6 +179,7 @@ class DraftDeliverySyncTests(TestCase):
 
         self.assertEqual(order.delivery_method_id, self.method.id)
         self.assertEqual(order.delivery_cost, 30)
+        self.assertEqual(order.payable_total, 180)
 
     def test_unchanged_delivery_cost_does_not_write_order(self):
         self.order.delivery_cost = 30
