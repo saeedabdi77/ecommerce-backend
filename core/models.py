@@ -149,6 +149,21 @@ class SiteSettings(BaseModel):
         max_length=32,
         help_text='در پنل جدید همان شماره ارسال (sendingNumber) است.',
     )
+    zarinpal_merchant_id = models.CharField('شناسه پذیرنده زرین‌پال', max_length=64, blank=True)
+    zarinpal_api_base_url = models.URLField(
+        'آدرس API زرین‌پال',
+        default='https://sandbox.zarinpal.com/pg/v4/payment',
+    )
+    zarinpal_start_pay_url = models.URLField(
+        'آدرس پرداخت زرین‌پال',
+        default='https://sandbox.zarinpal.com/pg/StartPay/',
+    )
+    zarinpal_currency = models.CharField(
+        'واحد پول زرین‌پال',
+        max_length=3,
+        choices=(('IRR', 'ریال'), ('IRT', 'تومان')),
+        default='IRR',
+    )
 
     class Meta:
         verbose_name = 'تنظیمات سایت'
@@ -200,6 +215,24 @@ class SiteSettings(BaseModel):
             errors['mediana_base_url'] = 'آدرس API را وارد کنید.'
         else:
             self.mediana_base_url = base_url
+
+        merchant_id = (self.zarinpal_merchant_id or '').strip()
+        self.zarinpal_merchant_id = merchant_id
+
+        api_base_url = (self.zarinpal_api_base_url or '').strip().rstrip('/')
+        if not api_base_url:
+            errors['zarinpal_api_base_url'] = 'آدرس API زرین‌پال را وارد کنید.'
+        else:
+            self.zarinpal_api_base_url = api_base_url
+
+        start_pay_url = (self.zarinpal_start_pay_url or '').strip()
+        if not start_pay_url:
+            errors['zarinpal_start_pay_url'] = 'آدرس پرداخت زرین‌پال را وارد کنید.'
+        else:
+            self.zarinpal_start_pay_url = start_pay_url if start_pay_url.endswith('/') else f'{start_pay_url}/'
+
+        if self.zarinpal_currency not in ('IRR', 'IRT'):
+            errors['zarinpal_currency'] = 'واحد پول زرین‌پال نامعتبر است.'
 
         if errors:
             raise ValidationError(errors)

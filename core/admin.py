@@ -14,6 +14,10 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         'mediana_base_url',
         'mediana_api_key',
         'mediana_from_number',
+        'zarinpal_merchant_id',
+        'zarinpal_api_base_url',
+        'zarinpal_start_pay_url',
+        'zarinpal_currency',
     )
 
     def has_add_permission(self, request):
