@@ -20,6 +20,14 @@ from product.models import Product
 ZARINPAL_CODE = "zarinpal"
 
 
+def _db_alias():
+    return getattr(_tenant_local, "db", "default")
+
+
+def _atomic():
+    return transaction.atomic(using=_db_alias())
+
+
 class CheckoutError(Exception):
     def __init__(self, message, reason):
         super().__init__(message)
@@ -50,7 +58,7 @@ def start_order_payment(user, payment_method_id, request):
 
 
 def _reserve_and_submit(order_id):
-    with transaction.atomic():
+    with _atomic():
         order = Order.objects.select_for_update().filter(pk=order_id, status=OrderStatus.DRAFT).first()
         if order is None:
             return Order.objects.filter(pk=order_id, status=OrderStatus.SUBMITTED).first()
@@ -172,7 +180,7 @@ def handle_zarinpal_callback(db_alias, authority, gateway_status):
 
 
 def finalize_successful_payment(payment_id, ref_id):
-    with transaction.atomic():
+    with _atomic():
         payment = Payment.objects.select_for_update().select_related("order").get(pk=payment_id)
         order = Order.objects.select_for_update().get(pk=payment.order_id)
 
@@ -213,7 +221,7 @@ def _mark_payment_failed(payment_id):
 
 
 def _mark_payment_status(payment_id, status):
-    with transaction.atomic():
+    with _atomic():
         payment = Payment.objects.select_for_update().get(pk=payment_id)
         if payment.status != PaymentStatus.PENDING:
             return
