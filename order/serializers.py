@@ -145,6 +145,10 @@ class SelectDeliveryAddressSerializer(CustomSerializer):
         return instance
 
 
+class SubmitOrderPaymentSerializer(CustomSerializer):
+    payment_method_id = serializers.IntegerField()
+
+
 class PaymentMethodListSerializer(CustomModelSerializer):
     class Meta:
         model = PaymentMethod

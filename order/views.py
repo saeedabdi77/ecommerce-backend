@@ -9,14 +9,19 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from core.base_views import CustomRetrieveAPIView, CustomCreateListUpdateDestroyViewSet, CustomUpdateAPIView, \
-    CustomListAPIView
+    CustomListAPIView, CustomCreateAPIView
+from order.checkout import CheckoutError, handle_zarinpal_callback, start_order_payment
+from order.enums import PaymentStatus
 from order.models import OrderConfig, OrderItem
 from order.serializers import OrderRetrieveSerializer, AddCartItemSerializer, SelectDeliveryAddressSerializer, \
-    DeliveryMethodListSerializer, SelectDeliveryMethodSerializer, OrderConfigSerializer, PaymentMethodListSerializer
+    DeliveryMethodListSerializer, SelectDeliveryMethodSerializer, OrderConfigSerializer, PaymentMethodListSerializer, \
+    SubmitOrderPaymentSerializer
 from order.utilities import sync_draft_order, get_draft_order, get_available_delivery_methods, get_order_config, \
     get_available_payment_methods
+from order.zarinpal import ZarinpalError
 
 
 class OrderConfigRetrieveView(CustomRetrieveAPIView):
@@ -202,6 +207,79 @@ class DeliveryMethodListView(CustomListAPIView):
         context = super().get_serializer_context()
         context["order"] = self.order
         return context
+
+
+class SubmitOrderPaymentView(CustomCreateAPIView):
+    serializer_class = SubmitOrderPaymentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            result = start_order_payment(
+                user=request.user,
+                payment_method_id=serializer.validated_data["payment_method_id"],
+                request=request,
+            )
+        except CheckoutError as exc:
+            raise ValidationError({
+                "message": "Invalid inputs",
+                "details": [{"message": exc.message, "reason": exc.reason}],
+            })
+        except ZarinpalError as exc:
+            raise ValidationError({
+                "message": "Invalid inputs",
+                "details": [{"message": str(exc), "reason": "payment"}],
+            })
+
+        return Response(
+            {
+                "message": "انتقال به درگاه پرداخت",
+                "data": {
+                    "order_id": result.order.id,
+                    "tracking_code": result.order.tracking_code,
+                    "payment_id": result.payment.id,
+                    "amount": result.payment.amount,
+                    "payment_url": result.payment_url,
+                },
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class ZarinpalCallbackView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, db_alias):
+        try:
+            payment = handle_zarinpal_callback(
+                db_alias=db_alias,
+                authority=request.query_params.get("Authority"),
+                gateway_status=request.query_params.get("Status"),
+            )
+        except CheckoutError as exc:
+            raise ValidationError({
+                "message": "Invalid inputs",
+                "details": [{"message": exc.message, "reason": exc.reason}],
+            })
+        except ZarinpalError as exc:
+            raise ValidationError({
+                "message": "Invalid inputs",
+                "details": [{"message": str(exc), "reason": "payment"}],
+            })
+
+        paid = payment.status == PaymentStatus.SUCCESS
+        return Response({
+            "message": "پرداخت با موفقیت انجام شد." if paid else "پرداخت انجام نشد.",
+            "data": {
+                "order_id": payment.order_id,
+                "tracking_code": payment.order.tracking_code,
+                "payment_id": payment.id,
+                "ref_id": payment.tracking_code,
+                "status": payment.order.status if paid else payment.status,
+            },
+        })
 
 
 class SelectDeliveryMethodView(CustomUpdateAPIView):
