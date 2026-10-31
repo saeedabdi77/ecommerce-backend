@@ -15,6 +15,7 @@ from product.forms import (
     ProductCollectionForm,
     ProductForm,
     ProductImageForm,
+    PurchaseMethodForm,
     ProductTypeForm,
     ReviewForm,
     TagForm,
@@ -30,6 +31,7 @@ from product.models import (
     ProductCollection,
     ProductImage,
     ProductType,
+    PurchaseMethod,
     Review,
     Tag,
 )

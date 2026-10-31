@@ -3,7 +3,7 @@ from django.test import TestCase
 from core.models import SiteSettings
 from product.enums import ProductState
 from product.forms import ProductForm
-from product.models import Brand, Category, Product, ProductType
+from product.models import Brand, Category, Product, ProductType, PurchaseMethod
 
 
 def site_settings(**kwargs):
@@ -75,9 +75,11 @@ class ProductDollarPriceTests(TestCase):
 
     def test_product_form_stores_dollar_price_from_config(self):
         site_settings(dollar_price=85000)
+        method = PurchaseMethod.objects.create(name="Cash")
         form = ProductForm(data={
             "product_type": self.product_type.pk,
             "purchase_price": 80,
+            "purchase_method": method.pk,
             "serial": "SN-1",
             "state": ProductState.IN_WAREHOUSE,
         })
@@ -86,3 +88,15 @@ class ProductDollarPriceTests(TestCase):
         product = form.save()
 
         self.assertEqual(product.dollar_price, 85000)
+        self.assertEqual(product.purchase_method_id, method.pk)
+
+    def test_product_form_requires_purchase_method(self):
+        form = ProductForm(data={
+            "product_type": self.product_type.pk,
+            "purchase_price": 80,
+            "serial": "SN-2",
+            "state": ProductState.IN_WAREHOUSE,
+        })
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("purchase_method", form.errors)

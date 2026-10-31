@@ -163,10 +163,31 @@ class ProductImage(BaseModel):
         verbose_name_plural = 'عکسهای محصولات'
 
 
+class PurchaseMethod(BaseModel):
+    name = models.CharField('نام', max_length=100, unique=True)
+    description = models.TextField('توضیحات', blank=True)
+
+    class Meta:
+        verbose_name = 'نحوه خرید'
+        verbose_name_plural = 'نحوه‌های خرید'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class Product(BaseModel):
     product_type = models.ForeignKey(ProductType, verbose_name='نوع محصول', on_delete=models.PROTECT,
                                      related_name='products', db_index=True)
     purchase_price = models.BigIntegerField('قیمت خرید')
+    purchase_method = models.ForeignKey(
+        PurchaseMethod,
+        verbose_name='نحوه خرید',
+        on_delete=models.PROTECT,
+        related_name='products',
+        null=True,
+        blank=True,
+    )
     dollar_price = models.PositiveBigIntegerField(
         'قیمت دلار',
         null=True,

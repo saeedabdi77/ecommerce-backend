@@ -6,7 +6,7 @@ from django.db.models import Count
 from .models import (
     Category, Brand, Attribute, AttributeValue,
     ProductType, ProductAttribute, ProductImage,
-    Product, Tag, Review, Wishlist, ProductCollection
+    Product, PurchaseMethod, Tag, Review, Wishlist, ProductCollection
 )
 
 
@@ -26,7 +26,7 @@ class ProductImageInline(admin.TabularInline):
 class ProductInline(admin.TabularInline):
     model = Product
     extra = 1
-    fields = ('serial', 'purchase_price', 'dollar_price', 'state')
+    fields = ('serial', 'purchase_price', 'purchase_method', 'dollar_price', 'state')
     readonly_fields = ('dollar_price',)
     show_change_link = True
 
@@ -183,10 +183,16 @@ class ProductAttributeAdmin(admin.ModelAdmin):
     list_editable = ('extra_price',)
 
 
+@admin.register(PurchaseMethod)
+class PurchaseMethodAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description')
+    search_fields = ('name', 'description')
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('id', 'product_type', 'state', 'purchase_price', 'dollar_price', 'serial')
-    list_filter = ('state', 'product_type')
+    list_display = ('id', 'product_type', 'state', 'purchase_price', 'purchase_method', 'dollar_price', 'serial')
+    list_filter = ('state', 'product_type', 'purchase_method')
     search_fields = ('serial', 'product_type__name')
     list_editable = ('state', 'purchase_price')
     autocomplete_fields = ['product_type']
@@ -196,7 +202,7 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('product_type', 'serial', 'state')
         }),
         ('قیمت و انبار', {
-            'fields': ('purchase_price', 'dollar_price')
+            'fields': ('purchase_price', 'purchase_method', 'dollar_price')
         }),
         ('تاریخ در دسترس', {
             'fields': ('available_from', 'available_to'),

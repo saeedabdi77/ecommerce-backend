@@ -11,6 +11,7 @@ from product.models import (
     ProductCollection,
     ProductImage,
     ProductType,
+    PurchaseMethod,
     Review,
     Tag,
 )
@@ -120,14 +121,25 @@ class ProductImageForm(forms.ModelForm):
         fields = ("product_type", "image", "is_thumbnail", "order")
 
 
+class PurchaseMethodForm(forms.ModelForm):
+    class Meta:
+        model = PurchaseMethod
+        fields = ("name", "description")
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3}),
+        }
+
+
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ("product_type", "purchase_price", "dollar_price", "serial", "state")
+        fields = ("product_type", "purchase_price", "purchase_method", "dollar_price", "serial", "state")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["product_type"].queryset = ProductType.objects.select_related("category", "brand").order_by("name")
+        self.fields["purchase_method"].queryset = PurchaseMethod.objects.order_by("name")
+        self.fields["purchase_method"].required = True
         self.fields["dollar_price"].disabled = True
         self.fields["dollar_price"].help_text = "هنگام ثبت کالا از قیمت دلار در تنظیمات سایت پر می‌شود."
         if not self.instance.pk:
