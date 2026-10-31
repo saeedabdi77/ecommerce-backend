@@ -5,7 +5,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('product', '0006_catalogactivitylog'),
-        ('product', '0002_alter_product_options_alter_productimage_options_and_more'),
     ]
 
     operations = [
