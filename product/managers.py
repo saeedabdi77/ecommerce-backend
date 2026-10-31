@@ -369,6 +369,7 @@ class ProductManager(BaseManager):
         Column("product_type.category", "دسته بندی", sortable=True),
         Column("serial", "سریال", sortable=True),
         Column("purchase_price", "قیمت خرید", sortable=True, editable=True),
+        Column("purchase_method", "نحوه خرید", sortable=True),
         Column("dollar_price", "قیمت دلار", sortable=True),
         Column("state", "وضعیت", sortable=True, editable=True),
     )
@@ -376,6 +377,7 @@ class ProductManager(BaseManager):
     filters = (
         TextFilter("serial", "سریال"),
         ForeignKeyFilter("product_type", queryset=ProductType.objects.all(), label="نوع محصول"),
+        ForeignKeyFilter("purchase_method", queryset=PurchaseMethod.objects.all(), label="نحوه خرید"),
         ChoiceFilter.from_field(Product, "state", label="وضعیت"),
     )
 
@@ -398,7 +400,39 @@ class ProductManager(BaseManager):
         "product_type",
         "product_type__category",
         "product_type__brand",
+        "purchase_method",
     )
+
+
+@registry.register
+class PurchaseMethodManager(BaseManager):
+    slug = "purchase-methods"
+    model = PurchaseMethod
+
+    menu_group = "inventory"
+    menu_label = "نحوه خرید"
+    menu_icon = "list"
+    menu_order = 20
+
+    columns = (
+        Column("name", "نام", sortable=True),
+        Column("description", "توضیحات"),
+    )
+
+    filters = (
+        TextFilter("name", "نام"),
+        TextFilter("description", "توضیحات"),
+    )
+
+    actions = (
+        CreateAction(PurchaseMethodForm),
+        DetailAction(),
+        UpdateAction(PurchaseMethodForm),
+        DeleteAction(),
+    )
+
+    search_fields = ("name", "description")
+    ordering = ("name",)
 
 
 
