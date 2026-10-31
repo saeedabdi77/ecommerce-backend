@@ -3,8 +3,18 @@ from django.conf import settings
 from core.models import SiteSettings, parse_phone_numbers
 
 
-def get_site_settings():
-    return SiteSettings.objects.order_by('pk').first()
+def get_site_settings(using=None):
+    queryset = SiteSettings.objects.all()
+    if using:
+        queryset = queryset.using(using)
+    return queryset.order_by('pk').first()
+
+
+def get_dollar_price(using=None):
+    site = get_site_settings(using=using)
+    if site is None:
+        return None
+    return site.dollar_price
 
 
 def get_admin_phone_numbers():

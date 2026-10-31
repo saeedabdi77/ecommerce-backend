@@ -26,7 +26,8 @@ class ProductImageInline(admin.TabularInline):
 class ProductInline(admin.TabularInline):
     model = Product
     extra = 1
-    fields = ('serial', 'purchase_price', 'state')
+    fields = ('serial', 'purchase_price', 'dollar_price', 'state')
+    readonly_fields = ('dollar_price',)
     show_change_link = True
 
 
@@ -184,17 +185,18 @@ class ProductAttributeAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('id', 'product_type', 'state', 'purchase_price', 'serial')
+    list_display = ('id', 'product_type', 'state', 'purchase_price', 'dollar_price', 'serial')
     list_filter = ('state', 'product_type')
     search_fields = ('serial', 'product_type__name')
     list_editable = ('state', 'purchase_price')
     autocomplete_fields = ['product_type']
+    readonly_fields = ('dollar_price',)
     fieldsets = (
         ('اطلاعات محصول', {
             'fields': ('product_type', 'serial', 'state')
         }),
         ('قیمت و انبار', {
-            'fields': ('purchase_price',)
+            'fields': ('purchase_price', 'dollar_price')
         }),
         ('تاریخ در دسترس', {
             'fields': ('available_from', 'available_to'),

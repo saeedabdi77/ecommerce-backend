@@ -1,5 +1,6 @@
 from django import forms
 
+from core.site_config import get_dollar_price
 from product.models import (
     Attribute,
     AttributeValue,
@@ -122,11 +123,15 @@ class ProductImageForm(forms.ModelForm):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ("product_type", "purchase_price", "serial", "state")
+        fields = ("product_type", "purchase_price", "dollar_price", "serial", "state")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["product_type"].queryset = ProductType.objects.select_related("category", "brand").order_by("name")
+        self.fields["dollar_price"].disabled = True
+        self.fields["dollar_price"].help_text = "هنگام ثبت کالا از قیمت دلار در تنظیمات سایت پر می‌شود."
+        if not self.instance.pk:
+            self.initial["dollar_price"] = get_dollar_price()
 
 
 class ReviewForm(forms.ModelForm):

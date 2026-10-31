@@ -18,6 +18,7 @@ class SiteSettingsForm(forms.ModelForm):
             'zarinpal_api_base_url',
             'zarinpal_start_pay_url',
             'zarinpal_currency',
+            'dollar_price',
         )
         widgets = {
             'admin_phone_numbers': forms.Textarea(attrs={'rows': 3}),
@@ -33,6 +34,7 @@ class SiteSettingsForm(forms.ModelForm):
             ('اعلان‌ها', {'fields': ('admin_phone_numbers', 'master_otp_code')}),
             ('پیامک مدیانا', {'fields': ('mediana_panel', 'mediana_base_url', 'mediana_api_key', 'mediana_from_number')}),
             ('زرین‌پال', {'fields': ('zarinpal_merchant_id', 'zarinpal_api_base_url', 'zarinpal_start_pay_url', 'zarinpal_currency')}),
+            ('قیمت دلار', {'fields': ('dollar_price',)}),
         )
 
     def clean(self):

@@ -2,6 +2,7 @@ import uuid
 
 from django.test import TestCase
 
+from core.models import SiteSettings
 from order.enums import DeliveryPricingStrategy, OrderStatus
 from order.models import DeliveryMethod, DeliveryPricing, Order, OrderItem, PaymentMethod
 from order.utilities import get_available_payment_methods, sync_draft_order
@@ -238,6 +239,84 @@ class DraftDeliverySyncTests(TestCase):
 
         self.assertEqual(order.delivery_method_id, self.method.id)
         self.assertEqual(order.delivery_cost, 10)
+
+
+class OrderDollarPriceTests(TestCase):
+    def setUp(self):
+        category = Category.objects.create(name="Rings", slug="rings-dollar")
+        brand = Brand.objects.create(name="Atashin", slug="atashin-dollar")
+        self.product_type = ProductType.objects.create(
+            category=category,
+            brand=brand,
+            name="Ring",
+            slug="ring-dollar",
+            description="A ring",
+            main_price=200,
+            sell_price=150,
+        )
+        self.order = Order.objects.create(guest_uid=uuid.uuid4())
+        self.item = OrderItem.objects.create(
+            order=self.order,
+            product_type=self.product_type,
+            price=150,
+            count=1,
+        )
+        self.settings = SiteSettings.objects.order_by("pk").first()
+        if self.settings is None:
+            self.settings = SiteSettings.objects.create(
+                mediana_api_key="key",
+                mediana_from_number="1000",
+                dollar_price=85000,
+            )
+        else:
+            self.settings.dollar_price = 85000
+            self.settings.save(update_fields=("dollar_price",))
+
+    def test_draft_item_does_not_store_dollar_price(self):
+        self.item.refresh_from_db()
+        self.assertIsNone(self.item.dollar_price)
+
+    def test_submitting_order_stores_current_dollar_price(self):
+        self.order.status = OrderStatus.SUBMITTED
+        self.order.save(update_fields=("status",))
+
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.dollar_price, 85000)
+
+    def test_submitted_order_keeps_dollar_price_after_config_change(self):
+        self.order.status = OrderStatus.SUBMITTED
+        self.order.save(update_fields=("status",))
+        self.settings.dollar_price = 91000
+        self.settings.save(update_fields=("dollar_price",))
+
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.dollar_price, 85000)
+
+    def test_item_added_to_submitted_order_stores_current_dollar_price(self):
+        self.order.status = OrderStatus.SUBMITTED
+        self.order.save(update_fields=("status",))
+        self.settings.dollar_price = 91000
+        self.settings.save(update_fields=("dollar_price",))
+        other_type = ProductType.objects.create(
+            category=self.product_type.category,
+            brand=self.product_type.brand,
+            name="Necklace",
+            slug="necklace-dollar",
+            description="A necklace",
+            main_price=300,
+            sell_price=250,
+        )
+
+        item = OrderItem.objects.create(
+            order=self.order,
+            product_type=other_type,
+            price=250,
+            count=1,
+        )
+
+        self.assertEqual(item.dollar_price, 91000)
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.dollar_price, 85000)
 
 
 class PaymentMethodListTests(TestCase):

@@ -115,6 +115,7 @@ class OrderItemManager(BaseManager):
         Column("product_type.name", "محصول", sortable=True),
         Column("count", "تعداد", sortable=True, editable=True),
         Column("price", "قیمت", sortable=True, editable=True),
+        Column("dollar_price", "قیمت دلار", sortable=True),
     )
 
     filters = (

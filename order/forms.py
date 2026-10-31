@@ -33,12 +33,14 @@ class OrderForm(forms.ModelForm):
 class OrderItemForm(forms.ModelForm):
     class Meta:
         model = OrderItem
-        fields = ("order", "product_type", "price", "count")
+        fields = ("order", "product_type", "price", "dollar_price", "count")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["order"].queryset = Order.objects.order_by("-created_at")
         self.fields["product_type"].queryset = ProductType.objects.select_related("category", "brand").order_by("name")
+        self.fields["dollar_price"].disabled = True
+        self.fields["dollar_price"].help_text = "هنگام ثبت سفارش از قیمت دلار در تنظیمات سایت پر می‌شود."
 
 
 class OrderItemProductForm(forms.ModelForm):

@@ -17,7 +17,7 @@ class OrderItemProductInline(admin.TabularInline):
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
-    readonly_fields = ("product_type", "price", "count", "created_at")
+    readonly_fields = ("product_type", "price", "dollar_price", "count", "created_at")
     can_delete = False
     show_change_link = True
 
@@ -56,6 +56,7 @@ class OrderItemAdmin(admin.ModelAdmin):
         "product_type",
         "count",
         "price",
+        "dollar_price",
         "created_at",
     )
     search_fields = (
@@ -67,6 +68,7 @@ class OrderItemAdmin(admin.ModelAdmin):
         "product_type",
     )
     readonly_fields = (
+        "dollar_price",
         "created_at",
         "updated_at",
     )

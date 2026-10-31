@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import Sum, F
 
 from core.models import BaseModel
+from core.site_config import get_dollar_price
 from user.models import Address
 from order.enums import OrderStatus, DeliveryPricingStrategy, PaymentStatus
 
@@ -87,16 +88,33 @@ class Order(BaseModel):
         return total
 
     def save(self, *args, **kwargs):
+        using = kwargs.get('using') or self._state.db
+        previous_status = None
+        if self.pk:
+            lookup = Order.objects.filter(pk=self.pk)
+            if using:
+                lookup = lookup.using(using)
+            previous_status = lookup.values_list('status', flat=True).first()
+
         if not self.pk:
             last = Order.objects.order_by('-tracking_code').first()
             self.tracking_code = (last.tracking_code + 1) if last else 1000
         super().save(*args, **kwargs)
+
+        if self.status == OrderStatus.SUBMITTED and previous_status != OrderStatus.SUBMITTED:
+            self.items.update(dollar_price=get_dollar_price(using=self._state.db))
 
 
 class OrderItem(BaseModel):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     product_type = models.ForeignKey("product.ProductType", on_delete=models.PROTECT, related_name="order_items")
     price = models.BigIntegerField("قیمت")
+    dollar_price = models.PositiveBigIntegerField(
+        'قیمت دلار',
+        null=True,
+        blank=True,
+        help_text='قیمت دلار در لحظه ثبت سفارش، از تنظیمات سایت.',
+    )
     count = models.PositiveIntegerField("تعداد", default=1)
 
     class Meta:
@@ -106,6 +124,12 @@ class OrderItem(BaseModel):
 
     def __str__(self):
         return f"{self.order} - {self.product_type}"
+
+    def save(self, *args, **kwargs):
+        if self._state.adding and self.dollar_price is None and self.order_id and self.order.status == OrderStatus.SUBMITTED:
+            using = kwargs.get('using') or self.order._state.db or self._state.db
+            self.dollar_price = get_dollar_price(using=using)
+        super().save(*args, **kwargs)
 
 
 class OrderItemProduct(BaseModel):

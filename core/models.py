@@ -164,6 +164,12 @@ class SiteSettings(BaseModel):
         choices=(('IRR', 'ریال'), ('IRT', 'تومان')),
         default='IRR',
     )
+    dollar_price = models.PositiveBigIntegerField(
+        'قیمت دلار',
+        null=True,
+        blank=True,
+        help_text='قیمت روز دلار به تومان. هر روز همین مقدار را دستی به‌روز کنید. هنگام افزودن کالا و ثبت سفارش، قیمت همان لحظه ذخیره می‌شود.',
+    )
 
     class Meta:
         verbose_name = 'تنظیمات سایت'
@@ -233,6 +239,9 @@ class SiteSettings(BaseModel):
 
         if self.zarinpal_currency not in ('IRR', 'IRT'):
             errors['zarinpal_currency'] = 'واحد پول زرین‌پال نامعتبر است.'
+
+        if self.dollar_price is not None and self.dollar_price < 1:
+            errors['dollar_price'] = 'قیمت دلار باید بزرگ‌تر از صفر باشد.'
 
         if errors:
             raise ValidationError(errors)

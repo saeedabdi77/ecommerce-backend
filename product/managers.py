@@ -367,6 +367,7 @@ class ProductManager(BaseManager):
         Column("product_type.category", "دسته بندی", sortable=True),
         Column("serial", "سریال", sortable=True),
         Column("purchase_price", "قیمت خرید", sortable=True, editable=True),
+        Column("dollar_price", "قیمت دلار", sortable=True),
         Column("state", "وضعیت", sortable=True, editable=True),
     )
 

@@ -33,6 +33,7 @@ class SiteSettingsManager(BaseManager):
         Column('mediana_panel', 'نسخه پنل'),
         Column('mediana_from_number', 'شماره خط ارسال'),
         Column('mediana_base_url', 'آدرس API'),
+        Column('dollar_price', 'قیمت دلار', sortable=True, editable=True),
         Column('zarinpal_currency', 'واحد پول زرین‌پال'),
         Column('zarinpal_api_base_url', 'آدرس API زرین‌پال'),
     )

@@ -18,6 +18,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         'zarinpal_api_base_url',
         'zarinpal_start_pay_url',
         'zarinpal_currency',
+        'dollar_price',
     )
 
     def has_add_permission(self, request):

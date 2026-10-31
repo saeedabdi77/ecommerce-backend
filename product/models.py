@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 from django.utils import timezone
 from core.models import BaseModel, LogBaseModel
+from core.site_config import get_dollar_price
 from product.enums import CatalogActivityEvent, ProductState
 
 
@@ -166,6 +167,12 @@ class Product(BaseModel):
     product_type = models.ForeignKey(ProductType, verbose_name='نوع محصول', on_delete=models.PROTECT,
                                      related_name='products', db_index=True)
     purchase_price = models.BigIntegerField('قیمت خرید')
+    dollar_price = models.PositiveBigIntegerField(
+        'قیمت دلار',
+        null=True,
+        blank=True,
+        help_text='قیمت دلار در لحظه افزودن کالا، از تنظیمات سایت.',
+    )
     serial = models.CharField('سریال', max_length=100, null=True, blank=True)
     state = models.CharField('وضعیت', max_length=20, choices=ProductState.choices, default=ProductState.IN_WAREHOUSE,
                              db_index=True)
@@ -176,6 +183,11 @@ class Product(BaseModel):
 
     def __str__(self):
         return f"{self.product_type.name} - {self.id}"
+
+    def save(self, *args, **kwargs):
+        if self._state.adding and self.dollar_price is None:
+            self.dollar_price = get_dollar_price(using=kwargs.get('using') or self._state.db)
+        super().save(*args, **kwargs)
 
 
 class Tag(BaseModel):
