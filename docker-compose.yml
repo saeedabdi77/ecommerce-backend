@@ -49,6 +49,7 @@ services:
       - ./nginx/server.key:/etc/nginx/conf.d/server.key
       - ./nginx/maria.crt:/etc/nginx/conf.d/maria.crt
       - ./nginx/maria.key:/etc/nginx/conf.d/maria.key
+      - ./nginx/.htpasswd:/etc/nginx/conf.d/.htpasswd:ro
 
   redis:
     image: redis:6
