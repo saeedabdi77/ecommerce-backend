@@ -30,12 +30,13 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "user",
+        "sale_method",
         "status",
         "total_price",
         "tracking_code",
         "created_at",
     )
-    list_filter = ("status", "created_at")
+    list_filter = ("status", "sale_method", "created_at")
     search_fields = ("user__phone_number", "tracking_code")
     autocomplete_fields = ("user",)
     readonly_fields = (

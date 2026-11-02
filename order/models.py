@@ -4,7 +4,7 @@ from django.db.models import Sum, F
 from core.models import BaseModel
 from core.site_config import get_dollar_price
 from user.models import Address
-from order.enums import OrderStatus, DeliveryPricingStrategy, PaymentStatus
+from order.enums import OrderStatus, DeliveryPricingStrategy, PaymentStatus, SaleMethod
 
 
 class OrderConfig(BaseModel):
@@ -56,6 +56,12 @@ class Order(BaseModel):
     tracking_code = models.PositiveIntegerField(verbose_name='کد پیگیری', unique=True, editable=False)
     user = models.ForeignKey("user.User", on_delete=models.PROTECT, related_name="orders",
                              blank=True, null=True)
+    sale_method = models.CharField(
+        "نحوه فروش",
+        max_length=20,
+        choices=SaleMethod.choices,
+        default=SaleMethod.WEBSITE,
+    )
     guest_uid = models.UUIDField(null=True, blank=True, db_index=True)
     status = models.CharField("وضعیت", max_length=20, choices=OrderStatus.choices,
                               default=OrderStatus.DRAFT, db_index=True)

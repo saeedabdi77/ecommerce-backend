@@ -19,7 +19,7 @@ from user.models import User
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ("user", "guest_uid", "status", "total_price", "admin_note")
+        fields = ("user", "guest_uid", "status", "sale_method", "total_price", "admin_note")
         widgets = {
             "admin_note": forms.Textarea(attrs={"rows": 3, "full_width": True}),
         }

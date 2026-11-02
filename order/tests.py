@@ -3,7 +3,8 @@ import uuid
 from django.test import TestCase
 
 from core.models import SiteSettings
-from order.enums import DeliveryPricingStrategy, OrderStatus
+from order.enums import DeliveryPricingStrategy, OrderStatus, SaleMethod
+from order.forms import OrderForm
 from order.models import DeliveryMethod, DeliveryPricing, Order, OrderItem, PaymentMethod
 from order.utilities import get_available_payment_methods, sync_draft_order
 from product.enums import ProductState
@@ -328,3 +329,21 @@ class PaymentMethodListTests(TestCase):
         codes = set(get_available_payment_methods(order).values_list("code", flat=True))
 
         self.assertEqual(codes, {"card"})
+
+
+class SaleMethodTests(TestCase):
+    def test_new_order_defaults_to_website(self):
+        order = Order.objects.create(guest_uid=uuid.uuid4())
+
+        self.assertEqual(order.sale_method, SaleMethod.WEBSITE)
+
+    def test_order_form_saves_selected_sale_method(self):
+        form = OrderForm(data={
+            "status": OrderStatus.SUBMITTED,
+            "sale_method": SaleMethod.IN_PERSON,
+        })
+
+        self.assertTrue(form.is_valid(), form.errors)
+        order = form.save()
+        self.assertEqual(order.sale_method, SaleMethod.IN_PERSON)
+        self.assertEqual(order.get_sale_method_display(), "حضوری")

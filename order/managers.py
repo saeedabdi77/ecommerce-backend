@@ -76,6 +76,7 @@ class OrderManager(BaseManager):
     columns = (
         Column("tracking_code", "کد پیگیری", sortable=True),
         Column("user", "کاربر", sortable=True),
+        Column("sale_method", "نحوه فروش", sortable=True),
         Column("status", "وضعیت", sortable=True, editable=True),
         Column("total_price", "مبلغ کل", sortable=True),
         Column("created_at", "تاریخ ثبت", sortable=True),
@@ -84,6 +85,7 @@ class OrderManager(BaseManager):
     filters = (
         TextFilter("tracking_code", "کد پیگیری", lookup="exact"),
         ForeignKeyFilter("user", queryset=User.objects.all(), label="کاربر"),
+        ChoiceFilter.from_field(Order, "sale_method", label="نحوه فروش"),
         ChoiceFilter.from_field(Order, "status", label="وضعیت"),
     )
 
@@ -150,6 +152,11 @@ class OrderItemProductManager(BaseManager):
         Column("order_item.order.tracking_code", "کد پیگیری", sortable=True),
         Column("order_item.product_type.name", "محصول", sortable=True),
         Column("product.serial", "سریال", sortable=True),
+        Column(
+            "order_item.order.sale_method",
+            "نحوه فروش",
+            value=lambda obj: obj.order_item.order.get_sale_method_display(),
+        ),
     )
 
     filters = (
@@ -167,7 +174,13 @@ class OrderItemProductManager(BaseManager):
     search_fields = ("order_item__order__tracking_code", "order_item__product_type__name", "product__serial")
     ordering = ("-created_at",)
 
-    select_related = ("order_item", "order_item__order", "order_item__product_type", "product", "product__product_type")
+    select_related = (
+        "order_item",
+        "order_item__order",
+        "order_item__product_type",
+        "product",
+        "product__product_type",
+    )
 
 
 @registry.register

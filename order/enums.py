@@ -18,6 +18,13 @@ class DeliveryPricingStrategy(models.TextChoices):
     BY_DISTANCE = "by_distance", "بر اساس فاصله"
 
 
+class SaleMethod(models.TextChoices):
+    WEBSITE = "website", "وب‌سایت"
+    IN_PERSON = "in_person", "حضوری"
+    PHONE = "phone", "تلفنی"
+    OTHER = "other", "سایر"
+
+
 class PaymentStatus(models.TextChoices):
     PENDING = "pending", "در انتظار پرداخت"
     SUCCESS = "success", "موفق"
