@@ -32,6 +32,8 @@ class Category(BaseModel):
         unique_together = [['parent', 'slug']]
 
     def __str__(self):
+        if self.parent_id:
+            return f"{self.parent.name} / {self.name}"
         return self.name
 
     def save(self, *args, **kwargs):
