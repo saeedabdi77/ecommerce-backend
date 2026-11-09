@@ -3,6 +3,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 from django.db.models import Count
+from .forms import ProductImageInlineForm, ProductInlineForm, ProductTypeForm
 from .models import (
     Category, Brand, Attribute, AttributeValue,
     ProductType, ProductAttribute, ProductImage,
@@ -12,6 +13,7 @@ from .models import (
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
+    form = ProductImageInlineForm
     extra = 1
     fields = ('preview', 'image', 'is_thumbnail', 'order')
     readonly_fields = ('preview',)
@@ -25,9 +27,9 @@ class ProductImageInline(admin.TabularInline):
 
 class ProductInline(admin.TabularInline):
     model = Product
+    form = ProductInlineForm
     extra = 1
-    fields = ('serial', 'purchase_price', 'purchase_method', 'dollar_price', 'state')
-    readonly_fields = ('dollar_price',)
+    fields = ('serial', 'purchase_price', 'purchase_method', 'state')
     show_change_link = True
 
 
@@ -130,19 +132,19 @@ class AttributeValueAdmin(admin.ModelAdmin):
 class ProductTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'brand', 'sell_price', 'main_price', 'stock', 'active', 'has_discount')
     list_editable = ('sell_price', 'main_price', 'active')
+    form = ProductTypeForm
     list_filter = ('category', 'brand', 'active', 'tags')
     search_fields = ('name', 'slug', 'description', 'seo_keywords')
-    prepopulated_fields = {"slug": ("name",)}
     autocomplete_fields = ['category', 'brand', 'tags']
     inlines = [ProductImageInline, ProductInline, ProductAttributeInline]
     filter_horizontal = ('tags',)
     fieldsets = (
-        ('اطلاعات پایه', {
-            'fields': ('category', 'brand', 'name', 'slug', 'description', 'active')
+        ('Product', {
+            'fields': ('category', 'brand', 'name', 'description', 'active')
         }),
-        ('قیمت', {
+        ('Prices', {
             'fields': ('main_price', 'sell_price'),
-            'description': 'TODO: Add discount system later'
+            'description': 'English digits.'
         }),
         ('وزن و ابعاد', {
             'fields': ('weight', 'dimensions'),
