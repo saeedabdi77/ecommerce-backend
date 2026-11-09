@@ -62,9 +62,10 @@ class Order(BaseModel):
         choices=SaleMethod.choices,
         default=SaleMethod.WEBSITE,
     )
-    buyer_name = models.CharField("نام خریدار", max_length=200, blank=True)
     buyer_phone = models.CharField("موبایل خریدار", max_length=11, blank=True)
     buyer_address = models.TextField("آدرس خریدار", blank=True)
+    first_name = models.CharField("نام", max_length=150, blank=True)
+    last_name = models.CharField("نام خانوادگی", max_length=150, blank=True)
     guest_uid = models.UUIDField(null=True, blank=True, db_index=True)
     status = models.CharField("وضعیت", max_length=20, choices=OrderStatus.choices,
                               default=OrderStatus.DRAFT, db_index=True)
@@ -88,11 +89,13 @@ class Order(BaseModel):
 
     @property
     def buyer_label(self):
+        name = f"{(self.first_name or '').strip()} {(self.last_name or '').strip()}".strip()
         if self.user_id:
-            name = (self.user.get_full_name() or "").strip()
-            return f"{name} — {self.user.phone_number}" if name else self.user.phone_number
-        parts = [part.strip() for part in (self.buyer_name, self.buyer_phone) if part and part.strip()]
-        return " — ".join(parts)
+            name = name or (self.user.get_full_name() or "").strip()
+            phone = self.user.phone_number
+            return f"{name} — {phone}" if name else phone
+        phone = (self.buyer_phone or "").strip()
+        return " — ".join(part for part in (name, phone) if part)
 
     def __str__(self):
         return f"{self.buyer_label or self.guest_uid or self.tracking_code} - {self.tracking_code}"
@@ -251,7 +254,9 @@ class OrderStatusMessage(BaseModel):
             parameters[tracking_param] = order.tracking_code
 
         if full_name_param:
-            user = order.user if order.user_id else None
-            parameters[full_name_param] = user.get_full_name().strip() if user else ''
+            name = f"{(order.first_name or '').strip()} {(order.last_name or '').strip()}".strip()
+            if not name and order.user_id:
+                name = order.user.get_full_name().strip()
+            parameters[full_name_param] = name
 
         return parameters

@@ -63,6 +63,9 @@ def _reserve_and_submit(order_id):
         if order is None:
             return Order.objects.filter(pk=order_id, status=OrderStatus.SUBMITTED).first()
 
+        if not (order.first_name or "").strip() or not (order.last_name or "").strip():
+            raise CheckoutError("نام و نام خانوادگی را همراه آدرس ارسال کنید.", "first_name")
+
         order = sync_draft_order(order)
         if order is None:
             raise CheckoutError("سبد خرید خالی است.", "order")

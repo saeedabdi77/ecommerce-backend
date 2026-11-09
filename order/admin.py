@@ -37,7 +37,7 @@ class OrderAdmin(admin.ModelAdmin):
         "created_at",
     )
     list_filter = ("status", "sale_method", "created_at")
-    search_fields = ("user__phone_number", "buyer_name", "buyer_phone", "tracking_code")
+    search_fields = ("user__phone_number", "first_name", "last_name", "buyer_phone", "tracking_code")
 
     @admin.display(description="خریدار")
     def buyer_label(self, obj):
