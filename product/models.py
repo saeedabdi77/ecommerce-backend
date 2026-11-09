@@ -98,7 +98,12 @@ class ProductType(BaseModel):
     brand = models.ForeignKey(Brand, verbose_name='برند', on_delete=models.PROTECT, related_name='product_types',
                               null=True, blank=True)
     name = models.CharField('نام محصول', max_length=200)
-    slug = models.SlugField('اسلاگ', unique=True)
+    slug = models.SlugField(
+        'اسلاگ',
+        unique=True,
+        blank=True,
+        help_text='اگر خالی باشد از نام انگلیسی ساخته می‌شود.',
+    )
     description = models.TextField('توضیحات')
     active = models.BooleanField('فعال', default=True, db_index=True)
 
@@ -124,12 +129,32 @@ class ProductType(BaseModel):
         return self.name
 
     def clean(self):
+        if self.sell_price is None or self.main_price is None:
+            return
         if self.sell_price > self.main_price:
             raise ValidationError({'sell_price': 'قیمت فروش نمی‌تواند از قیمت اصلی بیشتر باشد'})
 
     def save(self, *args, **kwargs):
+        update_fields = kwargs.get("update_fields")
+        if not (self.slug or "").strip():
+            self.slug = self._unique_slug()
+            if update_fields is not None:
+                kwargs["update_fields"] = set(update_fields) | {"slug"}
         self.full_clean()
         super().save(*args, **kwargs)
+
+    def _unique_slug(self):
+        base = (slugify(self.name) or "product")[:50]
+        candidate = base
+        number = 2
+        taken = ProductType.objects.using(self._state.db)
+        if self.pk:
+            taken = taken.exclude(pk=self.pk)
+        while taken.filter(slug=candidate).exists():
+            suffix = f"-{number}"
+            candidate = f"{base[:50 - len(suffix)]}{suffix}"
+            number += 1
+        return candidate
 
     @property
     def stock(self):

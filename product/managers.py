@@ -4,6 +4,7 @@ from django.urls import reverse
 from core.manager.actions import CreateAction, DeleteAction, DetailAction, UpdateAction
 from core.manager.columns import Column
 from core.manager.filters import BooleanFilter, ChoiceFilter, DateFilter, ForeignKeyFilter, TextFilter
+from core.manager.inlines import Inline
 from core.manager.managers import BaseManager, registry
 from product.enums import CatalogActivityEvent
 from product.forms import (
@@ -15,6 +16,8 @@ from product.forms import (
     ProductCollectionForm,
     ProductForm,
     ProductImageForm,
+    ProductImageInlineForm,
+    ProductInlineForm,
     PurchaseMethodForm,
     ProductTypeForm,
     ReviewForm,
@@ -250,6 +253,23 @@ class ProductTypeManager(BaseManager):
         BooleanFilter("active", "فعال"),
         ForeignKeyFilter("category", queryset=Category.objects.all(), label="دسته بندی"),
         ForeignKeyFilter("brand", queryset=Brand.objects.all(), label="برند"),
+    )
+
+    inlines = (
+        Inline(
+            model=Product,
+            form_class=ProductInlineForm,
+            fk_name="product_type",
+            extra=1,
+            verbose_name_plural="Products",
+        ),
+        Inline(
+            model=ProductImage,
+            form_class=ProductImageInlineForm,
+            fk_name="product_type",
+            extra=1,
+            verbose_name_plural="Images",
+        ),
     )
 
     actions = (

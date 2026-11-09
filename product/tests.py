@@ -1,9 +1,18 @@
-from django.test import TestCase
+import tempfile
+from io import BytesIO
 
+from decouple import config
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
+from PIL import Image
+
+from core.manager.forms import build_inline_formsets, inline_formsets_are_valid, save_inline_formsets
 from core.models import SiteSettings
 from product.enums import ProductState
-from product.forms import ProductForm
-from product.models import Brand, Category, Product, ProductType, PurchaseMethod
+from product.forms import ProductForm, ProductTypeForm
+from product.managers import ProductTypeManager
+from product.models import Brand, Category, Product, ProductImage, ProductType, PurchaseMethod
+from user.models import User
 
 
 def site_settings(**kwargs):
@@ -100,3 +109,158 @@ class ProductDollarPriceTests(TestCase):
 
         self.assertFalse(form.is_valid())
         self.assertIn("purchase_method", form.errors)
+
+
+def tiny_png(name="ring.png"):
+    buffer = BytesIO()
+    Image.new("RGB", (8, 8), "red").save(buffer, format="PNG")
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/png")
+
+
+class ProductTypeEntryTests(TestCase):
+    def setUp(self):
+        self.category = Category.objects.create(name="Rings", slug="rings")
+        self.brand = Brand.objects.create(name="Atashin", slug="atashin")
+
+    def test_slug_is_generated_from_the_english_name(self):
+        product_type = ProductType.objects.create(
+            category=self.category,
+            name="Gold Ring",
+            description="A gold ring",
+            main_price=2500000,
+            sell_price=1990000,
+        )
+
+        self.assertEqual(product_type.slug, "gold-ring")
+
+    def test_duplicate_english_name_gets_a_unique_slug(self):
+        shared = dict(
+            category=self.category,
+            name="Gold Ring",
+            description="A gold ring",
+            main_price=2500000,
+            sell_price=1990000,
+        )
+        ProductType.objects.create(**shared)
+        second = ProductType.objects.create(**shared)
+
+        self.assertEqual(second.slug, "gold-ring-2")
+
+    def test_existing_slug_is_kept_when_the_name_changes(self):
+        product_type = ProductType.objects.create(
+            category=self.category,
+            name="Gold Ring",
+            slug="custom-ring",
+            description="A gold ring",
+            main_price=2500000,
+            sell_price=1990000,
+        )
+        product_type.name = "Silver Ring"
+        product_type.save()
+
+        self.assertEqual(product_type.slug, "custom-ring")
+
+    def test_form_hides_slug_and_rejects_a_higher_sell_price(self):
+        form = ProductTypeForm(data=self.product_type_data(sell_price="3000000", main_price="2000000"))
+
+        self.assertNotIn("slug", form.fields)
+        self.assertEqual(form.fields["main_price"].label, "Main price")
+        self.assertEqual(form.fields["sell_price"].label, "Sell price")
+        self.assertFalse(form.is_valid())
+        self.assertIn("sell_price", form.errors)
+
+    def test_empty_product_and_image_rows_can_be_left_blank(self):
+        form = ProductTypeForm(data=self.product_type_data())
+        formsets = build_inline_formsets(
+            ProductTypeManager(),
+            data=self.product_type_data(),
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertTrue(inline_formsets_are_valid(formsets), [item["formset"].errors for item in formsets])
+
+        product_type = form.save()
+        for item in formsets:
+            item["formset"].instance = product_type
+        save_inline_formsets(formsets)
+
+        product_type.refresh_from_db()
+        self.assertEqual(product_type.slug, "gold-ring")
+        self.assertEqual(product_type.products.count(), 0)
+        self.assertEqual(product_type.images.count(), 0)
+
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_create_form_saves_product_image_and_english_prices(self):
+        data = self.product_type_data()
+        data.update({
+            "inline0-0-purchase_price": "800000",
+            "inline0-0-serial": "SN-1",
+            "inline0-0-state": ProductState.IN_WAREHOUSE,
+            "inline1-0-is_thumbnail": "on",
+            "inline1-0-order": "1",
+        })
+        files = {"inline1-0-image": tiny_png()}
+        form = ProductTypeForm(data=data, files=files)
+        formsets = build_inline_formsets(ProductTypeManager(), data=data, files=files)
+
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertTrue(inline_formsets_are_valid(formsets), [item["formset"].errors for item in formsets])
+
+        product_type = form.save()
+        for item in formsets:
+            item["formset"].instance = product_type
+        save_inline_formsets(formsets)
+
+        product = product_type.products.get()
+        image = product_type.images.get()
+        self.assertEqual(product.purchase_price, 800000)
+        self.assertEqual(product.serial, "SN-1")
+        self.assertEqual(product.state, ProductState.IN_WAREHOUSE)
+        self.assertIsInstance(image, ProductImage)
+        self.assertTrue(image.is_thumbnail)
+        self.assertTrue(image.image.name)
+
+    def product_type_data(self, **overrides):
+        data = {
+            "category": self.category.pk,
+            "brand": self.brand.pk,
+            "name": "Gold Ring",
+            "description": "A plain gold ring",
+            "active": "on",
+            "main_price": "2500000",
+            "sell_price": "1990000",
+            "inline0-TOTAL_FORMS": "1",
+            "inline0-INITIAL_FORMS": "0",
+            "inline0-MIN_NUM_FORMS": "0",
+            "inline0-MAX_NUM_FORMS": "1000",
+            "inline0-0-purchase_price": "",
+            "inline0-0-purchase_method": "",
+            "inline0-0-serial": "",
+            "inline0-0-state": ProductState.IN_WAREHOUSE,
+            "inline1-TOTAL_FORMS": "1",
+            "inline1-INITIAL_FORMS": "0",
+            "inline1-MIN_NUM_FORMS": "0",
+            "inline1-MAX_NUM_FORMS": "1000",
+            "inline1-0-order": "10",
+        }
+        data.update(overrides)
+        return data
+
+
+class ProductTypeAdminPageTests(TestCase):
+    def setUp(self):
+        self.category = Category.objects.create(name="Rings", slug="rings")
+        self.user = User.objects.create(phone_number="09120000000", is_superuser=True, is_staff=True)
+        self.client.force_login(self.user)
+
+    def test_create_page_offers_products_images_and_english_prices(self):
+        response = self.client.get(f"/{config('MANAGER_URL')}/default/product-types/create/")
+
+        self.assertEqual(response.status_code, 200)
+        body = response.content.decode()
+        self.assertIn("Main price", body)
+        self.assertIn("Sell price", body)
+        self.assertIn("Products", body)
+        self.assertIn("Images", body)
+        self.assertIn('dir="ltr"', body)
+        self.assertNotIn('name="slug"', body)

@@ -1026,6 +1026,18 @@ textarea {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
+.form-help {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+input[dir="ltr"],
+textarea[dir="ltr"] {
+    direction: ltr;
+    text-align: left;
+}
+
 /* Autocomplete */
 
 .manager-autocomplete {
