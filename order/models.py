@@ -143,7 +143,12 @@ class OrderItem(BaseModel):
         return f"{self.order} - {self.product_type}"
 
     def save(self, *args, **kwargs):
-        if self._state.adding and self.dollar_price is None and self.order_id and self.order.status == OrderStatus.SUBMITTED:
+        if (
+            self._state.adding
+            and self.dollar_price is None
+            and self.order_id
+            and self.order.status not in (OrderStatus.DRAFT, OrderStatus.CANCELED)
+        ):
             using = kwargs.get('using') or self.order._state.db or self._state.db
             self.dollar_price = get_dollar_price(using=using)
         super().save(*args, **kwargs)
