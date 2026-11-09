@@ -1,9 +1,13 @@
+from collections import defaultdict
+
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
 
 from order.enums import OrderStatus, DeliveryPricingStrategy
-from order.models import Order, OrderItem, DeliveryMethod, OrderConfig, PaymentMethod
+from order.models import Order, OrderItem, OrderItemProduct, DeliveryMethod, OrderConfig, PaymentMethod
 from product.enums import ProductState
+from product.models import Product
 
 ORDER_REGISTRATION_DISABLED_MESSAGE = "ثبت سفارش در حال حاضر غیرفعال است."
 
@@ -198,6 +202,56 @@ def calculate_delivery_method_cost(order, delivery_method):
     if cost is None:
         return 0
     return cost
+
+
+def stock_state_for_order_status(status):
+    if status == OrderStatus.SUBMITTED:
+        return ProductState.RESERVED
+    if status in (OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED):
+        return ProductState.SOLD
+    return None
+
+
+def register_order_products(order, products):
+    product_ids = [product.pk for product in products]
+    if not product_ids:
+        return order
+
+    using = order._state.db
+    with transaction.atomic(using=using):
+        locked = list(
+            Product.objects.using(using)
+            .select_for_update()
+            .filter(pk__in=product_ids)
+            .select_related("product_type")
+            .order_by("id")
+        )
+        if len(locked) != len(set(product_ids)) or any(product.state != ProductState.IN_WAREHOUSE for product in locked):
+            raise ValidationError("فقط کالای موجود در انبار را می‌توان به سفارش اضافه کرد.")
+
+        grouped = defaultdict(list)
+        for product in locked:
+            grouped[product.product_type_id].append(product)
+
+        for units in grouped.values():
+            product_type = units[0].product_type
+            item = OrderItem.objects.using(using).create(
+                order=order,
+                product_type=product_type,
+                price=product_type.sell_price,
+                count=len(units),
+            )
+            OrderItemProduct.objects.using(using).bulk_create([
+                OrderItemProduct(order_item=item, product=unit)
+                for unit in units
+            ])
+
+        target = stock_state_for_order_status(order.status)
+        if target is not None:
+            Product.objects.using(using).filter(pk__in=product_ids).update(state=target)
+
+    order.calculate_total_price()
+    return order
 
 
 def clear_draft_delivery(order):
