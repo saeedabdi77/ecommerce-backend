@@ -62,6 +62,9 @@ class Order(BaseModel):
         choices=SaleMethod.choices,
         default=SaleMethod.WEBSITE,
     )
+    buyer_name = models.CharField("نام خریدار", max_length=200, blank=True)
+    buyer_phone = models.CharField("موبایل خریدار", max_length=11, blank=True)
+    buyer_address = models.TextField("آدرس خریدار", blank=True)
     guest_uid = models.UUIDField(null=True, blank=True, db_index=True)
     status = models.CharField("وضعیت", max_length=20, choices=OrderStatus.choices,
                               default=OrderStatus.DRAFT, db_index=True)
@@ -83,8 +86,16 @@ class Order(BaseModel):
         verbose_name = "سفارش"
         verbose_name_plural = "سفارش‌ها"
 
+    @property
+    def buyer_label(self):
+        if self.user_id:
+            name = (self.user.get_full_name() or "").strip()
+            return f"{name} — {self.user.phone_number}" if name else self.user.phone_number
+        parts = [part.strip() for part in (self.buyer_name, self.buyer_phone) if part and part.strip()]
+        return " — ".join(parts)
+
     def __str__(self):
-        return f"{self.user or self.guest_uid} - {self.tracking_code}"
+        return f"{self.buyer_label or self.guest_uid or self.tracking_code} - {self.tracking_code}"
 
     def calculate_total_price(self):
         total = self.items.aggregate(total=Sum(F("price") * F("count")))["total"] or 0
