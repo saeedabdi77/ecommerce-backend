@@ -64,8 +64,8 @@ class Order(BaseModel):
     )
     buyer_phone = models.CharField("موبایل خریدار", max_length=11, blank=True)
     buyer_address = models.TextField("آدرس خریدار", blank=True)
-    first_name = models.CharField("نام", max_length=150, blank=True)
-    last_name = models.CharField("نام خانوادگی", max_length=150, blank=True)
+    first_name = models.CharField("نام", max_length=150, blank=True, null=True)
+    last_name = models.CharField("نام خانوادگی", max_length=150, blank=True, null=True)
     guest_uid = models.UUIDField(null=True, blank=True, db_index=True)
     status = models.CharField("وضعیت", max_length=20, choices=OrderStatus.choices,
                               default=OrderStatus.DRAFT, db_index=True)
