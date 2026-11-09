@@ -171,6 +171,15 @@ class PurchaseMethodForm(forms.ModelForm):
 
 
 class ProductInlineForm(forms.ModelForm):
+    count = forms.IntegerField(
+        label="Count",
+        min_value=1,
+        max_value=500,
+        initial=1,
+        required=False,
+        widget=forms.NumberInput(attrs={"dir": "ltr", "inputmode": "numeric", "min": 1, "placeholder": "1"}),
+    )
+
     class Meta:
         model = Product
         fields = ("purchase_price", "purchase_method", "serial", "state")
@@ -196,6 +205,41 @@ class ProductInlineForm(forms.ModelForm):
             (ProductState.SOLD, "Sold"),
             (ProductState.LOST, "Lost"),
         )
+        self.order_fields(["purchase_price", "purchase_method", "serial", "state", "count"])
+        if self.instance.pk:
+            self.fields["count"].disabled = True
+            self.fields["count"].initial = 1
+
+    def has_changed(self):
+        changed = [name for name in self.changed_data if name != "count"]
+        if changed:
+            return True
+        if self.instance.pk:
+            return False
+        try:
+            return int(self["count"].value()) > 1
+        except (TypeError, ValueError):
+            return False
+
+    def clean_count(self):
+        if self.instance.pk:
+            return 1
+        return self.cleaned_data.get("count") or 1
+
+    def save(self, commit=True):
+        creating = self.instance.pk is None
+        count = self.cleaned_data.get("count") or 1
+        instance = super().save(commit=commit)
+        if creating and commit and count > 1:
+            for _ in range(count - 1):
+                Product.objects.create(
+                    product_type=instance.product_type,
+                    purchase_price=instance.purchase_price,
+                    purchase_method=instance.purchase_method,
+                    serial=instance.serial,
+                    state=instance.state,
+                )
+        return instance
 
 
 class ProductForm(forms.ModelForm):

@@ -220,6 +220,31 @@ class ProductTypeEntryTests(TestCase):
         self.assertTrue(image.is_thumbnail)
         self.assertTrue(image.image.name)
 
+    def test_product_row_count_creates_that_many_items(self):
+        data = self.product_type_data()
+        data.update({
+            "inline0-0-purchase_price": "800000",
+            "inline0-0-serial": "SN-1",
+            "inline0-0-state": ProductState.IN_WAREHOUSE,
+            "inline0-0-count": "3",
+        })
+        form = ProductTypeForm(data=data)
+        formsets = build_inline_formsets(ProductTypeManager(), data=data)
+
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertTrue(inline_formsets_are_valid(formsets), [item["formset"].errors for item in formsets])
+
+        product_type = form.save()
+        for item in formsets:
+            item["formset"].instance = product_type
+        save_inline_formsets(formsets)
+
+        products = list(product_type.products.order_by("id"))
+        self.assertEqual(len(products), 3)
+        self.assertTrue(all(product.purchase_price == 800000 for product in products))
+        self.assertTrue(all(product.serial == "SN-1" for product in products))
+        self.assertTrue(all(product.state == ProductState.IN_WAREHOUSE for product in products))
+
     def product_type_data(self, **overrides):
         data = {
             "category": self.category.pk,
@@ -262,5 +287,6 @@ class ProductTypeAdminPageTests(TestCase):
         self.assertIn("Sell price", body)
         self.assertIn("Products", body)
         self.assertIn("Images", body)
+        self.assertIn("Count", body)
         self.assertIn('dir="ltr"', body)
         self.assertNotIn('name="slug"', body)
