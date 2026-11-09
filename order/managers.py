@@ -84,7 +84,8 @@ class OrderManager(BaseManager):
 
     filters = (
         TextFilter("tracking_code", "کد پیگیری", lookup="exact"),
-        TextFilter("buyer_name", "نام خریدار"),
+        TextFilter("first_name", "نام"),
+        TextFilter("last_name", "نام خانوادگی"),
         TextFilter("buyer_phone", "موبایل خریدار"),
         ForeignKeyFilter("user", queryset=User.objects.all(), label="کاربر"),
         ChoiceFilter.from_field(Order, "sale_method", label="نحوه فروش"),
@@ -100,7 +101,8 @@ class OrderManager(BaseManager):
 
     search_fields = (
         "tracking_code",
-        "buyer_name",
+        "first_name",
+        "last_name",
         "buyer_phone",
         "user__phone_number",
         "user__first_name",

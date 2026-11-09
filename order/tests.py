@@ -3,9 +3,11 @@ import uuid
 from django.test import TestCase
 
 from core.models import SiteSettings
+from order.checkout import CheckoutError, _reserve_and_submit
 from order.enums import DeliveryPricingStrategy, OrderStatus, SaleMethod
 from order.forms import OrderForm
 from order.models import DeliveryMethod, DeliveryPricing, Order, OrderItem, PaymentMethod
+from order.serializers import SelectDeliveryAddressSerializer, SubmitOrderPaymentSerializer
 from order.utilities import get_available_payment_methods, sync_draft_order
 from product.enums import ProductState
 from product.models import Brand, Category, Product, ProductType
@@ -338,12 +340,239 @@ class SaleMethodTests(TestCase):
         self.assertEqual(order.sale_method, SaleMethod.WEBSITE)
 
     def test_order_form_saves_selected_sale_method(self):
+        category = Category.objects.create(name="Rings", slug="rings-sale")
+        brand = Brand.objects.create(name="Atashin", slug="atashin-sale")
+        product_type = ProductType.objects.create(
+            category=category,
+            brand=brand,
+            name="Ring",
+            slug="ring-sale",
+            description="A ring",
+            main_price=200,
+            sell_price=150,
+        )
+        product = Product.objects.create(
+            product_type=product_type,
+            purchase_price=80,
+            state=ProductState.IN_WAREHOUSE,
+        )
         form = OrderForm(data={
             "status": OrderStatus.SUBMITTED,
             "sale_method": SaleMethod.IN_PERSON,
+            "first_name": "مریم",
+            "last_name": "رضایی",
+            "buyer_phone": "09120000000",
+            "products": [product.pk],
         })
 
         self.assertTrue(form.is_valid(), form.errors)
         order = form.save()
         self.assertEqual(order.sale_method, SaleMethod.IN_PERSON)
         self.assertEqual(order.get_sale_method_display(), "حضوری")
+
+
+class AdminOrderRegistrationTests(TestCase):
+    def setUp(self):
+        category = Category.objects.create(name="Rings", slug="rings-admin")
+        brand = Brand.objects.create(name="Atashin", slug="atashin-admin")
+        self.product_type = ProductType.objects.create(
+            category=category,
+            brand=brand,
+            name="Ring",
+            slug="ring-admin",
+            description="A ring",
+            main_price=200,
+            sell_price=150,
+        )
+        self.ring = Product.objects.create(
+            product_type=self.product_type,
+            purchase_price=80,
+            serial="RING-1",
+            state=ProductState.IN_WAREHOUSE,
+        )
+        self.second_ring = Product.objects.create(
+            product_type=self.product_type,
+            purchase_price=80,
+            serial="RING-2",
+            state=ProductState.IN_WAREHOUSE,
+        )
+
+    def test_registers_order_without_user_and_marks_products_sold(self):
+        form = OrderForm(data={
+            "first_name": "مریم",
+            "last_name": "رضایی",
+            "buyer_phone": "09121234567",
+            "buyer_address": "تهران",
+            "sale_method": SaleMethod.IN_PERSON,
+            "status": OrderStatus.PAID,
+            "products": [self.ring.pk, self.second_ring.pk],
+            "delivery_cost": 0,
+        })
+
+        self.assertTrue(form.is_valid(), form.errors)
+        order = form.save()
+
+        self.ring.refresh_from_db()
+        self.second_ring.refresh_from_db()
+        self.assertIsNone(order.user_id)
+        self.assertEqual(order.buyer_label, "مریم رضایی — 09121234567")
+        self.assertEqual(order.sale_method, SaleMethod.IN_PERSON)
+        self.assertEqual(order.items.get().count, 2)
+        self.assertEqual(order.total_price, 300)
+        self.assertEqual(self.ring.state, ProductState.SOLD)
+        self.assertEqual(self.second_ring.state, ProductState.SOLD)
+
+    def test_requires_name_and_phone_when_user_is_missing(self):
+        form = OrderForm(data={
+            "sale_method": SaleMethod.PHONE,
+            "status": OrderStatus.PAID,
+            "products": [self.ring.pk],
+            "delivery_cost": 0,
+        })
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("first_name", form.errors)
+
+    def test_existing_user_does_not_need_a_name(self):
+        user = User.objects.create(phone_number="09123334444", first_name="علی", last_name="احمدی")
+        form = OrderForm(data={
+            "user": user.pk,
+            "sale_method": SaleMethod.WEBSITE,
+            "status": OrderStatus.SUBMITTED,
+            "products": [self.ring.pk],
+            "delivery_cost": 0,
+        })
+
+        self.assertTrue(form.is_valid(), form.errors)
+        order = form.save()
+
+        self.ring.refresh_from_db()
+        self.assertEqual(order.user_id, user.pk)
+        self.assertEqual(order.buyer_label, "علی احمدی — 09123334444")
+        self.assertEqual(self.ring.state, ProductState.RESERVED)
+
+    def test_can_edit_order_names(self):
+        order = Order.objects.create(
+            first_name="مریم",
+            last_name="رضایی",
+            buyer_phone="09121234567",
+            status=OrderStatus.PAID,
+            sale_method=SaleMethod.IN_PERSON,
+        )
+        form = OrderForm(data={
+            "first_name": "سارا",
+            "last_name": "کریمی",
+            "buyer_phone": "09121234567",
+            "sale_method": SaleMethod.IN_PERSON,
+            "status": OrderStatus.PAID,
+            "delivery_cost": 0,
+        }, instance=order)
+
+        self.assertTrue(form.is_valid(), form.errors)
+        order = form.save()
+
+        self.assertEqual(order.first_name, "سارا")
+        self.assertEqual(order.last_name, "کریمی")
+        self.assertEqual(order.buyer_label, "سارا کریمی — 09121234567")
+
+
+class SubmitOrderNameTests(TestCase):
+    def setUp(self):
+        category = Category.objects.create(name="Rings", slug="rings-names")
+        brand = Brand.objects.create(name="Atashin", slug="atashin-names")
+        product_type = ProductType.objects.create(
+            category=category,
+            brand=brand,
+            name="Ring",
+            slug="ring-names",
+            description="A ring",
+            main_price=200,
+            sell_price=150,
+        )
+        Product.objects.create(
+            product_type=product_type,
+            purchase_price=80,
+            state=ProductState.IN_WAREHOUSE,
+        )
+        self.user = User.objects.create(phone_number="09120000099", first_name="پروفایل", last_name="قدیمی")
+        province = Province.objects.create(name="تهران")
+        city = City.objects.create(province=province, name="تهران")
+        self.address = Address.objects.create(user=self.user, city=city, address_detail="street")
+        method = DeliveryMethod.objects.create(name="Post", is_active=True)
+        DeliveryPricing.objects.create(
+            delivery_method=method,
+            strategy=DeliveryPricingStrategy.FIXED,
+            price=10,
+        )
+        self.order = Order.objects.create(
+            user=self.user,
+            total_price=150,
+            delivery_address=self.address,
+            delivery_method=method,
+            delivery_cost=10,
+        )
+        OrderItem.objects.create(
+            order=self.order,
+            product_type=product_type,
+            price=150,
+            count=1,
+        )
+
+    def _address_serializer(self, data):
+        return SelectDeliveryAddressSerializer(
+            instance=self.order,
+            data=data,
+            context={"request": type("Request", (), {"user": self.user})()},
+        )
+
+    def test_address_requires_and_saves_sent_names(self):
+        missing = self._address_serializer({"address_id": self.address.id})
+        self.assertFalse(missing.is_valid())
+        reasons = {item["reason"] for item in missing.error_list}
+        self.assertIn("first_name", reasons)
+        self.assertIn("last_name", reasons)
+
+        blank = self._address_serializer({
+            "address_id": self.address.id,
+            "first_name": "   ",
+            "last_name": "کریمی",
+        })
+        self.assertFalse(blank.is_valid())
+        self.assertIn("first_name", {item["reason"] for item in blank.error_list})
+
+        serializer = self._address_serializer({
+            "address_id": self.address.id,
+            "first_name": "  سارا  ",
+            "last_name": "کریمی",
+        })
+        self.assertTrue(serializer.is_valid(), getattr(serializer, "error_list", serializer.errors))
+        order = serializer.save()
+
+        order.refresh_from_db()
+        self.user.refresh_from_db()
+        self.assertEqual(order.first_name, "سارا")
+        self.assertEqual(order.last_name, "کریمی")
+        self.assertEqual(order.buyer_label, "سارا کریمی — 09120000099")
+        self.assertEqual(self.user.first_name, "پروفایل")
+
+    def test_payment_uses_names_saved_with_address(self):
+        self.order.first_name = "سارا"
+        self.order.last_name = "کریمی"
+        self.order.save(update_fields=("first_name", "last_name"))
+
+        payment = SubmitOrderPaymentSerializer(data={"payment_method_id": 1})
+        self.assertTrue(payment.is_valid(), getattr(payment, "errors", None))
+
+        order = _reserve_and_submit(self.order.id)
+        order.refresh_from_db()
+        self.assertEqual(order.status, OrderStatus.SUBMITTED)
+        self.assertEqual(order.first_name, "سارا")
+        self.assertEqual(order.last_name, "کریمی")
+
+    def test_payment_rejects_order_without_name(self):
+        with self.assertRaises(CheckoutError) as raised:
+            _reserve_and_submit(self.order.id)
+
+        self.assertEqual(raised.exception.reason, "first_name")
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, OrderStatus.DRAFT)
