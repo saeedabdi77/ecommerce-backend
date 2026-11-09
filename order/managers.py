@@ -75,7 +75,7 @@ class OrderManager(BaseManager):
 
     columns = (
         Column("tracking_code", "کد پیگیری", sortable=True),
-        Column("user", "کاربر", sortable=True),
+        Column("buyer_label", "خریدار"),
         Column("sale_method", "نحوه فروش", sortable=True),
         Column("status", "وضعیت", sortable=True, editable=True),
         Column("total_price", "مبلغ کل", sortable=True),
@@ -84,6 +84,8 @@ class OrderManager(BaseManager):
 
     filters = (
         TextFilter("tracking_code", "کد پیگیری", lookup="exact"),
+        TextFilter("buyer_name", "نام خریدار"),
+        TextFilter("buyer_phone", "موبایل خریدار"),
         ForeignKeyFilter("user", queryset=User.objects.all(), label="کاربر"),
         ChoiceFilter.from_field(Order, "sale_method", label="نحوه فروش"),
         ChoiceFilter.from_field(Order, "status", label="وضعیت"),
@@ -96,7 +98,14 @@ class OrderManager(BaseManager):
         DeleteAction(),
     )
 
-    search_fields = ("tracking_code", "user__phone_number", "user__first_name", "user__last_name")
+    search_fields = (
+        "tracking_code",
+        "buyer_name",
+        "buyer_phone",
+        "user__phone_number",
+        "user__first_name",
+        "user__last_name",
+    )
     ordering = ("-created_at",)
 
     select_related = ("user",)

@@ -29,7 +29,7 @@ class OrderItemInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
         "id",
-        "user",
+        "buyer_label",
         "sale_method",
         "status",
         "total_price",
@@ -37,7 +37,11 @@ class OrderAdmin(admin.ModelAdmin):
         "created_at",
     )
     list_filter = ("status", "sale_method", "created_at")
-    search_fields = ("user__phone_number", "tracking_code")
+    search_fields = ("user__phone_number", "buyer_name", "buyer_phone", "tracking_code")
+
+    @admin.display(description="خریدار")
+    def buyer_label(self, obj):
+        return obj.buyer_label
     autocomplete_fields = ("user",)
     readonly_fields = (
         "total_price",
