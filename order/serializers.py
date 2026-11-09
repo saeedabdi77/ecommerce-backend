@@ -46,8 +46,21 @@ class OrderRetrieveSerializer(CustomModelSerializer):
 
     class Meta:
         model = Order
-        fields = ("id", "guest_uid", "total_price", "delivery_cost", "payable_total", "admin_note", "clear_guest_uid", "items", "status", "delivery_address",
-            "delivery_method")
+        fields = (
+            "id",
+            "guest_uid",
+            "first_name",
+            "last_name",
+            "total_price",
+            "delivery_cost",
+            "payable_total",
+            "admin_note",
+            "clear_guest_uid",
+            "items",
+            "status",
+            "delivery_address",
+            "delivery_method",
+        )
 
     def get_clear_guest_uid(self, obj):
         return bool(
@@ -127,6 +140,20 @@ class AddCartItemSerializer(CustomModelSerializer):
 
 class SelectDeliveryAddressSerializer(CustomSerializer):
     address_id = serializers.IntegerField(write_only=True)
+    first_name = serializers.CharField(max_length=150)
+    last_name = serializers.CharField(max_length=150)
+
+    def validate_first_name(self, value):
+        value = (value or "").strip()
+        if not value:
+            raise serializers.ValidationError("نام الزامی است.")
+        return value
+
+    def validate_last_name(self, value):
+        value = (value or "").strip()
+        if not value:
+            raise serializers.ValidationError("نام خانوادگی الزامی است.")
+        return value
 
     def validate_serializer(self, attrs, error_obj):
         if append_registration_disabled_error(error_obj):
@@ -141,7 +168,15 @@ class SelectDeliveryAddressSerializer(CustomSerializer):
         instance.delivery_address_id = validated_data["address_id"]
         instance.delivery_method = None
         instance.delivery_cost = 0
-        instance.save(update_fields=("delivery_address", "delivery_method", "delivery_cost"))
+        instance.first_name = validated_data["first_name"]
+        instance.last_name = validated_data["last_name"]
+        instance.save(update_fields=(
+            "delivery_address",
+            "delivery_method",
+            "delivery_cost",
+            "first_name",
+            "last_name",
+        ))
         return instance
 
 
